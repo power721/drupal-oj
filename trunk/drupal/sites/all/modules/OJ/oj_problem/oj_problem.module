@@ -1,0 +1,402 @@
+<?php
+
+require_once drupal_get_path('module', 'oj_problem').'/oj_problem_import.inc';
+require_once drupal_get_path('module', 'oj_problem').'/oj_problem_list.inc';
+require_once drupal_get_path('module', 'oj_problem').'/oj_source_code.inc';
+require_once drupal_get_path('module', 'oj_problem').'/oj_problem_status.inc';
+require_once drupal_get_path('module', 'node').'/node.pages.inc';
+
+
+function oj_problem_init()
+{
+	drupal_add_css(drupal_get_path('module', 'oj_problem') . '/oj_problem.css');
+}
+
+function oj_problem_menu()
+{
+	
+	$items['status'] = array
+	(
+		'title' => 'Status List',
+		'page callback' => 'oj_status',
+		'page arguments' => array(1,2,3,4),
+		'access callback' => TRUE
+	);
+	
+	$items['oj_status.ajax'] = array 
+	(
+		'page callback' => 'oj_status_ajax',
+		'page arguments' => array(1,2,3,4),
+		'type' => MENU_CALLBACK,
+		'access callback' => TRUE,
+	);
+	
+	$items['oj_problem_status.ajax'] = array 
+	(
+		'page callback' => 'oj_problem_status_ajax',
+		'page arguments' => array(1),
+		'type' => MENU_CALLBACK,
+		'access callback' => TRUE,
+	);
+	
+	$items['node/%node/submit'] = array
+	(
+		'page callback' => 'oj_problem_submit_callback',
+		'page arguments' => array(1),
+		'access callback' => 'oj_problem_submit_access',
+		'access arguments' => array(1),
+		'title' => 'Submit',
+		'type' => MENU_LOCAL_TASK,
+		'weight'=>-3
+	);
+	$items['node/%node/status'] = array
+	(
+		'page callback' => 'oj_problem_status',
+		'page arguments' => array(1),
+		'access callback' => 'oj_problem_status_access',
+		'access arguments' => array(1),
+		'title' => 'Status',
+		'type' => MENU_LOCAL_TASK,
+		'weight'=>-2
+	);
+	$items['node/%node/discuss'] = array/*应该放在0j_message模块*/
+	(
+		'page callback' => 'oj_problem_discuss_callback',
+		'page arguments' => array(1),
+		'access callback' => 'oj_problem_discuss_access',
+		'access arguments' => array(1),
+		'title' => 'Discuss',
+		'type' => MENU_LOCAL_TASK,
+		'weight'=>-1
+	);
+	
+	$items['problem'] = array
+	(
+		'title' => 'Problem List',
+		'page callback' => 'oj_problem_list',
+		'access callback' => TRUE
+	);
+	$items['problem/%problem'] = array
+	(
+		'title callback' => 'problem_page_title',
+		'title arguments' => array(1),
+		'page callback' => 'node_page_view',
+		'page arguments' => array(1),
+		'access callback' => 'problem_view_access',
+		'access arguments' => array(1),
+		'type' => MENU_CALLBACK
+	);
+	$items['problem/%problem/view'] = array
+	(
+		'title' => 'View',
+		'type' => MENU_DEFAULT_LOCAL_TASK,
+		'weight' => -10
+	);
+	$items['problem/%problem/submit'] = array
+	(
+		'page callback' => 'oj_problem_submit_callback',
+		'page arguments' => array(1),
+		'access callback' => 'oj_problem_submit_access',
+		'access arguments' => array(1),
+		'title' => 'Submit',
+		'type' => MENU_LOCAL_TASK,
+		'weight'=>-3
+	);
+	$items['problem/%problem/status'] = array
+	(
+		'page callback' => 'oj_problem_status',
+		'page arguments' => array(1),
+		'access callback' => 'oj_problem_status_access',
+		'access arguments' => array(1),
+		'title' => 'Status',
+		'type' => MENU_LOCAL_TASK,
+		'weight'=>-2
+	);
+	$items['problem/%problem/discuss'] = array/*应该放在0j_message模块*/
+	(
+		'page callback' => 'oj_problem_discuss_callback',
+		'page arguments' => array(1),
+		'access callback' => 'oj_problem_discuss_access',
+		'access arguments' => array(1),
+		'title' => 'Discuss',
+		'type' => MENU_LOCAL_TASK,
+		'weight'=>-1
+	);
+	$items['problem/%problem/edit'] = array
+	(
+		'title' => 'Edit',
+		'page callback' => 'problem_page_edit',
+		'page arguments' => array(1),
+		'access callback' => 'node_access',
+		'access arguments' => array('update', 1),
+		'weight' => 1,
+		'type' => MENU_LOCAL_TASK,
+	);
+	$items['oj_problem_list.ajax'] = array 
+	(
+		'page callback' => 'oj_problem_list_ajax',
+		'type' => MENU_CALLBACK,
+		'access callback' => TRUE,
+	);
+	
+	$items['problem/import'] = array
+	(
+		'title' => 'Import problems form JudgeOnline',
+		'page callback' => 'import_problem',
+		'page arguments' => array(2,3),
+        'access arguments' => array('create problem content'),
+		'type' => MENU_CALLBACK
+	);
+	$items['problem/reset'] = array
+	(
+		'page callback' => 'reset_problem',
+        'access callback' => 'reset_problem_access'
+	);
+	
+	$items['status/import'] = array
+	(
+		'title' => 'Import Solutions form JudgeOnline',
+		'page callback' => 'import_solution',
+		'page arguments' => array(2,3),
+        'access arguments' => array('create problem content'),
+		'type' => MENU_CALLBACK
+	);
+	$items['status/reset'] = array
+	(
+		'page callback' => 'reset_solution',
+        'access callback' => 'reset_solution_access'
+	);
+	$items['code'] = array
+	(
+		'page callback' => 'show_code',
+		'page arguments' => array(1),
+        'access callback' => 'show_code_access',
+		'access arguments' => array(1)
+	);
+	$items['compileinfo'] = array
+	(
+		'page callback' => 'show_compile_info',
+		'page arguments' => array(1),
+        'access callback' => 'show_compile_info_access',
+		'access arguments' => array(1)
+	);
+	return $items;
+}
+
+function oj_problem_theme()
+{
+	return array
+	(
+		'node-porblem' => array
+		(
+			'arguments' => array('node' => NULL, 'teaser' => FALSE, 'page' => FALSE),
+			'template' => 'node-problem',
+		)
+	);
+}
+
+function oj_problem_form_alter(&$form, $form_state, $form_id)
+{
+	//debug($form_id,'$form_id');debug($form,'$form');debug($form_state,'$form_state');
+	if($form_id=='problem_node_form')
+	{
+		$form['author']['#access']='0';
+		unset($form['revision_information'],$form['comment_settings'],$form['menu'],$form['options']);
+		unset($form['field_pid'],$form['field_submit'],$form['field_accepted'],$form['field_submit_user'],$form['field_solved']);
+		unset($form['field_input_path'],$form['field_output_path'],$form['field_view'],$form['field_error'],$form['field_problem_id']);
+	}
+}
+
+function oj_problem_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) 
+{
+	//debug($op,'$op');debug($node,'$node');debug($a3,'$a3');debug($a4,'$a4');
+	if($node->type=='problem')
+	{
+		if($op=='load')
+		{
+			//unset($node->field_input_path,$node->field_output_path,$node->field_solved,$node->field_submit_user);
+			//$var = parse_ini_file("C:\JudgeOnline\serverconfig.property");
+			//debug($var);
+		}
+		if($op=='view')
+		{
+			//oj_get_value('Debug');
+			db_query("UPDATE {content_type_problem} SET field_view_value=field_view_value+1 WHERE nid=%d",$node->nid);
+		}
+		if($op=='presave')
+		{
+			if(isset($node->field_submit)&&$node->field_submit['0']['value']==NULL)
+				$node->field_submit['0']['value']=0;
+			if(isset($node->field_accepted)&&$node->field_accepted['0']['value']==NULL)
+				$node->field_accepted['0']['value']=0;
+			if(isset($node->field_submit_user)&&$node->field_submit_user['0']['value']==NULL)
+				$node->field_submit_user['0']['value']=0;
+			if(isset($node->field_solved)&&$node->field_solved['0']['value']==NULL)
+				$node->field_solved['0']['value']=0;
+		}
+		if($op=='insert')
+		{
+			$items=db_query("SELECT max(field_pid_value) AS pid FROM {content_type_problem}");
+			if($item=db_fetch_object($items))
+			{
+				$pid=$item->pid+1;
+				if($item->pid==null)
+					$pid=1000;
+			}
+			else
+				$pid=1000;
+			$node->field_pid['0']['value']=$pid;
+			db_query("UPDATE {content_type_problem} SET field_pid_value=%d WHERE nid=%d",$pid,$node->nid);
+			$items=db_query("SELECT field_pid_value AS pid FROM {content_type_problem} WHERE nid=%d",$node->nid);
+			if($item=db_fetch_object($items))
+			{
+				$dic = "D:/oj/data/$item->pid";
+				db_query("UPDATE {content_type_problem} SET field_input_path_value='%s',field_output_path_value='%s' WHERE nid=%d",$dic,$dic,$node->nid);
+				if(is_dir($dic))
+				{
+					drupal_set_message("Dictionary $dic already existed.\n");
+				}
+				else if(!mkdir($dic))
+				{
+					drupal_set_message("Create dictionary $dic failed.\n");
+				}
+			}
+		}
+	}
+	//debug($op,'op');debug($node,'node');
+}
+
+function oj_problem_discuss_access($node)/*应该放在0j_message模块*/
+{
+	global $user;
+	if($node->type=='problem')
+		return true;
+	return false;
+}
+
+function oj_problem_discuss_callback($node)/*应该放在0j_message模块*/
+{
+	return 'Discuss';
+}
+
+function problem_page_title($node)
+{
+	return $node->field_pid[0]['value']." -- ".$node->title;
+}
+
+function problem_page_view($node)
+{
+	drupal_set_title(check_plain($node->field_pid[0]['value']." -- ".$node->title));
+	$output = "";
+	print theme('page', $output);
+}
+
+function problem_page_edit($node)
+{
+  drupal_set_title(check_plain($node->field_pid[0]['value']." -- ".$node->title));
+  return drupal_get_form($node->type .'_node_form', $node);
+}
+
+function problem_view_access($node)
+{
+	global $user;
+	if($user->uid==1||$user->roles['4']!=null||$user->roles['5']!=null)
+		return true;
+	if($node->status!=1)
+		return false;
+	return true;
+}
+
+function problem_load($pid)
+{
+	$item = db_fetch_object(db_query("SELECT n.nid FROM {content_type_problem} p LEFT JOIN {node} n ON n.nid=p.nid WHERE field_pid_value=%d",$pid));
+	$node = node_load($item->nid);
+	return $node;
+}
+
+function get_previous_problem($pid)
+{
+	global $user;
+	$query = "SELECT field_pid_value FROM {content_type_problem} p 
+	LEFT JOIN {node} n ON n.nid=p.nid WHERE field_pid_value<%d ";
+	if(!($user->uid==1||$user->roles['4']!=null||$user->roles['5']!=null))
+		$query .= " AND status=1";
+	$query .= " ORDER BY field_pid_value desc LIMIT 1";
+	$item = db_fetch_object(db_query($query,$pid));
+	if($item->field_pid_value!=null)
+		$pid = $item->field_pid_value;
+	return "<a href=".url('problem/'.$pid)."><&lt;Previous</a>";
+}
+
+function get_next_problem($pid)
+{
+	global $user;
+	$query = "SELECT field_pid_value FROM {content_type_problem} p 
+	LEFT JOIN {node} n ON n.nid=p.nid WHERE field_pid_value>%d ";
+	if(!($user->uid==1||$user->roles['4']!=null||$user->roles['5']!=null))
+		$query .= " AND status=1";
+	$query .= " LIMIT 1";
+	$item = db_fetch_object(db_query($query,$pid));
+	if($item->field_pid_value!=null)
+		$pid = $item->field_pid_value;
+	return "<a href=".url('problem/'.$pid).">Next>></a>";
+}
+
+function data_files(&$node)
+{
+	$items=db_query("SELECT field_pid_value AS pid FROM {content_type_problem} WHERE nid=%d",$node->nid);
+	if($item=db_fetch_object($items))
+	{
+		$pattern = $item->pid;
+	}
+	else
+	{
+		drupal_set_message("Cann't find problem ID.\n");
+		return;
+	}
+	//debug($node);
+	if(isset($node->files) && user_access('upload files'))
+	{
+        foreach ($node->files as $key => $file)
+		{
+          // Only rewrite the path on new files to be saved
+			if ($file['new'] && !$file['remove'])
+			{
+				// apply new, prefixed file name by token replacing the path pattern
+				$file_name = str_replace(array(' ', "\n", "\t"), '_', $pattern . '/') . $file['filename'];
+				// SECURITY NOTE:
+				// Tokens include user supplied information and could provide an attack vector.
+				// The current method of creating directories prevents the use of .. or other malicious
+				// paths, but future developers should keep this in mind when modifying the following code	
+				// Create the directory if it doesn't exist yet.
+				$dirs = explode('/', dirname($file_name));
+				$directory = file_directory_path();
+				while (count($dirs))
+				{
+				  $directory .= '/' . array_shift($dirs);
+				  file_check_directory($directory, FILE_CREATE_DIRECTORY);
+				}
+				//move file to new subfolder
+				if (file_move($file['filepath'], $file_name, FILE_EXISTS_REPLACE))
+				{
+				  //update node file array with new path, if needed
+				  $node->files[$key]['filepath'] = $file_name; 
+				  // update file record in database
+				  db_query("UPDATE {files} SET filepath = '%s' WHERE fid = %d", $file['filepath'], $file['fid']);
+				}
+				else
+				{
+					drupal_set_message("Cann't move file.\n");
+				}
+			}
+			else
+			{
+				drupal_set_message("Not new file.\n");
+			}
+        }
+    }
+	else
+	{
+		drupal_set_message("No files.\n");
+	}
+}

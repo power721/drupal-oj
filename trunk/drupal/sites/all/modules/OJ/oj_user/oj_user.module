@@ -1,0 +1,294 @@
+<?php
+
+require_once drupal_get_path('module', 'oj_user').'/oj_user_list.inc';
+require_once drupal_get_path('module', 'oj_user').'/oj_user_import.inc';
+
+function oj_user_menu()
+{
+	$items['user/list'] = array
+	(
+		'title' => 'User Ranklist',
+		'page callback' => 'oj_user_ranklist',
+		'access callback' => TRUE
+	);
+	
+	$items['oj_user_list.ajax'] = array (
+     'page callback' => 'oj_user_list_ajax',
+     'type' => MENU_CALLBACK,
+		 'access callback' => TRUE,
+		);
+	
+	$items['user/import'] = array
+	(
+		'title' => 'Import users form JudgeOnline',
+		'page callback' => 'import_user',
+		'page arguments' => array(2,3),
+        'access arguments' => array('create problem content'),
+		'type' => MENU_CALLBACK
+	);
+	$items['user/reset'] = array
+	(
+		'page callback' => 'reset_user',
+        'access callback' => 'reset_user_access'
+	);
+	
+	return $items;
+}
+/**
+ * Implementation of hook_user().
+ * http://api.drupal.org/api/drupal/developer--hooks--core.php/function/hook_user/6
+ */
+function oj_user_user($op, &$edit, &$account, $category = NULL)
+{
+	//debug($op,'$op');debug($edit,'$edit');debug($account,'$account');debug($category,'$category');
+	switch($op)
+	{
+		case 'register':
+		break;
+		case 'insert':oj_user_insert($edit, $account, $category);variable_del('oj_user_register');//debug($edit,'$edit');debug($account,'$account');
+		break;
+		case 'login':$result=db_query('SELECT * FROM {profile_values} WHERE fid=3 AND uid=%d',$account->uid);
+		if($item=db_fetch_object($result))
+			db_query('UPDATE {profile_values} SET value=\'%s\' WHERE fid=3 AND uid=%d',$_SERVER['REMOTE_ADDR'],$account->uid);
+		else
+			db_query('INSERT INTO {profile_values} (fid,uid,value) VALUES (3,%d,\'%s\')',$account->uid,$_SERVER['REMOTE_ADDR']);
+		if($account->uid==1||$account->roles['5']!=null)
+			$_SESSION['IsAuthorized'] = TRUE;
+		break;
+		case 'logout':drupal_goto($_SERVER['HTTP_REFERER']);$_SESSION['IsAuthorized'] = FALSE;
+		break;
+		case 'view':global $user;
+		date_default_timezone_set('Asia/Chongqing');
+		$account->content['Basic']['profile_time']=array(
+			'#type'=>'user_profile_item',
+			'#weight'=>'21',
+			'#title'=>'Last Loginned Time',
+			'#value'=>date("Y-m-d H:i:s",$account->login),
+			'#attributes'=>array('class'=>'profile-profile_time')
+			);
+		if($user->uid==$account->uid||user_access('access administration pages'))
+		{
+			$account->content['Basic']['profile_ip']=array(
+				'#type'=>'user_profile_item',
+				'#weight'=>'20',
+				'#title'=>'Last Loginned IP',
+				'#value'=>$account->profile_ip,
+				'#attributes'=>array('class'=>'profile-profile_ip')
+				);
+		}
+		break;
+		case 'validate':
+		if($edit['profile_qq']!=NULL&&!check_qq($edit['profile_qq']))
+		{
+			form_set_error(QQ,"The QQ number is Invalid.");
+		}
+		break;
+	}
+}
+
+/**
+ * Implementation of hook_form_alter().
+ * We replace the local login validation handler with our own.
+ */
+function oj_user_form_alter(&$form, $form_state, $form_id)
+{
+	//debug($form,'$form');debug($form_state,'$form_state');debug($form_id,'$form_id');
+	if($form_id=='user_login'||$form_id=='user_login_block')
+	{
+		//If the user login form is being submitted, add our validation handler.
+        if (isset($form_state['post']['name']))
+		{
+            // Find the local validation function's entry so we can replace it.
+            $array_key = array_search('user_login_authenticate_validate',$form['#validate']);
+        
+            if ($array_key === FALSE)
+			{
+                // Could not find it. Some other module must have run form_alter().
+                // We will simply add our validation just before the final                                  //validator.
+                $final_validator = array_pop($form['#validate']);
+                $form['#validate'][] = 'oj_user_login_validate';
+                $form['#validate'][] = $final_validator;
+            }
+            else
+			{
+                // Found the local validation function. Replace with ours.
+                $form['#validate'][$array_key] = 'oj_user_login_validate';
+            }
+        }
+	}
+	if($form_id=='user_register')
+	{
+		variable_set('oj_user_register',TRUE);
+	}
+}
+/**
+ * Form validation handler.
+ */
+function oj_user_login_validate($form, &$form_state)
+ {
+    global $user;
+    if (!empty($user->uid))
+	{
+        // Another module has already handled authentication.
+        return;
+    }
+    // Call our custom authentication function.
+    if (!user_authenticate($form_state['values']))
+	{
+		$result=db_query("SELECT uid FROM {users} WHERE name='%s'",$form_state['values']['name']);
+		if($item=db_fetch_object($result))//just for new user
+			if($item)
+			{
+				form_set_error('name', t('Unrecognized username.'));
+				return;
+			}
+		if(!oj_user_authenticate($form_state['values']))// Authentication failed;
+			form_set_error('name', t('Unrecognized username.'));
+    }
+}
+ 
+/**
+ * Custom authentication function. This could be much more complicated,
+ * checking an external database, LDAP, etc.
+ */
+function oj_user_authenticate($form_values)
+ {
+    global $oj_user_authenticated;
+	$encode = "PWDforJO2005";
+    $username = $form_values['name'];
+	$password = $form_values['pass'];
+	/*$query="SELECT * FROM {users} WHERE name='%s'";
+	$result=db_query($query,$username);
+	if ($user = db_fetch_object($result))
+	{
+		debug($user);
+		return TRUE;
+	}*/
+	//mysql_connect('localhost','root','123456');
+	//mysql_select_db('JudgeOnline');
+	db_set_active('JudgeOnline');
+	$query="SELECT * FROM users WHERE user_id='$username' AND password=ENCODE('$password','$encode') AND UPPER(defunct) = 'N'";
+	$result=db_query($query);
+	db_set_active('default');
+	//debug($query);debug($result);
+    if ($user = db_fetch_object($result))
+	{
+        // Log user in, or register new user if not already present.
+        oj_user_external_login_register($username, $password, 'oj_user');
+        
+        // Write session, update timestamp, run user 'login' hook.
+        user_authenticate_finalize($form_state['values']);
+        // Use a global variable to save the fact that we did authentication.
+        // (See use of this global in hook_user() implementation of next
+        // code listing.)
+        $oj_user_authenticated = TRUE;
+        return TRUE;
+    }
+    else
+	{
+        return FALSE;
+    }
+}
+
+function oj_user_external_login_register($name, $pass, $module) 
+{
+	global $user;
+
+	$existing_user = user_load(array('name' => $name));
+	if (isset($existing_user->uid)) 
+	{
+		$user = $existing_user;
+	}
+	else 
+	{
+		// Register this new user.
+		$userinfo = array
+		(
+			'name' => $name, 
+			'pass' => $pass, 
+			'init' => $name, 
+			'status' => 1, 
+			"authname_$module" => $name, 
+			'access' => time(),
+		);
+		$account = user_save('', $userinfo);
+		// Terminate if an error occured during user_save().
+		if (!$account) 
+		{
+			drupal_set_message(t("Error saving user account."), 'error');
+			return;
+		}
+		$user = $account;
+		watchdog('user', 'New external user: %name using module %module.', array('%name' => $name, '%module' => $module), WATCHDOG_NOTICE, l(t('edit'), 'user/' . $user->uid . '/edit'));
+  }
+}
+
+/*
+*	insert user to drupal.
+*/
+function oj_user_insert(&$edit, &$account, $category)
+{
+	if(variable_get('oj_user_register',FALSE))
+		return;
+	$username=$edit['name'];
+	db_set_active('JudgeOnline');
+	db_query("SET NAMES 'latin1'");
+	$query="SELECT *,UNIX_TIMESTAMP(reg_time) AS reg_time,UNIX_TIMESTAMP(accesstime) AS accesstime FROM users WHERE user_id='$username'";
+	$result=db_query($query);
+	
+    if (!($user = db_fetch_object($result)))//It is a user for drupal.
+	{
+		return;
+	}
+	$query="SELECT rightstr FROM privilege WHERE user_id='%s' AND UPPER(defunct) = 'N'";
+	$result=db_query($query,$username);
+	db_set_active('default');
+	while ($right = db_fetch_object($result))
+	{
+		switch($right->rightstr)
+		{
+			case 'source_browser':$edit['roles']['3']=3;
+			break;
+			case 'member':$edit['roles']['4']=4;
+			break;
+			case 'Administrator':
+			case 'root':$edit['roles']['5']=5;
+			break;
+		}
+	}
+	//debug($user,'$user')
+	$language=array('G++','GCC','JAVA','Pascal','Masm32');
+	if($user->email == null)
+		$user->email = $user->user_id;
+	db_query("UPDATE {users} SET mail = '%s',created=%d,login=%d WHERE uid = %d", $user->email,$user->reg_time,$user->accesstime,$account->uid); 
+	//db_query("UPDATE {profile_values} SET value='%s' WHERE fid=(SELECT fid FROM {profile_fields} WHERE name='profile_nick') AND uid=%d",$user->nick,$account->uid);
+	//db_query("UPDATE {profile_values} SET value='%s' WHERE fid=(SELECT fid FROM {profile_fields} WHERE name='profile_school') AND uid=%d",$user->school,$account->uid);
+	$edit['profile_nick']=phpcharset($user->nick,'UTF-8');
+	$edit['profile_school']=phpcharset($user->school,'UTF-8');
+	$edit['profile_qq']=$user->qq;
+	$edit['profile_language']=$language[$user->language];
+	$edit['profile_share']=$user->share;
+	$edit['profile_ip']=$user->ip;
+	$edit['profile_volume']=$user->volume;
+	$edit['profile_solved']=$user->solved;
+	$edit['profile_submissions']=$user->submit;
+	profile_save_profile($edit, $account, $category, TRUE);
+	db_query("INSERT INTO {profile_values} (fid, uid, value) VALUES (%d, %d, '%s')", 4, $account->uid, $user->solved);
+	db_query("INSERT INTO {profile_values} (fid, uid, value) VALUES (%d, %d, '%s')", 5, $account->uid, $user->submit);
+}
+function check_qq($qq)
+{
+	if(preg_match('$[1-9][0-9]{4,9}$',$qq))
+		return TRUE;
+	return FALSE;
+}
+
+function oj_user_menu_alter()
+{
+	return $items;
+}
+
+function oj_user_info($uid)
+{
+	
+}

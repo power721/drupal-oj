@@ -1,0 +1,117 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function oj_problem_install() {
+  // Create tables.
+  drupal_install_schema('oj_problem');
+  db_query("ALTER TABLE {solution} AUTO_INCREMENT=1000");
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function oj_problem_uninstall() {
+  // Delete menu links.
+  //db_query("DELETE FROM {menu_links} WHERE module = 'book'");
+ // menu_cache_clear_all();
+  // Remove tables.
+  drupal_uninstall_schema('oj_problem');
+}
+
+function oj_problem_schema()
+{
+	$schema['solution'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'sid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'pid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+	'uid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+    ),
+    'memory' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+    ),
+    'in_date' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'in_date' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'result' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'size' => 'small',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'language' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '8',
+      'not null' => TRUE,
+      'default' => '0',
+    ),
+    'ip' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '20',
+      'not null' => TRUE,
+      'default' => '',
+    ),
+    'contest_id' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+    ),
+    'num' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => -1,
+    ),
+    'code_length' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'source' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'blob',
+      'not null' => TRUE,
+    ),
+    'error' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'text',
+      'not null' => FALSE,
+    ),
+  ),
+  'primary key' => array('sid'),
+);
+return $schema;
+}

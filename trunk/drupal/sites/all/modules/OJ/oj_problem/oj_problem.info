@@ -1,0 +1,9 @@
+name = OnlineJudge Problem
+description = Administration Online Judge Problem and Problem List.
+package = Online Judge
+core = 6.x
+version = 6.x-0.1
+dependencies[] = content
+dependencies[] = text
+dependencies[] = number
+dependencies[] = datatables
