@@ -1,0 +1,5 @@
+name = OnlineJudge Message
+description = Administration Online Judge Announcement, BBS Message and In-site Message.
+package = Online Judge
+core = 6.x
+version = 6.x-0.1

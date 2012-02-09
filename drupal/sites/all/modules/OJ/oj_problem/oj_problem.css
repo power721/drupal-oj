@@ -1,0 +1,56 @@
+.field-field-pid .field-label,.field-field-pid .field-items
+{
+	display:inline-block;
+}
+.field-field-time .field-label,.field-field-time .field-items
+{
+	display:inline-block;
+}
+.field-field-memory .field-label,.field-field-memory .field-items
+{
+	display:inline-block;
+}
+.field-field-submit .field-label,.field-field-submit .field-items
+{
+	display:inline-block;
+}
+.field-field-accepted .field-label,.field-field-accepted .field-items
+{
+	display:inline-block;
+}
+.field-field-ctime .field-label,.field-field-ctime .field-items
+{
+	display:inline-block;
+}
+.problem-info,.problem-info tr,.problem-info td
+{
+	align:center;
+}
+.fieldgroup .collapse-processed a:link
+{
+	color:blue;
+}
+th.ui-state-default
+{
+	align:center;
+}
+.field-items pre
+{
+	background-color:transparent;
+	border-width:medium;
+	border-style:none;
+	border-color:transparent;
+	padding:0 0.75em;
+}
+/*table
+{
+	border-collapse:separate;
+}*/
+.field-compile-error  a:link
+{
+	color:red;
+}
+.problem p
+{
+	margin:0.5em;
+}

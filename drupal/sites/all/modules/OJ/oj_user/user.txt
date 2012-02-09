@@ -1,0 +1,739 @@
+==========
+view
+
+==========
+
+
+==========
+stdClass Object
+(
+    [uid] => 4
+    [name] => power721
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power0721@gmail.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am power.
+    [signature_format] => 1
+    [created] => 1326456978
+    [access] => 1326469753
+    [login] => 1326469753
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => 
+    [init] => power0721@gmail.com
+    [data] => a:4:{s:13:"form_build_id";s:37:"form-79f151e4deed9e19d72e1ec534c20375";s:7:"contact";i:1;s:14:"picture_delete";s:0:"";s:14:"picture_upload";s:0:"";}
+    [form_build_id] => form-79f151e4deed9e19d72e1ec534c20375
+    [contact] => 1
+    [picture_delete] => 
+    [picture_upload] => 
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => power
+    [profile_ip] => ::1
+    [profile_school] => SWUST
+    [profile_qq] => 348045819
+    [profile_share] => 1
+    [profile_language] => G++
+    [content] => Array
+        (
+            [Basic] => Array
+                (
+                    [#type] => user_profile_category
+                    [#title] => Basic
+                    [profile_nick] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => Nick Name
+                            [#value] => power
+                            [#weight] => 0
+                            [#attributes] => Array
+                                (
+                                    [class] => profile-profile_nick
+                                )
+
+                        )
+
+                    [profile_school] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => School
+                            [#value] => SWUST
+                            [#weight] => 0
+                            [#attributes] => Array
+                                (
+                                    [class] => profile-profile_school
+                                )
+
+                        )
+
+                    [profile_qq] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => QQ
+                            [#value] => 348045819
+                            [#weight] => 0
+                            [#attributes] => Array
+                                (
+                                    [class] => profile-profile_qq
+                                )
+
+                        )
+
+                )
+
+            [Settings] => Array
+                (
+                    [#type] => user_profile_category
+                    [#title] => Settings
+                    [profile_language] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => Code Language
+                            [#value] => G++
+                            [#weight] => -10
+                            [#attributes] => Array
+                                (
+                                    [class] => profile-profile_language
+                                )
+
+                        )
+
+                    [profile_share] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => 
+                            [#value] => Share Code
+                            [#weight] => -9
+                            [#attributes] => Array
+                                (
+                                    [class] => profile-profile_share
+                                )
+
+                        )
+
+                )
+
+            [user_picture] => Array
+                (
+                    [#value] => <div class="picture">
+  <a href="/drupal/user/4" title="View user profile." class="active"><img src="/drupal/sites/default/files/pictures/user.gif" alt="power721&#039;s picture" title="power721&#039;s picture"  /></a></div>
+
+                    [#weight] => -10
+                )
+
+            [summary] => Array
+                (
+                    [#type] => user_profile_category
+                    [#attributes] => Array
+                        (
+                            [class] => user-member
+                        )
+
+                    [#weight] => 5
+                    [#title] => History
+                    [member_for] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => Member for
+                            [#value] => 3 hours 36 min
+                        )
+
+                )
+
+        )
+
+)
+
+
+==========
+
+
+==========
+load
+
+==========
+Array
+(
+    [uid] => 4
+)
+
+
+==========
+stdClass Object
+(
+    [uid] => 4
+    [name] => power721
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power0721@gmail.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am power.
+    [signature_format] => 1
+    [created] => 1326456978
+    [access] => 1326469753
+    [login] => 1326469753
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => 
+    [init] => power0721@gmail.com
+    [data] => a:4:{s:13:"form_build_id";s:37:"form-79f151e4deed9e19d72e1ec534c20375";s:7:"contact";i:1;s:14:"picture_delete";s:0:"";s:14:"picture_upload";s:0:"";}
+    [form_build_id] => form-79f151e4deed9e19d72e1ec534c20375
+    [contact] => 1
+    [picture_delete] => 
+    [picture_upload] => 
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => power
+    [profile_ip] => ::1
+    [profile_school] => SWUST
+    [profile_qq] => 348045819
+    [profile_share] => 1
+    [profile_language] => G++
+)
+==========
+form
+
+==========
+Array
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1326505976
+    [login] => 1326469769
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-42354ce7ce27f6d725a326e88b23f4ee";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-42354ce7ce27f6d725a326e88b23f4ee
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => Admin
+    [profile_ip] => ::1
+    [profile_school] => Tieto
+    [profile_qq] => 348045819
+)
+
+
+==========
+stdClass Object
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1326505976
+    [login] => 1326469769
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-42354ce7ce27f6d725a326e88b23f4ee";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-42354ce7ce27f6d725a326e88b23f4ee
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => Admin
+    [profile_ip] => ::1
+    [profile_school] => Tieto
+    [profile_qq] => 348045819
+)
+
+
+==========
+account
+==========
+
+
+==========
+form
+
+==========
+Array
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1326505976
+    [login] => 1326469769
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-42354ce7ce27f6d725a326e88b23f4ee";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-42354ce7ce27f6d725a326e88b23f4ee
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => Admin
+    [profile_ip] => ::1
+    [profile_school] => Tieto
+    [profile_qq] => 348045819
+)
+
+
+==========
+stdClass Object
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1326505976
+    [login] => 1326469769
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-42354ce7ce27f6d725a326e88b23f4ee";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-42354ce7ce27f6d725a326e88b23f4ee
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => Admin
+    [profile_ip] => ::1
+    [profile_school] => Tieto
+    [profile_qq] => 348045819
+)
+
+
+==========
+Settings
+
+==========
+load
+
+==========
+Array
+(
+    [uid] => 1
+)
+
+
+==========
+stdClass Object
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1326505976
+    [login] => 1326469769
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-42354ce7ce27f6d725a326e88b23f4ee";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-42354ce7ce27f6d725a326e88b23f4ee
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => Admin
+    [profile_ip] => ::1
+    [profile_school] => Tieto
+    [profile_qq] => 348045819
+)
+
+
+==========
+==========
+validate
+
+==========
+Array
+(
+    [profile_language] => G++
+    [profile_share] => 0
+    [_category] => Settings
+    [_account] => stdClass Object
+        (
+            [uid] => 1
+            [name] => power
+            [pass] => 403890551bf14411ba2b854b1de9b61e
+            [mail] => power721@163.com
+            [mode] => 0
+            [sort] => 0
+            [threshold] => 0
+            [theme] => 
+            [signature] => I am administrator.
+            [signature_format] => 1
+            [created] => 1326455796
+            [access] => 1326505976
+            [login] => 1326469769
+            [status] => 1
+            [timezone] => 28800
+            [language] => 
+            [picture] => sites/default/files/pictures/picture-1.gif
+            [init] => power721@163.com
+            [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-42354ce7ce27f6d725a326e88b23f4ee";}
+            [admin_compact_mode] => 
+            [picture_delete] => 0
+            [picture_upload] => 
+            [contact] => 0
+            [form_build_id] => form-42354ce7ce27f6d725a326e88b23f4ee
+            [roles] => Array
+                (
+                    [2] => authenticated user
+                )
+
+            [profile_nick] => Admin
+            [profile_ip] => ::1
+            [profile_school] => Tieto
+            [profile_qq] => 348045819
+        )
+
+    [op] => Save
+    [submit] => Save
+    [delete] => Delete
+    [form_build_id] => form-3f68b6782bc6e52f5c9dd375be794100
+    [form_token] => c715fa9337db268a37b6aaba9ec901bb
+    [form_id] => user_profile_form
+)
+
+
+==========
+stdClass Object
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1326505976
+    [login] => 1326469769
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-42354ce7ce27f6d725a326e88b23f4ee";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-42354ce7ce27f6d725a326e88b23f4ee
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => Admin
+    [profile_ip] => ::1
+    [profile_school] => Tieto
+    [profile_qq] => 348045819
+)
+
+
+==========
+Settings
+
+==========
+submit
+
+==========
+Array
+(
+    [profile_language] => G++
+    [profile_share] => 0
+    [form_build_id] => form-3f68b6782bc6e52f5c9dd375be794100
+)
+
+
+==========
+stdClass Object
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1326505976
+    [login] => 1326469769
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-42354ce7ce27f6d725a326e88b23f4ee";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-42354ce7ce27f6d725a326e88b23f4ee
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => Admin
+    [profile_ip] => ::1
+    [profile_school] => Tieto
+    [profile_qq] => 348045819
+)
+
+
+==========
+Settings
+
+==========
+update
+
+==========
+Array
+(
+    [profile_language] => 
+    [profile_share] => 
+    [form_build_id] => form-3f68b6782bc6e52f5c9dd375be794100
+)
+
+
+==========
+stdClass Object
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1326505976
+    [login] => 1326469769
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-42354ce7ce27f6d725a326e88b23f4ee";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-42354ce7ce27f6d725a326e88b23f4ee
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => Admin
+    [profile_ip] => ::1
+    [profile_school] => Tieto
+    [profile_qq] => 348045819
+)
+
+
+==========
+Settings
+
+==========
+load
+
+==========
+Array
+(
+    [uid] => 1
+)
+
+
+==========
+stdClass Object
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1326505976
+    [login] => 1326469769
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-3f68b6782bc6e52f5c9dd375be794100";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-3f68b6782bc6e52f5c9dd375be794100
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => Admin
+    [profile_ip] => ::1
+    [profile_school] => Tieto
+    [profile_qq] => 348045819
+    [profile_share] => 0
+    [profile_language] => G++
+)
+
+
+==========
+
+
+==========
+after_update
+
+==========
+Array
+(
+    [profile_language] => 
+    [profile_share] => 
+    [form_build_id] => form-3f68b6782bc6e52f5c9dd375be794100
+)
+
+
+==========
+stdClass Object
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1326505976
+    [login] => 1326469769
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-3f68b6782bc6e52f5c9dd375be794100";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-3f68b6782bc6e52f5c9dd375be794100
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_nick] => Admin
+    [profile_ip] => ::1
+    [profile_school] => Tieto
+    [profile_qq] => 348045819
+    [profile_share] => 0
+    [profile_language] => G++
+)
+
+
+==========
+Settings

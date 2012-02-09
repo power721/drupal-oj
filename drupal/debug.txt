@@ -1,0 +1,1041 @@
+=====  =====
+Array
+(
+    [WelcomePage] => /oldoj/index.acm
+    [RootPath] => /oldoj/
+    [DefaultTitle] => 欢迎来到信息学院在线测评系统！！
+    [ojURL] => http://222.196.33.59/oj/
+    [RootPathOJ] => /oj/
+    [DefaultTitleOJ] => <a href=..>欢迎来到PowerOJ在线测评系统！！</a>
+    [OldOJ] => <font color=red>Virtual Judge</font>
+    [NewOJ] => <font color=red><b>New Version</b></font>
+    [LangCount] => 5
+    [LanguageDescs] => G++,GCC,Pascal,Java,Masm32
+    [LanguageExtMemory] => 808,808,1000,8000,784
+    [LanguageExtTime] => 0,0,0,0,0
+    [LanguageExts] => cc,c,pas,java,asm
+    [LanguageExes] => exe,exe,exe,class,exe
+    [LanguageTimeFactor] => 1,1,1,3,1
+    [LanguageMemoryFactor] => 1,1,1,3,1
+    [CompileStreamOrder] => 1,1,0,2,1
+    [G++CompileCmd] => C\:\\JudgeOnline\\bin\\gcc\\bin\\g++.exe -fno-asm -s -w -O1 -DONLINE_JUDGE -o %PATH%%NAME% %PATH%%NAME%.%EXT%
+    [GCCCompileCmd] => C\:\\JudgeOnline\\bin\\gcc\\bin\\gcc.exe -fno-asm -s -w -O1 -DONLINE_JUDGE -o %PATH%%NAME% %PATH%%NAME%.%EXT%
+    [PascalCompileCmd] => C\:\\JudgeOnline\\bin\\fpc\\fpc.exe -Sg -dONLINE_JUDGE %PATH%%NAME%.%EXT%
+    [JavaCompileCmd] => C\:\\JudgeOnline\\bin\\Java\\Java.bat %PATH%
+    [Masm32CompileCmd] => C\:\\JudgeOnline\\bin\\asm\\masm32.bat %PATH% %NAME% %EXT%
+    [WorkingPath] => d\:\\oj\\temp
+    [DataFilesPath] => D\:\\oj\\data
+    [DeleteTempFile] => 1
+    [RunShell] => C\:\\JudgeOnline\\bin\\run.exe
+    [ComShell] => C\:\\JudgeOnline\\bin\\com.exe
+    [xmlPath] => D\:\\OJ\\XML\\
+    [imagesPath] => D\:\\OJ\\tomcat\\webapps\\oj\\images\\
+    [AdminName] => admin
+    [AdminEmail] => swust_acm@163.com
+    [Login] => 1
+    [Source] => 1
+    [Mail] => 1
+    [Archive] => 1
+    [Debug] => 1
+    [DebugFile] => D\:\\oj\\debug.txt
+    [ErrFile] => D\:\\oj\\err.txt
+)
+
+
+=====  =====
+Array
+(
+    [WelcomePage] => /oldoj/index.acm
+    [RootPath] => /oldoj/
+    [DefaultTitle] => 欢迎来到信息学院在线测评系统！！
+    [ojURL] => http://222.196.33.59/oj/
+    [RootPathOJ] => /oj/
+    [DefaultTitleOJ] => <a href=..>欢迎来到PowerOJ在线测评系统！！</a>
+    [OldOJ] => <font color=red>Virtual Judge</font>
+    [NewOJ] => <font color=red><b>New Version</b></font>
+    [LangCount] => 5
+    [LanguageDescs] => G++,GCC,Pascal,Java,Masm32
+    [LanguageExtMemory] => 808,808,1000,8000,784
+    [LanguageExtTime] => 0,0,0,0,0
+    [LanguageExts] => cc,c,pas,java,asm
+    [LanguageExes] => exe,exe,exe,class,exe
+    [LanguageTimeFactor] => 1,1,1,3,1
+    [LanguageMemoryFactor] => 1,1,1,3,1
+    [CompileStreamOrder] => 1,1,0,2,1
+    [G++CompileCmd] => C\:\\JudgeOnline\\bin\\gcc\\bin\\g++.exe -fno-asm -s -w -O1 -DONLINE_JUDGE -o %PATH%%NAME% %PATH%%NAME%.%EXT%
+    [GCCCompileCmd] => C\:\\JudgeOnline\\bin\\gcc\\bin\\gcc.exe -fno-asm -s -w -O1 -DONLINE_JUDGE -o %PATH%%NAME% %PATH%%NAME%.%EXT%
+    [PascalCompileCmd] => C\:\\JudgeOnline\\bin\\fpc\\fpc.exe -Sg -dONLINE_JUDGE %PATH%%NAME%.%EXT%
+    [JavaCompileCmd] => C\:\\JudgeOnline\\bin\\Java\\Java.bat %PATH%
+    [Masm32CompileCmd] => C\:\\JudgeOnline\\bin\\asm\\masm32.bat %PATH% %NAME% %EXT%
+    [WorkingPath] => d\:\\oj\\temp
+    [DataFilesPath] => D\:\\oj\\data
+    [DeleteTempFile] => 1
+    [RunShell] => C\:\\JudgeOnline\\bin\\run.exe
+    [ComShell] => C\:\\JudgeOnline\\bin\\com.exe
+    [xmlPath] => D\:\\OJ\\XML\\
+    [imagesPath] => D\:\\OJ\\tomcat\\webapps\\oj\\images\\
+    [AdminName] => admin
+    [AdminEmail] => swust_acm@163.com
+    [Login] => 1
+    [Source] => 1
+    [Mail] => 1
+    [Archive] => 1
+    [Debug] => 1
+    [DebugFile] => D\:\\oj\\debug.txt
+    [ErrFile] => D\:\\oj\\err.txt
+)
+
+
+=====  =====
+
+
+=====  =====
+Array
+(
+    [WelcomePage] => /oldoj/index.acm
+    [RootPath] => /oldoj/
+    [DefaultTitle] => 欢迎来到信息学院在线测评系统！！
+    [ojURL] => http://222.196.33.59/oj/
+    [RootPathOJ] => /oj/
+    [DefaultTitleOJ] => <a href=..>欢迎来到PowerOJ在线测评系统！！</a>
+    [OldOJ] => <font color=red>Virtual Judge</font>
+    [NewOJ] => <font color=red><b>New Version</b></font>
+    [LangCount] => 5
+    [LanguageDescs] => G++,GCC,Pascal,Java,Masm32
+    [LanguageExtMemory] => 808,808,1000,8000,784
+    [LanguageExtTime] => 0,0,0,0,0
+    [LanguageExts] => cc,c,pas,java,asm
+    [LanguageExes] => exe,exe,exe,class,exe
+    [LanguageTimeFactor] => 1,1,1,3,1
+    [LanguageMemoryFactor] => 1,1,1,3,1
+    [CompileStreamOrder] => 1,1,0,2,1
+    [G++CompileCmd] => C\:\\JudgeOnline\\bin\\gcc\\bin\\g++.exe -fno-asm -s -w -O1 -DONLINE_JUDGE -o %PATH%%NAME% %PATH%%NAME%.%EXT%
+    [GCCCompileCmd] => C\:\\JudgeOnline\\bin\\gcc\\bin\\gcc.exe -fno-asm -s -w -O1 -DONLINE_JUDGE -o %PATH%%NAME% %PATH%%NAME%.%EXT%
+    [PascalCompileCmd] => C\:\\JudgeOnline\\bin\\fpc\\fpc.exe -Sg -dONLINE_JUDGE %PATH%%NAME%.%EXT%
+    [JavaCompileCmd] => C\:\\JudgeOnline\\bin\\Java\\Java.bat %PATH%
+    [Masm32CompileCmd] => C\:\\JudgeOnline\\bin\\asm\\masm32.bat %PATH% %NAME% %EXT%
+    [WorkingPath] => d\:\\oj\\temp
+    [DataFilesPath] => D\:\\oj\\data
+    [DeleteTempFile] => 1
+    [RunShell] => C\:\\JudgeOnline\\bin\\run.exe
+    [ComShell] => C\:\\JudgeOnline\\bin\\com.exe
+    [xmlPath] => D\:\\OJ\\XML\\
+    [imagesPath] => D\:\\OJ\\tomcat\\webapps\\oj\\images\\
+    [AdminName] => admin
+    [AdminEmail] => swust_acm@163.com
+    [Login] => 1
+    [Source] => 1
+    [Mail] => 1
+    [Archive] => 1
+    [Debug] => 1
+    [DebugFile] => D\:\\oj\\debug.txt
+    [ErrFile] => D\:\\oj\\err.txt
+)
+
+
+=====  =====
+1
+
+=====  =====
+Array
+(
+    [WelcomePage] => /oldoj/index.acm
+    [RootPath] => /oldoj/
+    [DefaultTitle] => 欢迎来到信息学院在线测评系统！！
+    [ojURL] => http://222.196.33.59/oj/
+    [RootPathOJ] => /oj/
+    [DefaultTitleOJ] => <a href=..>欢迎来到PowerOJ在线测评系统！！</a>
+    [OldOJ] => <font color=red>Virtual Judge</font>
+    [NewOJ] => <font color=red><b>New Version</b></font>
+    [LangCount] => 5
+    [LanguageDescs] => G++,GCC,Pascal,Java,Masm32
+    [LanguageExtMemory] => 808,808,1000,8000,784
+    [LanguageExtTime] => 0,0,0,0,0
+    [LanguageExts] => cc,c,pas,java,asm
+    [LanguageExes] => exe,exe,exe,class,exe
+    [LanguageTimeFactor] => 1,1,1,3,1
+    [LanguageMemoryFactor] => 1,1,1,3,1
+    [CompileStreamOrder] => 1,1,0,2,1
+    [G++CompileCmd] => C\:\\JudgeOnline\\bin\\gcc\\bin\\g++.exe -fno-asm -s -w -O1 -DONLINE_JUDGE -o %PATH%%NAME% %PATH%%NAME%.%EXT%
+    [GCCCompileCmd] => C\:\\JudgeOnline\\bin\\gcc\\bin\\gcc.exe -fno-asm -s -w -O1 -DONLINE_JUDGE -o %PATH%%NAME% %PATH%%NAME%.%EXT%
+    [PascalCompileCmd] => C\:\\JudgeOnline\\bin\\fpc\\fpc.exe -Sg -dONLINE_JUDGE %PATH%%NAME%.%EXT%
+    [JavaCompileCmd] => C\:\\JudgeOnline\\bin\\Java\\Java.bat %PATH%
+    [Masm32CompileCmd] => C\:\\JudgeOnline\\bin\\asm\\masm32.bat %PATH% %NAME% %EXT%
+    [WorkingPath] => d\:\\oj\\temp
+    [DataFilesPath] => D\:\\oj\\data
+    [DeleteTempFile] => 1
+    [RunShell] => C\:\\JudgeOnline\\bin\\run.exe
+    [ComShell] => C\:\\JudgeOnline\\bin\\com.exe
+    [xmlPath] => D\:\\OJ\\XML\\
+    [imagesPath] => D\:\\OJ\\tomcat\\webapps\\oj\\images\\
+    [AdminName] => admin
+    [AdminEmail] => swust_acm@163.com
+    [Login] => TRUE
+    [Source] => 1
+    [Mail] => 1
+    [Archive] => 1
+    [Debug] => 1
+    [DebugFile] => D\:\\oj\\debug.txt
+    [ErrFile] => D\:\\oj\\err.txt
+)
+
+
+=====  =====
+1
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 980
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $op =====
+view
+
+===== $edit =====
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+    [content] => Array
+        (
+            [Basic] => Array
+                (
+                    [#type] => user_profile_category
+                    [#title] => Basic
+                    [profile_nick] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => Nick Name
+                            [#value] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+                            [#weight] => 0
+                            [#attributes] => Array
+                                (
+                                    [class] => profile-profile_nick
+                                )
+
+                        )
+
+                    [profile_school] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => School
+                            [#value] => sounthwest university of science and technology
+                            [#weight] => 0
+                            [#attributes] => Array
+                                (
+                                    [class] => profile-profile_school
+                                )
+
+                        )
+
+                    [profile_qq] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => QQ
+                            [#value] => 510685263
+                            [#weight] => 0
+                            [#attributes] => Array
+                                (
+                                    [class] => profile-profile_qq
+                                )
+
+                        )
+
+                )
+
+            [Settings] => Array
+                (
+                    [#type] => user_profile_category
+                    [#title] => Settings
+                    [profile_language] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => Code Language
+                            [#value] => G++
+                            [#weight] => 8
+                            [#attributes] => Array
+                                (
+                                    [class] => profile-profile_language
+                                )
+
+                        )
+
+                    [profile_share] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => 
+                            [#value] => Share Code
+                            [#weight] => 9
+                            [#attributes] => Array
+                                (
+                                    [class] => profile-profile_share
+                                )
+
+                        )
+
+                )
+
+            [user_picture] => Array
+                (
+                    [#value] => <div class="picture">
+  <a href="/drupal/users/bingshen" title="View user profile." class="active"><img src="/drupal/sites/default/files/pictures/user.gif" alt="bingshen&#039;s picture" title="bingshen&#039;s picture"  /></a></div>
+
+                    [#weight] => -10
+                )
+
+            [summary] => Array
+                (
+                    [#type] => user_profile_category
+                    [#attributes] => Array
+                        (
+                            [class] => user-member
+                        )
+
+                    [#weight] => 5
+                    [#title] => History
+                    [member_for] => Array
+                        (
+                            [#type] => user_profile_item
+                            [#title] => Member for
+                            [#value] => 2 years 10 weeks
+                        )
+
+                )
+
+        )
+
+)
+
+
+===== $category =====
+
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 1
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 1
+    [name] => power
+    [pass] => 403890551bf14411ba2b854b1de9b61e
+    [mail] => power721@163.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => I am administrator.
+    [signature_format] => 1
+    [created] => 1326455796
+    [access] => 1328708070
+    [login] => 1328623181
+    [status] => 1
+    [timezone] => 28800
+    [language] => 
+    [picture] => sites/default/files/pictures/picture-1.gif
+    [init] => power721@163.com
+    [data] => a:5:{s:18:"admin_compact_mode";b:0;s:14:"picture_delete";i:0;s:14:"picture_upload";s:0:"";s:7:"contact";i:0;s:13:"form_build_id";s:37:"form-9d7301124838842e4094fe51b4b5ad14";}
+    [admin_compact_mode] => 
+    [picture_delete] => 0
+    [picture_upload] => 
+    [contact] => 0
+    [form_build_id] => form-9d7301124838842e4094fe51b4b5ad14
+    [roles] => Array
+        (
+            [2] => authenticated user
+        )
+
+    [profile_ip] => ::1
+    [profile_solved] => 0
+    [profile_submissions] => 16
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 980
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 980
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 980
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 980
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 980
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 980
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 980
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 980
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $op =====
+load
+
+===== $edit =====
+Array
+(
+    [uid] => 980
+)
+
+
+===== $account =====
+stdClass Object
+(
+    [uid] => 980
+    [name] => bingshen
+    [pass] => 4b965f24033d2a4073ee4552b7717f21
+    [mail] => 510685263@qq.com
+    [mode] => 0
+    [sort] => 0
+    [threshold] => 0
+    [theme] => 
+    [signature] => 
+    [signature_format] => 0
+    [created] => 1259245758
+    [access] => 1328454016
+    [login] => 1322397956
+    [status] => 1
+    [timezone] => 
+    [language] => 
+    [picture] => 
+    [init] => bingshen
+    [data] => a:5:{s:7:"contact";i:1;s:10:"profile_ip";s:14:"222.196.33.251";s:14:"profile_volume";s:1:"1";s:14:"profile_solved";s:3:"333";s:19:"profile_submissions";s:4:"1082";}
+    [contact] => 1
+    [profile_ip] => 222.196.33.251
+    [profile_volume] => 1
+    [profile_solved] => 333
+    [profile_submissions] => 1082
+    [roles] => Array
+        (
+            [2] => authenticated user
+            [5] => Administrator
+        )
+
+    [profile_nick] => 杩樻湁鏈ㄦ湁鏁拌甯濓紵
+    [profile_school] => sounthwest university of science and technology
+    [profile_qq] => 510685263
+    [profile_share] => 1
+    [profile_language] => G++
+)
+
+
+===== $category =====
+
+
+===== $form =====
+Array
+(
+    [search_theme_form] => Array
+        (
+            [#title] => Search this site
+            [#type] => textfield
+            [#size] => 15
+            [#default_value] => 
+            [#attributes] => Array
+                (
+                    [title] => Enter the terms you wish to search for.
+                )
+
+        )
+
+    [submit] => Array
+        (
+            [#type] => submit
+            [#value] => Search
+        )
+
+    [#submit] => Array
+        (
+            [0] => search_box_form_submit
+        )
+
+    [#parameters] => Array
+        (
+            [0] => search_theme_form
+            [1] => Array
+                (
+                    [storage] => 
+                    [submitted] => 
+                    [post] => Array
+                        (
+                        )
+
+                )
+
+        )
+
+    [#build_id] => form-3b9a077222fd2ed7d28112bbf2b755a5
+    [#type] => form
+    [#programmed] => 
+    [form_build_id] => Array
+        (
+            [#type] => hidden
+            [#value] => form-3b9a077222fd2ed7d28112bbf2b755a5
+            [#id] => form-3b9a077222fd2ed7d28112bbf2b755a5
+            [#name] => form_build_id
+        )
+
+    [#token] => search_theme_form
+    [form_token] => Array
+        (
+            [#id] => edit-search-theme-form-form-token
+            [#type] => token
+            [#default_value] => 02afc520f83f211e13732da246860bca
+        )
+
+    [form_id] => Array
+        (
+            [#type] => hidden
+            [#value] => search_theme_form
+            [#id] => edit-search-theme-form
+        )
+
+    [#id] => search-theme-form
+    [#description] => 
+    [#attributes] => Array
+        (
+        )
+
+    [#required] => 
+    [#tree] => 
+    [#parents] => Array
+        (
+        )
+
+    [#method] => post
+    [#action] => /drupal/users/bingshen
+    [#after_build] => Array
+        (
+            [0] => ckeditor_process_form
+        )
+
+)
+
+
+===== $form_state =====
+Array
+(
+    [storage] => 
+    [submitted] => 
+    [post] => Array
+        (
+        )
+
+)
+
+
+===== $form_id =====
+search_theme_form
+

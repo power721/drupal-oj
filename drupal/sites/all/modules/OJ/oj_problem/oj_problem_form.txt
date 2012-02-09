@@ -1,0 +1,1725 @@
+===== $form =====
+Array
+(
+    [#id] => node-form
+    [nid] => Array
+        (
+            [#type] => value
+            [#value] => 
+        )
+
+    [vid] => Array
+        (
+            [#type] => value
+            [#value] => 
+        )
+
+    [uid] => Array
+        (
+            [#type] => value
+            [#value] => 1
+        )
+
+    [created] => Array
+        (
+            [#type] => value
+            [#value] => 1326555833
+        )
+
+    [type] => Array
+        (
+            [#type] => value
+            [#value] => problem
+        )
+
+    [language] => Array
+        (
+            [#type] => value
+            [#value] => 
+        )
+
+    [changed] => Array
+        (
+            [#type] => hidden
+            [#default_value] => 
+        )
+
+    [title] => Array
+        (
+            [#type] => textfield
+            [#title] => Title
+            [#required] => 1
+            [#default_value] => 
+            [#maxlength] => 255
+            [#weight] => -5
+        )
+
+    [body_field] => Array
+        (
+            [#after_build] => Array
+                (
+                    [0] => node_teaser_js
+                    [1] => node_teaser_include_verify
+                )
+
+            [#prefix] => <div class="body-field-wrapper">
+            [#suffix] => </div>
+            [teaser_js] => Array
+                (
+                    [#type] => textarea
+                    [#rows] => 10
+                    [#teaser] => edit-body
+                    [#teaser_checkbox] => edit-teaser-include
+                    [#disabled] => 1
+                )
+
+            [teaser_include] => Array
+                (
+                    [#type] => checkbox
+                    [#title] => Show summary in full view
+                    [#default_value] => 1
+                    [#prefix] => <div class="teaser-checkbox">
+                    [#suffix] => </div>
+                )
+
+            [body] => Array
+                (
+                    [#type] => textarea
+                    [#title] => Description
+                    [#default_value] => 
+                    [#rows] => 20
+                    [#required] => 
+                )
+
+            [format] => Array
+                (
+                    [#type] => fieldset
+                    [#title] => Input format
+                    [#collapsible] => 1
+                    [#collapsed] => 1
+                    [#weight] => 
+                    [#element_validate] => Array
+                        (
+                            [0] => filter_form_validate
+                        )
+
+                    [1] => Array
+                        (
+                            [#type] => radio
+                            [#title] => Filtered HTML
+                            [#default_value] => 1
+                            [#return_value] => 1
+                            [#parents] => Array
+                                (
+                                    [0] => format
+                                )
+
+                            [#description] => <ul class="tips"><li>Web page addresses and e-mail addresses turn into links automatically.</li><li>Allowed HTML tags: &lt;a&gt; &lt;em&gt; &lt;strong&gt; &lt;cite&gt; &lt;code&gt; &lt;ul&gt; &lt;ol&gt; &lt;li&gt; &lt;dl&gt; &lt;dt&gt; &lt;dd&gt;</li><li>Lines and paragraphs break automatically.</li></ul>
+                            [#id] => edit-format-1
+                        )
+
+                    [2] => Array
+                        (
+                            [#type] => radio
+                            [#title] => Full HTML
+                            [#default_value] => 1
+                            [#return_value] => 2
+                            [#parents] => Array
+                                (
+                                    [0] => format
+                                )
+
+                            [#description] => <ul class="tips"><li>Web page addresses and e-mail addresses turn into links automatically.</li><li>Lines and paragraphs break automatically.</li></ul>
+                            [#id] => edit-format-2
+                        )
+
+                    [3] => Array
+                        (
+                            [#type] => radio
+                            [#title] => PHP code
+                            [#default_value] => 1
+                            [#return_value] => 3
+                            [#parents] => Array
+                                (
+                                    [0] => format
+                                )
+
+                            [#description] => <ul class="tips"><li>You may post PHP code. You should include &lt;?php ?&gt; tags.</li></ul>
+                            [#id] => edit-format-3
+                        )
+
+                    [4] => Array
+                        (
+                            [#value] => <p><a href="/drupal/filter/tips">More information about formatting options</a></p>
+                        )
+
+                )
+
+        )
+
+    [#node] => stdClass Object
+        (
+            [uid] => 1
+            [name] => power
+            [type] => problem
+            [language] => 
+            [body] => 
+            [title] => 
+            [format] => 
+            [status] => 1
+            [promote] => 
+            [sticky] => 
+            [created] => 1326555833
+            [revision] => 
+            [comment] => 1
+            [menu] => Array
+                (
+                    [link_title] => 
+                    [mlid] => 0
+                    [plid] => 0
+                    [menu_name] => primary-links
+                    [weight] => 0
+                    [options] => Array
+                        (
+                        )
+
+                    [module] => menu
+                    [expanded] => 0
+                    [hidden] => 0
+                    [has_children] => 0
+                    [customized] => 0
+                    [parent_depth_limit] => 8
+                )
+
+        )
+
+    [buttons] => Array
+        (
+            [submit] => Array
+                (
+                    [#type] => submit
+                    [#access] => 1
+                    [#value] => Save
+                    [#weight] => 5
+                    [#submit] => Array
+                        (
+                            [0] => node_form_submit
+                        )
+
+                )
+
+            [preview] => Array
+                (
+                    [#type] => submit
+                    [#value] => Preview
+                    [#weight] => 10
+                    [#submit] => Array
+                        (
+                            [0] => node_form_build_preview
+                        )
+
+                )
+
+        )
+
+    [#validate] => Array
+        (
+            [0] => node_form_validate
+        )
+
+    [#theme] => Array
+        (
+            [0] => problem_node_form
+            [1] => node_form
+        )
+
+    [#parameters] => Array
+        (
+            [0] => problem_node_form
+            [1] => Array
+                (
+                    [storage] => 
+                    [submitted] => 
+                    [post] => Array
+                        (
+                        )
+
+                )
+
+            [2] => Array
+                (
+                    [uid] => 1
+                    [name] => power
+                    [type] => problem
+                    [language] => 
+                )
+
+        )
+
+    [#build_id] => form-aa2e27ff2085c1de8fe08e62317c06dd
+    [#type] => form
+    [#programmed] => 
+    [form_build_id] => Array
+        (
+            [#type] => hidden
+            [#value] => form-aa2e27ff2085c1de8fe08e62317c06dd
+            [#id] => form-aa2e27ff2085c1de8fe08e62317c06dd
+            [#name] => form_build_id
+        )
+
+    [#token] => problem_node_form
+    [form_token] => Array
+        (
+            [#id] => edit-problem-node-form-form-token
+            [#type] => token
+            [#default_value] => d0643366b2fc3360572e36d95df8d10c
+        )
+
+    [form_id] => Array
+        (
+            [#type] => hidden
+            [#value] => problem_node_form
+            [#id] => edit-problem-node-form
+        )
+
+    [#description] => 
+    [#attributes] => Array
+        (
+            [enctype] => multipart/form-data
+        )
+
+    [#required] => 
+    [#tree] => 
+    [#parents] => Array
+        (
+        )
+
+    [#method] => post
+    [#action] => /drupal/node/add/problem
+    [#cache] => 
+    [#submit] => Array
+        (
+            [0] => menu_node_form_submit
+            [1] => upload_node_form_submit
+        )
+
+    [attachments] => Array
+        (
+            [#type] => fieldset
+            [#access] => 1
+            [#title] => File attachments
+            [#collapsible] => 1
+            [#collapsed] => 1
+            [#description] => Changes made to the attachments are not permanent until you save this post. The first "listed" file will be included in RSS feeds.
+            [#prefix] => <div class="attachments">
+            [#suffix] => </div>
+            [#weight] => 30
+            [wrapper] => Array
+                (
+                    [#prefix] => <div id="attach-wrapper">
+                    [#suffix] => </div>
+                    [#theme] => upload_form_new
+                    [#cache] => 1
+                    [new] => Array
+                        (
+                            [#weight] => 10
+                            [upload] => Array
+                                (
+                                    [#type] => file
+                                    [#title] => Attach new file
+                                    [#size] => 40
+                                    [#description] => The maximum upload size is <em>1 MB</em>. Only files with the following extensions may be uploaded: <em>jpg jpeg gif png txt doc xls pdf ppt pps odt ods odp</em>. 
+                                )
+
+                            [attach] => Array
+                                (
+                                    [#type] => submit
+                                    [#value] => Attach
+                                    [#name] => attach
+                                    [#ahah] => Array
+                                        (
+                                            [path] => upload/js
+                                            [wrapper] => attach-wrapper
+                                            [progress] => Array
+                                                (
+                                                    [type] => bar
+                                                    [message] => Please wait...
+                                                )
+
+                                        )
+
+                                    [#submit] => Array
+                                        (
+                                            [0] => node_form_submit_build_node
+                                        )
+
+                                )
+
+                        )
+
+                )
+
+        )
+
+    [#field_info] => Array
+        (
+            [field_pid] => Array
+                (
+                    [field_name] => field_pid
+                    [type_name] => problem
+                    [display_settings] => Array
+                        (
+                            [label] => Array
+                                (
+                                    [format] => above
+                                    [exclude] => 0
+                                )
+
+                            [teaser] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [full] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [4] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [2] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [3] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                        )
+
+                    [widget_active] => 1
+                    [type] => number_integer
+                    [required] => 1
+                    [multiple] => 0
+                    [db_storage] => 1
+                    [module] => number
+                    [active] => 1
+                    [locked] => 0
+                    [columns] => Array
+                        (
+                            [value] => Array
+                                (
+                                    [type] => int
+                                    [not null] => 
+                                    [sortable] => 1
+                                )
+
+                        )
+
+                    [prefix] => 
+                    [suffix] => 
+                    [min] => 1000
+                    [max] => 
+                    [allowed_values] => 
+                    [allowed_values_php] => 
+                    [widget] => Array
+                        (
+                            [default_value] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [value] => 
+                                            [_error_element] => default_value_widget][field_pid][0][value
+                                        )
+
+                                )
+
+                            [default_value_php] => 
+                            [label] => Problem ID
+                            [weight] => -4
+                            [description] => 
+                            [type] => number
+                            [module] => number
+                        )
+
+                )
+
+            [field_time] => Array
+                (
+                    [field_name] => field_time
+                    [type_name] => problem
+                    [display_settings] => Array
+                        (
+                            [label] => Array
+                                (
+                                    [format] => above
+                                    [exclude] => 0
+                                )
+
+                            [teaser] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [full] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [4] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [2] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [3] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                        )
+
+                    [widget_active] => 1
+                    [type] => number_integer
+                    [required] => 1
+                    [multiple] => 0
+                    [db_storage] => 1
+                    [module] => number
+                    [active] => 1
+                    [locked] => 0
+                    [columns] => Array
+                        (
+                            [value] => Array
+                                (
+                                    [type] => int
+                                    [not null] => 
+                                    [sortable] => 1
+                                )
+
+                        )
+
+                    [prefix] => 
+                    [suffix] => ms
+                    [min] => 
+                    [max] => 
+                    [allowed_values] => 
+                    [allowed_values_php] => 
+                    [widget] => Array
+                        (
+                            [default_value] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [value] => 1000
+                                            [_error_element] => default_value_widget][field_time][0][value
+                                        )
+
+                                )
+
+                            [default_value_php] => 
+                            [label] => Time Limit
+                            [weight] => -2
+                            [description] => 
+                            [type] => number
+                            [module] => number
+                        )
+
+                )
+
+            [field_ctime] => Array
+                (
+                    [field_name] => field_ctime
+                    [type_name] => problem
+                    [display_settings] => Array
+                        (
+                            [label] => Array
+                                (
+                                    [format] => above
+                                    [exclude] => 0
+                                )
+
+                            [teaser] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [full] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [4] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [2] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [3] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                        )
+
+                    [widget_active] => 1
+                    [type] => number_integer
+                    [required] => 0
+                    [multiple] => 0
+                    [db_storage] => 1
+                    [module] => number
+                    [active] => 1
+                    [locked] => 0
+                    [columns] => Array
+                        (
+                            [value] => Array
+                                (
+                                    [type] => int
+                                    [not null] => 
+                                    [sortable] => 1
+                                )
+
+                        )
+
+                    [prefix] => 
+                    [suffix] => ms
+                    [min] => 
+                    [max] => 
+                    [allowed_values] => 
+                    [allowed_values_php] => 
+                    [widget] => Array
+                        (
+                            [default_value] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [value] => 30000
+                                            [_error_element] => default_value_widget][field_ctime][0][value
+                                        )
+
+                                )
+
+                            [default_value_php] => 
+                            [label] => Case Time Limit
+                            [weight] => -1
+                            [description] => 
+                            [type] => number
+                            [module] => number
+                        )
+
+                )
+
+            [field_memory] => Array
+                (
+                    [field_name] => field_memory
+                    [type_name] => problem
+                    [display_settings] => Array
+                        (
+                            [label] => Array
+                                (
+                                    [format] => above
+                                    [exclude] => 0
+                                )
+
+                            [teaser] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [full] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [4] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [2] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [3] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                        )
+
+                    [widget_active] => 1
+                    [type] => number_integer
+                    [required] => 1
+                    [multiple] => 0
+                    [db_storage] => 1
+                    [module] => number
+                    [active] => 1
+                    [locked] => 0
+                    [columns] => Array
+                        (
+                            [value] => Array
+                                (
+                                    [type] => int
+                                    [not null] => 
+                                    [sortable] => 1
+                                )
+
+                        )
+
+                    [prefix] => 
+                    [suffix] => kb
+                    [min] => 
+                    [max] => 
+                    [allowed_values] => 
+                    [allowed_values_php] => 
+                    [widget] => Array
+                        (
+                            [default_value] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [value] => 65535
+                                            [_error_element] => default_value_widget][field_memory][0][value
+                                        )
+
+                                )
+
+                            [default_value_php] => 
+                            [label] => Memory Limit
+                            [weight] => 0
+                            [description] => 
+                            [type] => number
+                            [module] => number
+                        )
+
+                )
+
+            [field_input] => Array
+                (
+                    [field_name] => field_input
+                    [type_name] => problem
+                    [display_settings] => Array
+                        (
+                            [label] => Array
+                                (
+                                    [format] => above
+                                    [exclude] => 0
+                                )
+
+                            [teaser] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [full] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [4] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [2] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [3] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                        )
+
+                    [widget_active] => 1
+                    [type] => text
+                    [required] => 0
+                    [multiple] => 0
+                    [db_storage] => 1
+                    [module] => text
+                    [active] => 1
+                    [locked] => 0
+                    [columns] => Array
+                        (
+                            [value] => Array
+                                (
+                                    [type] => text
+                                    [size] => big
+                                    [not null] => 
+                                    [sortable] => 1
+                                    [views] => 1
+                                )
+
+                            [format] => Array
+                                (
+                                    [type] => int
+                                    [unsigned] => 1
+                                    [not null] => 
+                                    [views] => 
+                                )
+
+                        )
+
+                    [text_processing] => 1
+                    [max_length] => 
+                    [allowed_values] => 
+                    [allowed_values_php] => 
+                    [widget] => Array
+                        (
+                            [rows] => 5
+                            [size] => 60
+                            [default_value] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [value] => 
+                                            [_error_element] => default_value_widget][field_input][0][value
+                                        )
+
+                                )
+
+                            [default_value_php] => 
+                            [label] => Input
+                            [weight] => 2
+                            [description] => 
+                            [type] => text_textarea
+                            [module] => text
+                        )
+
+                )
+
+            [field_output] => Array
+                (
+                    [field_name] => field_output
+                    [type_name] => problem
+                    [display_settings] => Array
+                        (
+                            [label] => Array
+                                (
+                                    [format] => above
+                                    [exclude] => 0
+                                )
+
+                            [teaser] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [full] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [4] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [2] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [3] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                        )
+
+                    [widget_active] => 1
+                    [type] => text
+                    [required] => 0
+                    [multiple] => 0
+                    [db_storage] => 1
+                    [module] => text
+                    [active] => 1
+                    [locked] => 0
+                    [columns] => Array
+                        (
+                            [value] => Array
+                                (
+                                    [type] => text
+                                    [size] => big
+                                    [not null] => 
+                                    [sortable] => 1
+                                    [views] => 1
+                                )
+
+                            [format] => Array
+                                (
+                                    [type] => int
+                                    [unsigned] => 1
+                                    [not null] => 
+                                    [views] => 
+                                )
+
+                        )
+
+                    [text_processing] => 1
+                    [max_length] => 
+                    [allowed_values] => 
+                    [allowed_values_php] => 
+                    [widget] => Array
+                        (
+                            [rows] => 5
+                            [size] => 60
+                            [default_value] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [value] => 
+                                            [_error_element] => default_value_widget][field_output][0][value
+                                        )
+
+                                )
+
+                            [default_value_php] => 
+                            [label] => Output
+                            [weight] => 3
+                            [description] => 
+                            [type] => text_textarea
+                            [module] => text
+                        )
+
+                )
+
+            [field_sinput] => Array
+                (
+                    [field_name] => field_sinput
+                    [type_name] => problem
+                    [display_settings] => Array
+                        (
+                            [label] => Array
+                                (
+                                    [format] => above
+                                    [exclude] => 0
+                                )
+
+                            [teaser] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [full] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [4] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [2] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [3] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                        )
+
+                    [widget_active] => 1
+                    [type] => text
+                    [required] => 0
+                    [multiple] => 0
+                    [db_storage] => 1
+                    [module] => text
+                    [active] => 1
+                    [locked] => 0
+                    [columns] => Array
+                        (
+                            [value] => Array
+                                (
+                                    [type] => text
+                                    [size] => big
+                                    [not null] => 
+                                    [sortable] => 1
+                                    [views] => 1
+                                )
+
+                        )
+
+                    [text_processing] => 0
+                    [max_length] => 
+                    [allowed_values] => 
+                    [allowed_values_php] => 
+                    [widget] => Array
+                        (
+                            [rows] => 5
+                            [size] => 60
+                            [default_value] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [value] => 
+                                            [_error_element] => default_value_widget][field_sinput][0][value
+                                        )
+
+                                )
+
+                            [default_value_php] => 
+                            [label] => Sample Input
+                            [weight] => 4
+                            [description] => 
+                            [type] => text_textarea
+                            [module] => text
+                        )
+
+                )
+
+            [field_soutput] => Array
+                (
+                    [field_name] => field_soutput
+                    [type_name] => problem
+                    [display_settings] => Array
+                        (
+                            [label] => Array
+                                (
+                                    [format] => above
+                                    [exclude] => 0
+                                )
+
+                            [teaser] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [full] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [4] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [2] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [3] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                        )
+
+                    [widget_active] => 1
+                    [type] => text
+                    [required] => 0
+                    [multiple] => 0
+                    [db_storage] => 1
+                    [module] => text
+                    [active] => 1
+                    [locked] => 0
+                    [columns] => Array
+                        (
+                            [value] => Array
+                                (
+                                    [type] => text
+                                    [size] => big
+                                    [not null] => 
+                                    [sortable] => 1
+                                    [views] => 1
+                                )
+
+                        )
+
+                    [text_processing] => 0
+                    [max_length] => 
+                    [allowed_values] => 
+                    [allowed_values_php] => 
+                    [widget] => Array
+                        (
+                            [rows] => 5
+                            [size] => 60
+                            [default_value] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [value] => 
+                                            [_error_element] => default_value_widget][field_soutput][0][value
+                                        )
+
+                                )
+
+                            [default_value_php] => 
+                            [label] => Sample Output
+                            [weight] => 5
+                            [description] => 
+                            [type] => text_textarea
+                            [module] => text
+                        )
+
+                )
+
+            [field_hint] => Array
+                (
+                    [field_name] => field_hint
+                    [type_name] => problem
+                    [display_settings] => Array
+                        (
+                            [label] => Array
+                                (
+                                    [format] => above
+                                    [exclude] => 0
+                                )
+
+                            [teaser] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [full] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [4] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [2] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [3] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                        )
+
+                    [widget_active] => 1
+                    [type] => text
+                    [required] => 0
+                    [multiple] => 0
+                    [db_storage] => 1
+                    [module] => text
+                    [active] => 1
+                    [locked] => 0
+                    [columns] => Array
+                        (
+                            [value] => Array
+                                (
+                                    [type] => text
+                                    [size] => big
+                                    [not null] => 
+                                    [sortable] => 1
+                                    [views] => 1
+                                )
+
+                            [format] => Array
+                                (
+                                    [type] => int
+                                    [unsigned] => 1
+                                    [not null] => 
+                                    [views] => 
+                                )
+
+                        )
+
+                    [text_processing] => 1
+                    [max_length] => 
+                    [allowed_values] => 
+                    [allowed_values_php] => 
+                    [widget] => Array
+                        (
+                            [rows] => 5
+                            [size] => 60
+                            [default_value] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [value] => 
+                                            [_error_element] => default_value_widget][field_hint][0][value
+                                        )
+
+                                )
+
+                            [default_value_php] => 
+                            [label] => Hint
+                            [weight] => 6
+                            [description] => 
+                            [type] => text_textarea
+                            [module] => text
+                        )
+
+                )
+
+            [field_source] => Array
+                (
+                    [field_name] => field_source
+                    [type_name] => problem
+                    [display_settings] => Array
+                        (
+                            [label] => Array
+                                (
+                                    [format] => above
+                                    [exclude] => 0
+                                )
+
+                            [teaser] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [full] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [4] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [2] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                            [3] => Array
+                                (
+                                    [format] => default
+                                    [exclude] => 0
+                                )
+
+                        )
+
+                    [widget_active] => 1
+                    [type] => text
+                    [required] => 0
+                    [multiple] => 0
+                    [db_storage] => 1
+                    [module] => text
+                    [active] => 1
+                    [locked] => 0
+                    [columns] => Array
+                        (
+                            [value] => Array
+                                (
+                                    [type] => text
+                                    [size] => big
+                                    [not null] => 
+                                    [sortable] => 1
+                                    [views] => 1
+                                )
+
+                        )
+
+                    [text_processing] => 0
+                    [max_length] => 
+                    [allowed_values] => 
+                    [allowed_values_php] => 
+                    [widget] => Array
+                        (
+                            [rows] => 5
+                            [size] => 60
+                            [default_value] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [value] => 
+                                            [_error_element] => default_value_widget][field_source][0][value
+                                        )
+
+                                )
+
+                            [default_value_php] => 
+                            [label] => Source
+                            [weight] => 7
+                            [description] => 
+                            [type] => text_textfield
+                            [module] => text
+                        )
+
+                )
+
+        )
+
+    [field_time] => Array
+        (
+            [#theme] => content_multiple_values
+            [#title] => Time Limit
+            [#required] => 1
+            [#description] => 
+            [0] => Array
+                (
+                    [#type] => number
+                    [#default_value] => Array
+                        (
+                            [value] => 1000
+                            [_error_element] => default_value_widget][field_time][0][value
+                        )
+
+                    [#title] => Time Limit
+                    [#description] => 
+                    [#required] => 1
+                    [#weight] => 0
+                    [#delta] => 0
+                    [#columns] => Array
+                        (
+                            [0] => value
+                        )
+
+                    [#field_name] => field_time
+                    [#type_name] => problem
+                )
+
+            [#field_name] => field_time
+            [#tree] => 1
+            [#weight] => -2
+            [#access] => 1
+            [#count] => 5
+        )
+
+    [field_ctime] => Array
+        (
+            [#theme] => content_multiple_values
+            [#title] => Case Time Limit
+            [#required] => 0
+            [#description] => 
+            [0] => Array
+                (
+                    [#type] => number
+                    [#default_value] => Array
+                        (
+                            [value] => 30000
+                            [_error_element] => default_value_widget][field_ctime][0][value
+                        )
+
+                    [#title] => Case Time Limit
+                    [#description] => 
+                    [#required] => 
+                    [#weight] => 0
+                    [#delta] => 0
+                    [#columns] => Array
+                        (
+                            [0] => value
+                        )
+
+                    [#field_name] => field_ctime
+                    [#type_name] => problem
+                )
+
+            [#field_name] => field_ctime
+            [#tree] => 1
+            [#weight] => -1
+            [#access] => 1
+            [#count] => 5
+        )
+
+    [field_memory] => Array
+        (
+            [#theme] => content_multiple_values
+            [#title] => Memory Limit
+            [#required] => 1
+            [#description] => 
+            [0] => Array
+                (
+                    [#type] => number
+                    [#default_value] => Array
+                        (
+                            [value] => 65535
+                            [_error_element] => default_value_widget][field_memory][0][value
+                        )
+
+                    [#title] => Memory Limit
+                    [#description] => 
+                    [#required] => 1
+                    [#weight] => 0
+                    [#delta] => 0
+                    [#columns] => Array
+                        (
+                            [0] => value
+                        )
+
+                    [#field_name] => field_memory
+                    [#type_name] => problem
+                )
+
+            [#field_name] => field_memory
+            [#tree] => 1
+            [#weight] => 0
+            [#access] => 1
+            [#count] => 5
+        )
+
+    [field_input] => Array
+        (
+            [#theme] => content_multiple_values
+            [#title] => Input
+            [#required] => 0
+            [#description] => 
+            [0] => Array
+                (
+                    [#type] => text_textarea
+                    [#default_value] => Array
+                        (
+                            [value] => 
+                            [_error_element] => default_value_widget][field_input][0][value
+                        )
+
+                    [#title] => Input
+                    [#description] => 
+                    [#required] => 
+                    [#weight] => 0
+                    [#delta] => 0
+                    [#columns] => Array
+                        (
+                            [0] => value
+                            [1] => format
+                        )
+
+                    [#field_name] => field_input
+                    [#type_name] => problem
+                )
+
+            [#field_name] => field_input
+            [#tree] => 1
+            [#weight] => 2
+            [#access] => 1
+            [#count] => 5
+        )
+
+    [field_output] => Array
+        (
+            [#theme] => content_multiple_values
+            [#title] => Output
+            [#required] => 0
+            [#description] => 
+            [0] => Array
+                (
+                    [#type] => text_textarea
+                    [#default_value] => Array
+                        (
+                            [value] => 
+                            [_error_element] => default_value_widget][field_output][0][value
+                        )
+
+                    [#title] => Output
+                    [#description] => 
+                    [#required] => 
+                    [#weight] => 0
+                    [#delta] => 0
+                    [#columns] => Array
+                        (
+                            [0] => value
+                            [1] => format
+                        )
+
+                    [#field_name] => field_output
+                    [#type_name] => problem
+                )
+
+            [#field_name] => field_output
+            [#tree] => 1
+            [#weight] => 3
+            [#access] => 1
+            [#count] => 5
+        )
+
+    [field_sinput] => Array
+        (
+            [#theme] => content_multiple_values
+            [#title] => Sample Input
+            [#required] => 0
+            [#description] => 
+            [0] => Array
+                (
+                    [#type] => text_textarea
+                    [#default_value] => Array
+                        (
+                            [value] => 
+                            [_error_element] => default_value_widget][field_sinput][0][value
+                        )
+
+                    [#title] => Sample Input
+                    [#description] => 
+                    [#required] => 
+                    [#weight] => 0
+                    [#delta] => 0
+                    [#columns] => Array
+                        (
+                            [0] => value
+                        )
+
+                    [#field_name] => field_sinput
+                    [#type_name] => problem
+                )
+
+            [#field_name] => field_sinput
+            [#tree] => 1
+            [#weight] => 4
+            [#access] => 1
+            [#count] => 5
+        )
+
+    [field_soutput] => Array
+        (
+            [#theme] => content_multiple_values
+            [#title] => Sample Output
+            [#required] => 0
+            [#description] => 
+            [0] => Array
+                (
+                    [#type] => text_textarea
+                    [#default_value] => Array
+                        (
+                            [value] => 
+                            [_error_element] => default_value_widget][field_soutput][0][value
+                        )
+
+                    [#title] => Sample Output
+                    [#description] => 
+                    [#required] => 
+                    [#weight] => 0
+                    [#delta] => 0
+                    [#columns] => Array
+                        (
+                            [0] => value
+                        )
+
+                    [#field_name] => field_soutput
+                    [#type_name] => problem
+                )
+
+            [#field_name] => field_soutput
+            [#tree] => 1
+            [#weight] => 5
+            [#access] => 1
+            [#count] => 5
+        )
+
+    [field_hint] => Array
+        (
+            [#theme] => content_multiple_values
+            [#title] => Hint
+            [#required] => 0
+            [#description] => 
+            [0] => Array
+                (
+                    [#type] => text_textarea
+                    [#default_value] => Array
+                        (
+                            [value] => 
+                            [_error_element] => default_value_widget][field_hint][0][value
+                        )
+
+                    [#title] => Hint
+                    [#description] => 
+                    [#required] => 
+                    [#weight] => 0
+                    [#delta] => 0
+                    [#columns] => Array
+                        (
+                            [0] => value
+                            [1] => format
+                        )
+
+                    [#field_name] => field_hint
+                    [#type_name] => problem
+                )
+
+            [#field_name] => field_hint
+            [#tree] => 1
+            [#weight] => 6
+            [#access] => 1
+            [#count] => 5
+        )
+
+    [field_source] => Array
+        (
+            [#theme] => content_multiple_values
+            [#title] => Source
+            [#required] => 0
+            [#description] => 
+            [0] => Array
+                (
+                    [#type] => text_textfield
+                    [#default_value] => Array
+                        (
+                            [value] => 
+                            [_error_element] => default_value_widget][field_source][0][value
+                        )
+
+                    [#title] => Source
+                    [#description] => 
+                    [#required] => 
+                    [#weight] => 0
+                    [#delta] => 0
+                    [#columns] => Array
+                        (
+                            [0] => value
+                        )
+
+                    [#field_name] => field_source
+                    [#type_name] => problem
+                )
+
+            [#field_name] => field_source
+            [#tree] => 1
+            [#weight] => 7
+            [#access] => 1
+            [#count] => 5
+        )
+
+    [#pre_render] => Array
+        (
+            [0] => content_alter_extra_weights
+        )
+
+    [#content_extra_fields] => Array
+        (
+            [title] => Array
+                (
+                    [label] => Title
+                    [description] => Node module form.
+                    [weight] => -3
+                )
+
+            [body_field] => Array
+                (
+                    [label] => Description
+                    [description] => Node module form.
+                    [weight] => 1
+                    [view] => body
+                )
+
+            [revision_information] => Array
+                (
+                    [label] => Revision information
+                    [description] => Node module form.
+                    [weight] => 9
+                )
+
+            [author] => Array
+                (
+                    [label] => Authoring information
+                    [description] => Node module form.
+                    [weight] => 10
+                )
+
+            [options] => Array
+                (
+                    [label] => Publishing options
+                    [description] => Node module form.
+                    [weight] => 11
+                )
+
+            [comment_settings] => Array
+                (
+                    [label] => Comment settings
+                    [description] => Comment module form.
+                    [weight] => 12
+                )
+
+            [menu] => Array
+                (
+                    [label] => Menu settings
+                    [description] => Menu module form.
+                    [weight] => 8
+                )
+
+            [attachments] => Array
+                (
+                    [label] => File attachments
+                    [description] => Upload module form.
+                    [weight] => 13
+                    [view] => files
+                )
+
+        )
+
+)
+
+
+===== $form_state =====
+Array
+(
+    [storage] => 
+    [submitted] => 
+    [post] => Array
+        (
+        )
+
+)
+
+
+===== $form_id =====
+problem_node_form
+
