@@ -48,7 +48,7 @@ function oj_user_ranklist()
                  'aoColumns' => $colwidths,
                  'bJQueryUI' => true,
 				 'bAutoWidth' => false,
-				'iDisplayLength'=>50,
+				'iDisplayLength'=>25,
 				'aLengthMenu'=>array(array(25, 50, 100, 200),array('25', '50', '100', '200'))
         )
           );
@@ -106,19 +106,21 @@ function oj_user_list_ajax() {
            profile_values pv
        WHERE u.status=1 AND pv.uid=u.uid AND pf.fid=pv.fid AND (pf.name='profile_nick' OR pf.name='profile_solved' OR pf.name='profile_submissions')";
 */
-	$sql="SELECT SQL_CALC_FOUND_ROWS u.uid,u.name,pn.value AS nick,
-		CAST(pa.value AS SIGNED) AS solved,CAST(ps.value AS SIGNED) AS submissions FROM {users} u 
+	$sql="SELECT SQL_CALC_FOUND_ROWS * FROM
+		(SELECT uid,name,nick,solved,submissions,@rank:=@rank+1 AS rank FROM 
+		(SELECT u.uid,u.name,pn.value AS nick,CAST(pa.value AS SIGNED) AS solved,
+		CAST(ps.value AS SIGNED) AS submissions FROM users u 
 		LEFT JOIN profile_values pn ON u.uid=pn.uid AND pn.fid=1 
 		LEFT JOIN profile_values pa ON u.uid=pa.uid AND pa.fid=4 
 		LEFT JOIN profile_values ps ON u.uid=ps.uid AND ps.fid=5 
-		WHERE status=1";
+		WHERE status=1)t,(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt WHERE 1";
    
       // NOTE: use double %, because drupal printf()s it before sending to mysql...
       if (!empty($_GET['sSearch_1'])) {
-        $sql.=" AND u.name LIKE '%%" . $_GET['sSearch_1']  . "%%' ";
+        $sql.=" AND name LIKE '%%" . $_GET['sSearch_1']  . "%%' ";
       }
       if (!empty($_GET['sSearch_2'])) {
-        $sql.=" AND pn.value LIKE '%%" . $_GET['sSearch_2']  . "%%' ";
+        $sql.=" AND nick LIKE '%%" . $_GET['sSearch_2']  . "%%' ";
       }
       // because of condition listing, one odering is always needed: based on nid
       // to be able to group the same notification (with just differenct conditions) together
@@ -131,7 +133,7 @@ function oj_user_list_ajax() {
             case 1: $sqlorderby.= $ordercomma . "name " . $_GET["sSortDir_$s"];
                     $ordercomma=",";
                     break;
-            case 3: $sqlorderby.= $ordercomma . "solved " . $_GET["sSortDir_$s"].",submissions";  
+            case 3: $sqlorderby.= $ordercomma . "solved " . $_GET["sSortDir_$s"].",submissions desc";  
                     $ordercomma=",";
                     break;
             case 4: $sqlorderby.= $ordercomma . "submissions " . $_GET["sSortDir_$s"].",solved desc";  
@@ -175,10 +177,10 @@ function oj_user_list_ajax() {
       	}
         print $comma; $comma=",";
     
-        $linkbeg=addslashes('<a href="' . url('user/' . $r['uid']) . '">');
+        $linkbeg=addslashes('<a href="' . url('user/') . $r['uid'] . '/status">');
         $linkend=addslashes('</a>');
                 
-        $row= '["' .($idx+$_GET['iDisplayStart']).
+        $row= '["' .$r['rank'] .
              '","' . $linkbeg . $r['name'] . $linkend .
              '","' . $r['nick'] .
              '","' . $r['solved'] .

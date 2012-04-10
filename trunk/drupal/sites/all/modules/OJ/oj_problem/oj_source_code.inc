@@ -61,11 +61,12 @@ function oj_problem_submit_form(&$form_state=NULL,$node)
 		'#suffix' => '</div>'
 	);
 	*/
+	$languages = oj_languages();
 	$form['language']=array
 	(
 		'#type'=>'select',
 		'#title'=>t('Language'),
-		'#options' => array('G++'=>'G++','GCC'=>'GCC','JAVA'=>'JAVA','Pascal'=>'Pascal','Masm32'=>'Masm32'),
+		'#options' => $languages,
 		'#default_value' => $user_account->profile_language,
 		'#required' => TRUE,
 		'#prefix' => '<div class=container-inline>',
@@ -114,38 +115,49 @@ function problem_submit_validate($form, &$form_state)
 function problem_submit(&$form, &$form_state)
 {
 	global $user;
-	$item = db_fetch_object(db_query("SELECT sid FROM {solution} WHERE uid=%d AND pid=%d LIMIT 1",$user->uid,$form_state['values']['pid']));
+	$array = oj_languages();
+	$id = 0;
+	foreach($array as $value)
+	{
+		$language[$value] = $id++;
+	}
+	//$language = array('G++'=>0,'GCC'=>1,'JAVA'=>2,'Pascal'=>3,'Masm32'=>4);
+	$item = db_fetch_object(db_query("SELECT sid FROM {solution} WHERE uid=%d AND pid=%d LIMIT 1"
+			,$user->uid,$form_state['values']['pid']));
 	if($item->sid==null)
-		db_query("UPDATE {content_type_problem} SET field_submit_user_value=field_submit_user_value+1 WHERE field_pid_value=%d",$form_state['values']['pid']);
-	db_query("UPDATE {content_type_problem} SET field_submit_value=field_submit_value+1 WHERE field_pid_value=%d",$form_state['values']['pid']);
+		db_query("UPDATE {content_type_problem} SET field_submit_user_value=field_submit_user_value+1 
+				WHERE field_pid_value=%d",$form_state['values']['pid']);
+	db_query("UPDATE {content_type_problem} SET field_submit_value=field_submit_value+1 
+			WHERE field_pid_value=%d",$form_state['values']['pid']);
 	$len = strlen($form_state['values']['source_code']);
-	db_query("INSERT INTO {solution} (pid,uid,in_date,result,language,ip,num,code_length,source) VALUES (%d,%d,%d,%d,%d,'%s',%d,%d,compress('%s'))",
+	$time = time();
+	db_query("INSERT INTO {solution} (pid,uid,in_date,result,language,ip,num,code_length,source)
+			VALUES (%d,%d,%d,%d,%d,'%s',%d,%d,compress('%s'))",
 		$form_state['values']['pid'],
 		$user->uid,
-		time(),
+		$time,
 		10000,
-		$form_state['values']['language'],
+		$language[$form_state['values']['language']],
 		$_SERVER['REMOTE_ADDR'],
 		-1,
 		$len,
 		$form_state['values']['source_code']
 		);
+	//$sid = db_result(db_query("SELECT sid FROM {solution} WHERE pid=%d AND uid=%d AND in_date=%d ORDER BY sid DESC LIMIT 1",$form_state['values']['pid'],$user->uid,$time));
+	$sid = db_result(db_query("SELECT LAST_INSERT_ID()"));
 	
-	$item = db_fetch_object(db_query("SELECT CAST(value AS SIGNED) AS submissions FROM {profile_values} WHERE fid=5 AND uid=%d",$user->uid));
-	$submissions = ($item->submissions+1);
-	if($item)
-		db_query("UPDATE {profile_values} SET value=%s WHERE fid=5 AND uid=%d",$submissions,$user->uid);
-	else
-	{
-		db_query("INSERT INTO {profile_values} VALUES (%d,%d,%s)",5,$user->uid,$submissions);
-		db_query("INSERT INTO {profile_values} VALUES (%d,%d,'0')",4,$user->uid);
-	}
+	$account = user_load($user->uid);
+	user_save($account,array('profile_submissions'=>$account->profile_submissions+1));
 	
 	db_query("UPDATE {node} SET changed=%d WHERE nid=%d",time(),$form_state['values']['nid']);
 	$cid = "content:".$form_state['values']['nid'];
 	cache_clear_all($cid,'cache_content',TRUE);
+	
+	oj_judge($sid);
+	
 	drupal_set_message("Source code submitted sucessfully.");
 	drupal_goto('status');
+	
 }
 
 function reset_problem_submit(&$form, &$form_state)
@@ -162,58 +174,58 @@ function show_code($sid)
 	}
 	$query = "SELECT s.*,u.name,uncompress(source) AS source FROM {solution} s LEFT JOIN {users} u ON s.uid=u.uid WHERE sid=%d";
 	$items = db_query($query,$sid);
-	$language = array('G++','GCC','JAVA','Pascal','Masm32');
+	$language = oj_languages(TRUE);
+	//$language = array('G++','GCC','JAVA','Pascal','Masm32');
+	$type = array('cpp','c','java','pascal','xml','c','cpp');
 	if($item = db_fetch_object($items))
 	{
-		//debug($item,'$item');
 		$result = getResultDescript($item->result);
-$script=<<<SCR
-    function getCode(name,css)
-    {
-        document.getElementById(name).className = css;
-        dp.SyntaxHighlighter.ClipboardSwf = 'dp.SyntaxHighlighter/Scripts/clipboard.swf';   
-        dp.SyntaxHighlighter.HighlightAll(name);        
-    }
+
+		$path = drupal_get_path('module','oj').'/misc/js/dp.SyntaxHighlighter/';
+		drupal_add_css($path.'Styles/shCore.css');
+		drupal_add_css($path.'Styles/shThemeDefault.css');
+		//drupal_add_css($path.'Styles/shThemeEclipse.css');
+		drupal_add_js($path.'Scripts/shCore.js');
+		switch($item->language)
+		{
+			case 0:
+			case 1:drupal_add_js($path.'Scripts/shBrushCpp.js');break;
+			case 2:drupal_add_js($path.'Scripts/shBrushJava.js');break;
+			case 3:drupal_add_js($path.'Scripts/shBrushDelphi.js');break;
+			case 4:drupal_add_js($path.'Scripts/shBrushXml.js');break;
+			case 5:
+			case 6:drupal_add_js($path.'Scripts/shBrushCpp.js');break;
+		}
+		$problem_url = url('problem/'.$item->pid);
+		$user_url = url('user/'.$item->uid);
+		$item->memory = (int)$item->memory;
+		$item->time = (int)$item->time;
+		$output =<<<SCR
+			<p align=center><font size=5 color=#333399>View Code</font></p>
+			<p align=center>
+			<font color=#006600>Problem ID</font>:<a href={$problem_url}>{$item->pid}</a>  
+			<font color=#006600>User ID</font>:<a href={$user_url}>{$item->name}</a> <br>
+			<font color=#006600>Memory</font>:{$item->memory}K  <font color=#006600>Time</font>:{$item->time}MS <br>
+			<font color=#006600>Language</font>:{$language[$item->language]}  <font color=#006600>Result</font>:{$result} <br></p>
 SCR;
-	$path = drupal_get_path('module','oj');
-	drupal_add_js($script,'inline');
-	drupal_add_css($path.'/misc/js/dp.SyntaxHighlighter/Styles/SyntaxHighlighter.css');
-	drupal_add_js($path.'/misc/js/dp.SyntaxHighlighter/Scripts/shCore.js');
-	drupal_add_js($path.'/misc/js/dp.SyntaxHighlighter/Scripts/shBrushCpp.js');
-	drupal_add_js($path.'/misc/js/dp.SyntaxHighlighter/Scripts/shBrushJava.js');
-	drupal_add_js($path.'/misc/js/dp.SyntaxHighlighter/Scripts/shBrushDelphi.js');
-	drupal_add_js($path.'/misc/js/dp.SyntaxHighlighter/Scripts/shBrushXml.js');
-	$problem_url = url('problem/'.$item->pid);
-	$user_url = url('user/'.$item->uid);
-	$item->memory = (int)$item->memory;
-	$item->time = (int)$item->time;
-	$output =<<<SCR
-	<p align=center><font size=5 color=#333399>View Code</font></p>
-		<p align=center>
-		<font color=#006600>Problem ID</font>:<a href={$problem_url}>{$item->pid}</a>  
-		<font color=#006600>User ID</font>:<a href={$user_url}>{$item->name}</a> <br>
-		<font color=#006600>Memory</font>:{$item->memory}K  <font color=#006600>Time</font>:{$item->time}MS <br>
-		<font color=#006600>Language</font>:{$language[$item->language]}  <font color=#006600>Result</font>:{$result} <br></p>
+		if($item->result == 7)
+		{
+			drupal_add_js('misc/collapse.js');
+			$item->error = preg_replace('![a-zA-Z]:\\\\.+\\\\(\d+)!','${1}',$item->error);
+			$item->error = oj_check_markup($item->error);
+			$output .= "
+			<fieldset class='fieldgroup field-compile-error collapsible'>
+			<legend>Compile Error</legend>
+			<div class='field-items'>$item->error</div>
+			</fieldset>";
+		}
+		$output .= <<<SCR
+			<ul><li><font color=#333399 size=5>Source</font></li></ul>
+			
+			<script type="syntaxhighlighter" class="brush: {$type[$item->language]};toolbar: false;"><![CDATA[ {$item->source}]]></script> 
+			<script type="text/javascript">SyntaxHighlighter.all();</script>
+			
 SCR;
-	if($item->result == 7)
-	{
-		drupal_add_js('misc/collapse.js');
-		$item->error = preg_replace('![A-Z]:\\\\.+\\\\(\d+)!','${1}',$item->error);
-		$item->error = oj_check_markup($item->error);
-		$output .= "
-		<fieldset class='fieldgroup field-compile-error collapsible'>
-		<legend>Compile Error</legend>
-		<div class='field-items'>$item->error</div>
-		</fieldset>";
-	}
-$output .=<<<SCR
-		<ul><li><font color=#333399 size=5>Source</font></li></ul>
-		<textarea align='left' id='code' name='code' class='cpp' style='width: 600px;'>
-{$item->source}
-		</textarea>
-		<script language='javascript' type='text/javascript'>dp.SyntaxHighlighter.HighlightAll('code');</script>
-SCR;
-		
 		print theme('page', $output);
 	}
 	else
@@ -273,7 +285,8 @@ function show_compile_info($sid)
 	}
 	$query = "SELECT s.*,u.name,uncompress(source) AS source FROM {solution} s LEFT JOIN {users} u ON s.uid=u.uid WHERE sid=%d AND result=7";
 	$items = db_query($query,$sid);
-	$language = array('G++','GCC','JAVA','Pascal','Masm32');
+	$language = oj_languages(TRUE);
+	//$language = array('G++','GCC','JAVA','Pascal','Masm32');
 	if($item = db_fetch_object($items))
 	{
 		$problem_url = url('problem/'.$item->pid);

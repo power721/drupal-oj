@@ -2,23 +2,30 @@
 
 function oj_menu()
 {
-	$items['faq']=array
+	$items['faq'] = array
 	(
 		'title' => 'Frequently Asked Questions',
 		'page callback' => 'oj_faq',
 		'access callback' => TRUE,
 		'type' => MENU_SUGGESTED_ITEM
 	);
-	
+	$items['hook_exist'] = array
+	(
+		'title' => 'Hook Exist',
+		'page callback' => 'hook_exist',
+		'page arguments' => array(1),
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK
+	);
 	return $items;
 }
 
 // debug function to dump an array into a temp file
-function debug($var,$head=NULL,$filename=NULL)
+function debug($var,$head = NULL,$filename = NULL)
 {
-	if($filename==NULL)
-		$filename='debug.txt';
-	$f=fopen($filename,'a');
+	if($filename == NULL)
+		$filename = 'debug.txt';
+	$f = fopen($filename,'a');
 	ob_start();
 	print("===== ".$head." =====\r\n");
 	print_r($var);
@@ -50,21 +57,13 @@ function oj_faq()
 <link rel="shortcut icon" href="/drupal/misc/favicon.ico" type="image/x-icon" />
 <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
 <title>OnlineJudge F.A.Q</title>
-<link href="{$path}/misc/css/faq.css" rel="stylesheet" type="text/css" />
-<link type='text/css' rel='stylesheet' href='{$path}/misc/js/dp.SyntaxHighlighter/Styles/SyntaxHighlighter.css'/>
+<link type="text/css" rel="stylesheet" href="{$path}/misc/css/faq.css" />
+<link type='text/css' rel='stylesheet' href='{$path}/misc/js/dp.SyntaxHighlighter/Styles/shCore.css'/>
+<link type='text/css' rel='stylesheet' href='{$path}/misc/js/dp.SyntaxHighlighter/Styles/shThemeDefault.css'/>
 <script src='{$path}/misc/js/dp.SyntaxHighlighter/Scripts/shCore.js' type='text/javascript'></script>
 <script src='{$path}/misc/js/dp.SyntaxHighlighter/Scripts/shBrushCpp.js' type='text/javascript'></script>
 <script src='{$path}/misc/js/dp.SyntaxHighlighter/Scripts/shBrushJava.js' type='text/javascript'></script>
 <script src='{$path}/misc/js/dp.SyntaxHighlighter/Scripts/shBrushDelphi.js' type='text/javascript'></script>
-<script src='{$path}/misc/js/dp.SyntaxHighlighter/Scripts/shBrushXml.js' type='text/javascript'></script>
-<script language='javascript' type='text/javascript'>
-    function getCode(name,css)
-    {
-        document.getElementById(name).className = css;
-        dp.SyntaxHighlighter.ClipboardSwf = 'dp.SyntaxHighlighter/Scripts/clipboard.swf';   
-        dp.SyntaxHighlighter.HighlightAll(name);        
-    }
-</script>
 </head>
 
 <body>
@@ -240,8 +239,8 @@ ALT+P    :问题编号
 <font color="#FF8040"><b>Q</b></font>：1000题怎么解答？
 </div>
 <font color="green"><b>A</b></font>：以下是1000题的各种语言的参考程序：<br />
-C++语言:<br /><div class="data">
-<textarea align='left' id='code' name='code' class='cpp' style='width: 600px;'>
+C++语言:<br />
+<pre class='brush: cpp;toolbar: false;'>
 #include &lt;iostream&gt;
 using namespace std;
 int main()
@@ -251,10 +250,10 @@ int main()
 	cout&lt;&lt;a+b&lt;&lt;endl;
   return 0;
 }
-</textarea>
-</div>
-C语言：<br /><div class="data">
-<textarea align='left' id='code' name='code' class='c' style='width: 600px;'>
+</pre>
+
+C语言：<br />
+<pre class='brush: c;toolbar: false;'>
 #include &lt;stdio.h&gt;
 int main()
 {
@@ -263,10 +262,10 @@ int main()
     printf("%d\\n",a+b);
   return 0;
 }
-</textarea>
-</div>
-PASCAL语言：<div class="data">
-<textarea align='left' id='code' name='code' class='Delphi' style='width: 600px;'>
+</pre>
+
+PASCAL语言：
+<pre class='brush: pascal;toolbar: false;'>
 var
   a,b:integer;
 begin
@@ -275,10 +274,10 @@ begin
     writeln(a+b);
   end;
 end.
-</textarea>
-</div>
-Java语言：<div class="data">
-<textarea align='left' id='code' name='code' class='java' style='width: 600px;'>
+</pre>
+
+Java语言：
+<pre class='brush: java;toolbar: false;'>
 import java.io.*;
 import java.util.*;
 public class Main
@@ -296,8 +295,9 @@ public class Main
 
 	}
 }
-</textarea>
-</div>
+</pre>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+
 <br />
 </div>
 </div>
@@ -363,7 +363,135 @@ function oj_check_markup($text, $format = FILTER_FORMAT_DEFAULT, $check = FALSE)
 
 function oj_get_value($key)
 {
-	$file = variable_get('oj_config_file',"C:\JudgeOnline\serverconfig.property");
+	$file = variable_get('oj_config_file',"C:\JudgeOnline\server.config");
 	$var = parse_ini_file($file);
 	return $var[$key];
+}
+
+function oj_languages($type = FALSE)
+{
+	$language = explode(',',oj_get_value('LanguageDescs'));
+	if($type)
+		return $language;
+	foreach($language as $value)
+	{
+		$languages[$value] = $value;
+	}
+	return $languages;
+}
+
+function oj_judge_value($key,$id)
+{
+	$value = explode(',',oj_get_value($key));
+	return $value[$id];
+}
+
+function oj_get_status_result($flag = FALSE)
+{
+	$status_result = array
+	(
+		0 => "AC",
+		1 => "PE",
+		2 => "TLE",
+		3 => "MLE",
+		4 => "WA",
+		5 => "RE",
+		6 => "OLE",
+		7 => "CE",
+		98 => "System Error",
+		99 => "Validate Error",
+		100 => "Data Error",
+		10000 => "Waiting"
+	);
+	if($flag == TRUE)
+	{
+		foreach($status_result as $key => $value)
+		{
+			$descript[$key] = getResultDescript($key);
+		}
+		return $descript;
+	}
+	return $status_result;
+}
+
+function getResultDescript($i)
+{
+	if ($i == 0)
+		return "<font color=red><b>Accepted</b></font>";
+	if ($i == 1)
+		return "<font color=#ff03fa>Presentation Error</font>";
+	if ($i == 2)
+		return "<font color=#ff9900>Time Limit Exceed</font>";
+	if ($i == 3)
+		return "<font color=#0692ff>Memory Limit Exceed</font>";
+	if ($i == 4)
+		return "<font color=#000000>Wrong Answer</font>";
+	if ($i == 5)
+		return "<font color=#bb338f>Runtime Error</font>";
+	if ($i == 6)
+		return "<font color=#999999>Output Limit Exceed</font>";
+	if ($i == 7)
+		return "<font color=#1e9e00>Compile Error</font>";
+	if ($i == 10000)
+		return "<font color=green>Waiting</font>";
+	if ($i == 98)
+		return "<font color=black>System Error</font>";
+	if ($i == 99)
+		return "Validate Error";
+	if ($i == 100)
+		return "Data Error";
+	return "Other";
+}
+
+function deldir($dir)
+{
+	//先删除目录下的文件：
+	$dh = opendir($dir);
+	while ($file = readdir($dh))
+	{
+		if($file != '.' && $file != '..')
+		{
+			$fullpath = $dir.'/'.$file;
+			if(!is_dir($fullpath))
+				unlink($fullpath);
+			else
+				deldir($fullpath);
+		}
+	}
+	closedir($dh);
+	//删除当前文件夹：
+	if(rmdir($dir))
+		return true;
+	else
+		return false;
+}
+
+/*
+* date format like 2012-02-13 21:58:49
+*/
+function oj_date($time = NULL)
+{
+	if($time == NULL)
+		$time = time();
+	return format_date($time,'custom','Y-m-d H:i:s');
+}
+
+function hook_exist($type = NULL)
+{
+	print "<pre>\n";
+	if($type == NULL)
+	{
+		
+	}
+	foreach (module_implements($type) as $module)
+	{
+		$function = $module . '_' . $type;
+		print $function."\n";
+	}
+	/*foreach (module_implements($type . '_alter') as $module)
+	{
+		$function = $module . '_' . $type . '_alter';
+		print $function."\n";
+	}*/
+	print "</pre>\n";
 }
