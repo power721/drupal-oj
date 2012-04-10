@@ -1,7 +1,7 @@
 <?php
 
 // server side processing:
-function oj_status($pid=0,$s_result=0,$user=0,$s_language=0)
+function oj_status()
 {
 	$head=array
 	(
@@ -42,7 +42,16 @@ function oj_status($pid=0,$s_result=0,$user=0,$s_language=0)
 		array('bSortable'=>true,'sWidth'=>'7%'),
 		array('bSortable'=>false,'sWidth'=>'14%'),
 	);
-	
+	//debug($_GET,'$_GET');
+	$url = "?q=oj_status.ajax";
+	if($_GET['uid'])
+		$url .= "&uid=".$_GET['uid'];
+	if($_GET['pid'])
+		$url .= "&pid=".$_GET['pid'];
+	if(!is_null($_GET['result']))
+		$url .= "&result=".$_GET['result'];
+	if(!is_null($_GET['language']))
+		$url .= "&language=".$_GET['language'];
 	$params=array
 	(
 		'datatable_options' =>array
@@ -53,11 +62,11 @@ function oj_status($pid=0,$s_result=0,$user=0,$s_language=0)
             'sCookiePrefix' => 'pl_',
             'bProcessing' => true,
             'bServerSide' => true,
-            'sAjaxSource' => "?q=oj_status.ajax/$pid/$s_result/$user/$s_language",
+            'sAjaxSource' => $url,
             'aoColumns' => $colwidths,
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
-			'iDisplayLength'=>50,
+			'iDisplayLength'=>25,
 			'aLengthMenu'=>array(array(25, 50, 100, 200),array('25', '50', '100', '200')),
         )
     );
@@ -67,8 +76,8 @@ $(document).ready(function()
         $("#search-user").keyup( 
 		function () 
 		{
-                t=$('#datatable-1').dataTable();
-                t.fnFilter( this.value, 1 );
+            t=$('#datatable-1').dataTable();
+            t.fnFilter( this.value, 1 );
         });
         $("#search-pid").keyup( 
 		function () 
@@ -80,8 +89,8 @@ $(document).ready(function()
 		$("#search-result").change( 
 		function () 
 		{
-                t=$('#datatable-1').dataTable();
-                t.fnFilter( this.value, 3 );
+            t=$('#datatable-1').dataTable();
+            t.fnFilter( this.value, 3 );
         });
         $("#search-language").change( 
 		function () 
@@ -95,7 +104,7 @@ $(document).ready(function()
 			t.fnFilter( $("#search-user").val(), 1 );
 			t.fnFilter( $("#search-pid").val(), 2 );
 			t.fnFilter( $("#search-result").val(), 3 );
-			 t.fnFilter( $("#search-language").val(), 6 );
+			t.fnFilter( $("#search-language").val(), 6 );
         });
 } );
 SCR;
@@ -109,52 +118,55 @@ SCR;
 	global $user;
 	$inputboxes = '<table style="border:0px;background-color:#fedc6b; float:left">
                 <tr><td>Filter User:</td><td><input id="search-user" type=text size=15></td>
-                <td>Problem ID:</td><td><input id="search-pid" type=text size=15></td>
+                <td>Problem ID:</td><td><input id="search-pid" type=text size=10></td>
 				<td>Result:<select size=1 id=search-result><option value=\'\'  selected>All</option><option value=0>Accepted</option><option value=1>Presentation Error</option><option value=2>Time Limit Exceeded</option><option value=3>Memory Limit Exceeded</option><option value=4>Wrong Answer</option><option value=5>Runtime Error</option><option value=6>Output Limit Exceeded</option><option value=7>Compile Error</option>';
 	if($user->uid==1||$user->roles['5']!=null)
-		$inputboxes .= '<option value=98>System Error</option><option value=99>Validate Error</option><option value=10000>Waiting</option>';
+		$inputboxes .= '<option value=98>System Error</option><option value=99>Validate Error</option><option value=100>Data Error</option><option value=10000>Waiting</option>';
 	$inputboxes .= '</select></td>
-				<td>Language:<select size=1 id=search-language><option value=\'\'  selected>All</option><option value=0>G++</option><option value=1>GCC</option><option value=2>Java</option><option value=3>Pascal</option><option value=4>Masm32</option></select></td></tr>
+				<td>Language:<select size=1 id=search-language><option value=\'\'  selected>All</option><option value=0>G++</option><option value=1>GCC</option><option value=2>Java</option><option value=3>Pascal</option></select></td></tr>
 				</table>
 				<input id="search_button" type="submit" value="Search">';
 			
 	return $inputboxes . theme_datatable($head,$dummy_row,$params);
 }
 
-function oj_status_ajax($pid=0,$s_result=0,$user=0,$s_language=0)
+function oj_status_ajax()
 {
-	$s_result--;
-	$s_language--;
-	
 	$lim_off=db_escape_string($_GET['iDisplayStart']);
 	$lim_rowc=db_escape_string($_GET['iDisplayLength']);
-    //debug($_GET);
 	
 	$allrecord=db_result(db_query("SELECT COUNT(*) FROM {solution}"));
 	$sql="SELECT SQL_CALC_FOUND_ROWS s.sid,u.name,s.uid,s.pid,s.result,s.memory,s.time,s.language,s.code_length,s.in_date FROM {solution} s LEFT JOIN {users} u ON u.uid=s.uid WHERE 1";
-	//debug($allrecord);
-      // NOTE: use double %, because drupal printf()s it before sending to mysql...
-	
-	if (!empty($_GET['sSearch_1']))
+    // NOTE: use double %, because drupal printf()s it before sending to mysql...
+	if(!empty($_GET['sSearch_1']))
         $sql.=" AND u.name LIKE '" . $_GET['sSearch_1']  . "%%' ";
-	if($user!=0)
+	else if($_GET['uid'])
 	{	
-		$d_user = user_load(array('uid'=>$user));
+		$d_user = user_load($_GET['uid']);
 		$_GET['sSearch_1'] = $d_user->name;
 		$sql.=" AND u.name = '" . $_GET['sSearch_1']  . "' ";
 	}
-	if($pid!=0)
-		$_GET['sSearch_2'] = $pid;
-    if (!empty($_GET['sSearch_2']))
-		$sql.=" AND  s.pid = " . $_GET['sSearch_2'];
-    if($s_result!=-1)
-		$_GET['sSearch_3'] = (string)$s_result;
-    if ($_GET['sSearch_3']!=null)
-		$sql.=" AND  s.result = " . $_GET['sSearch_3'];
-	if($s_language!=-1)
-		$_GET['sSearch_6'] = (string)$s_language;
-	if ($_GET['sSearch_6']!=null)
-		$sql.=" AND  s.language = " . $_GET['sSearch_6'];
+	
+	if(!empty($_GET['sSearch_2']))
+		$pid = $_GET['sSearch_2'];
+	else if($_GET['pid'])
+		$pid = $_GET['pid'];
+    if(!empty($pid))
+		$sql.=" AND  s.pid = " . $pid;
+	
+	if($_GET['sSearch_3']!=null)
+		$result = $_GET['sSearch_3'];
+	else if(!is_null($_GET['result']))
+		$result = $_GET['result'];
+    if(!is_null($result))
+		$sql.=" AND  s.result = " . $result;
+	
+	if($_GET['sSearch_6']!=null)
+		$language = $_GET['sSearch_6'];
+	else if(!is_null($_GET['language']))
+		$language = $_GET['language'];
+	if(!is_null($language))
+		$sql.=" AND  s.language = " . $language;
 	
     // because of condition listing, one odering is always needed: based on nid
     // to be able to group the same notification (with just differenct conditions) together
@@ -189,25 +201,11 @@ function oj_status_ajax($pid=0,$s_result=0,$user=0,$s_language=0)
     
     # limit is simply based on user choice
     $sql.=" LIMIT $lim_off, $lim_rowc";
-	//debug($sql);
     // Query that mess finally!
-    $result=db_query($sql);
-	
-    $language = array('G++','GCC','JAVA','Pascal','Masm32');
-	$result_type = array
-	(
-		0 => "AC",
-		1 => "PE",
-		2 => "TLE",
-		3 => "MLE",
-		4 => "WA",
-		5 => "RE",
-		6 => "OLE",
-		7 => "CE",
-		98 => "System Error",
-		99 => "Validate Error",
-		10000 => "Waiting"
-	);
+    $items=db_query($sql);
+	$languages = oj_languages(TRUE);
+    //$languages = array('G++','GCC','JAVA','Pascal','Masm32');
+	$result_type = oj_get_status_result();
     // Query the rows counted without the limit
     $filteredrec=db_result(db_query("SELECT FOUND_ROWS()"));
 	
@@ -219,7 +217,7 @@ function oj_status_ajax($pid=0,$s_result=0,$user=0,$s_language=0)
     print $out;
     // deliver the rows 
     $comma=""; // comma must not be written after the last row (IE)
-    while ($r = db_fetch_array($result))
+    while ($r = db_fetch_array($items))
 	{
       	foreach ($r as $key => $value)
       	{
@@ -235,7 +233,7 @@ function oj_status_ajax($pid=0,$s_result=0,$user=0,$s_language=0)
 			 '","' . getResultDescript($r['result']) .
 			 '","' . ($r['result']==0?$r['memory']."K":"") .
 			 '","' . ($r['result']==0?$r['time'] . "MS":"") .
-			 '","' . (show_code_access($r['sid'])?'<a href=' . url('code/'.$r['sid']) . '>':'') .$language[$r['language']] . (show_code_access($r['sid'])?'</a>':'') .
+			 '","' . (show_code_access($r['sid'])?'<a href=' . url('code/'.$r['sid']) . '>':'') .$languages[$r['language']] . (show_code_access($r['sid'])?'</a>':'') .
 			 '","' . $r['code_length'] . 'b' . 
 			 '","' . date('Y-m-d h:m:s',$r['in_date']) . 
 			 '"]';
@@ -247,6 +245,7 @@ function oj_status_ajax($pid=0,$s_result=0,$user=0,$s_language=0)
 // server side processing:
 function oj_problem_status($node=null)
 {
+	$pid = $node->field_pid['0']['value'];
 	$head=array
 	(
 		array('data' => 'Run ID'),
@@ -291,16 +290,15 @@ function oj_problem_status($node=null)
             'sCookiePrefix' => 'pl_',
             'bProcessing' => true,
             'bServerSide' => true,
-            'sAjaxSource' => '?q=oj_problem_status.ajax/'.$node->field_pid['0']['value'],
+            'sAjaxSource' => '?q=oj_problem_status.ajax/'.$pid,
             'aoColumns' => $colwidths,
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
-			'iDisplayLength'=>50,
-			'aLengthMenu'=>array(array(25, 50, 100, 200),array('25', '50', '100', '200')),
+			'iDisplayLength'=>20,
+			'aLengthMenu'=>array(array(10, 20, 50, 100),array('10', '20', '50', '100')),
         )
     );
 	$params['datatable_options']['aaSorting']=array(array(3,'asc'),array(2,'asc'),array(5,'asc'),array(1,'desc'));
-	//debug($params);
 	// script to initialize field seach box events
 	
 	$script=<<<SCR
@@ -315,12 +313,16 @@ $(document).ready(function()
 } );
 SCR;
 	drupal_add_js($script,'inline');
-	//drupal_set_html_head("<META HTTP-EQUIV=Refresh content=".variable_get('status_refresh_time',60).">");
 	
 	# add the themeroller widget set (bJQueryUI=true)
 	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
 	drupal_add_css(drupal_get_path('module','datatables').'/theme/css/start/jquery-ui-1.8.17.custom.css');
-	
+	$path = drupal_get_path('module','oj').'/misc/js/dist/';
+	drupal_add_js($path.'jquery.min.js');
+	drupal_add_js($path.'jquery.jqplot.min.js');
+	drupal_add_js($path.'plugins/jqplot.pieRenderer.min.js');
+	drupal_add_js($path.'plugins/jqplot.donutRenderer.min.js');
+	drupal_add_css($path.'jquery.jqplot.min.css');
 	$inputboxes='<table style="border:0px;background-color:#fedc6b; float:right">
                 <tr>
 				<td>
@@ -330,39 +332,81 @@ SCR;
 				<option value=1>GCC</option>
 				<option value=2>Java</option>
 				<option value=3>Pascal</option>
-				<option value=4>Masm32</option>
 				</select>
 				</td>
 				</tr>
 				</table>
 				';
-	return $inputboxes . theme_datatable($head,$dummy_row,$params);
+	
+	$item = db_fetch_object(db_query("SELECT field_submit_value,field_accepted_value,
+				field_submit_user_value,field_solved_value
+				FROM {content_type_problem} WHERE field_pid_value=%d",$pid));
+	$submit = $item->field_submit_value;
+	$accepted = $item->field_accepted_value;
+	$submit_user = $item->field_submit_user_value;
+	$solved = $item->field_solved_value;
+	$scr = "<center><div id=\"chart1\" style=\"height:330px; width:600px;\"></div></center>
+			<script language='javascript'>
+			$(document).ready(function(){
+			  var data = [ ['Total Submissions $submit',0],
+			  ['Users (Submitted) $submit_user',0],['Users (Solved) $solved',0],
+			";
+	$items =db_query("SELECT result,COUNT(*) as sum FROM {solution} WHERE pid=%d GROUP BY result",$pid);
+	$i = 0;
+	while($item =  db_fetch_object($items))
+	{
+		$result = getResultDescript($item->result);
+		$scr .= "['<a href=\'status?pid=$pid&result={$item->result}\'>$result</a>\t{$item->sum}',{$item->sum}],";
+		$i++;
+	}
+	//seriesColors: [ \"red\", \"#ff03fa\", \"#ff9900\", \"#0692ff\", \"#000000\", \"#bb338f\", 
+    //   \"#999999\", \"#1e9e00\", \"#d8b83f\", \"#ff5800\", \"#0085cc\"],
+	$scr .= "
+			  ];
+			  var plot1 = jQuery.jqplot ('chart1', [data], 
+				{ 
+					title: 'Statistics',
+					seriesColors: [ \"#4bb2c5\", \"#c5b47f\", \"#EAA228\", \"#579575\", \"#839557\", \"#958c12\", 
+        \"#953579\", \"#4b5de4\", \"#d8b83f\", \"#ff5800\", \"#0085cc\"],
+					seriesDefaults: {
+					// Make this a pie chart.
+					renderer: jQuery.jqplot.PieRenderer, 
+					rendererOptions: {
+					  // Put data labels on the pie slices.
+					  // By default, labels show the percentage of the slice.
+					  showDataLabels: true
+					}
+				  }, 
+				  legend: { show:true, location: 'e' }
+				}
+			  );
+			});
+			</script>
+			";
+	//debug($scr);
+	return $scr.$inputboxes . theme_datatable($head,$dummy_row,$params);
 }
 
 function oj_problem_status_ajax($pid=0)
 {
-	
 	$lim_off=db_escape_string($_GET['iDisplayStart']);
 	$lim_rowc=db_escape_string($_GET['iDisplayLength']);
-    //debug($_GET);
 	
 	$allrecord=db_result(db_query("SELECT COUNT(*) FROM {solution} WHERE pid=%d",$pid));
 	$sql="SELECT SQL_CALC_FOUND_ROWS s.sid,u.name,s.uid,s.pid,s.result,s.memory,s.time,s.language,s.code_length,s.in_date FROM {solution} s LEFT JOIN {users} u ON u.uid=s.uid WHERE 1";
 	
 	$sql.=" AND s.pid=$pid AND s.result=0";
-      // NOTE: use double %, because drupal printf()s it before sending to mysql...
-	//if($user!=null)
-	//	$_GET['sSearch_1'] = $user;
+    // NOTE: use double %, because drupal printf()s it before sending to mysql...
+	
 	if (!empty($_GET['sSearch_1']))
         $sql.=" AND u.name LIKE '" . $_GET['sSearch_1']  . "%%' ";
+	
     if (!empty($_GET['sSearch_2']))
 		$sql.=" AND  s.pid = " . $_GET['sSearch_2'];
-   // if($s_result!=-1)
-	//	$_GET['sSearch_3'] = $s_result;
+	
     if ($_GET['sSearch_3']!=null)
 		$sql.=" AND  s.result = " . $_GET['sSearch_3'];
-	//if($s_language!=-1)
-	//	$_GET['sSearch_6']=$s_language;
+	
 	if ($_GET['sSearch_6']!=null)
 		$sql.=" AND  s.language = " . $_GET['sSearch_6'];
     // because of condition listing, one odering is always needed: based on nid
@@ -391,7 +435,7 @@ function oj_problem_status_ajax($pid=0)
 			}
         }
     }
-     
+    
 	//if($pid!=null)
 	//	$sqlorderby.= $ordercomma . "s.time,s.memory,s.code_length"; 
     if(!empty($sqlorderby))
@@ -399,25 +443,11 @@ function oj_problem_status_ajax($pid=0)
     
     # limit is simply based on user choice
     $sql.=" LIMIT $lim_off, $lim_rowc";
-	//debug($sql);
     // Query that mess finally!
     $result=db_query($sql);
-	
-    $language = array('G++','GCC','JAVA','Pascal','Masm32');
-	$result_type = array
-	(
-		0 => "AC",
-		1 => "PE",
-		2 => "TLE",
-		3 => "MLE",
-		4 => "WA",
-		5 => "RE",
-		6 => "OLE",
-		7 => "CE",
-		98 => "System Error",
-		99 => "Validate Error",
-		10000 => "Waiting"
-	);
+	$language = oj_languages(TRUE);
+    //$language = array('G++','GCC','JAVA','Pascal','Masm32');
+	$result_type =oj_get_status_result();
     // Query the rows counted without the limit
     $filteredrec=db_result(db_query("SELECT FOUND_ROWS()"));
 	
@@ -453,34 +483,6 @@ function oj_problem_status_ajax($pid=0)
     print ']}';
 }
 
-function getResultDescript($i)
-{
-	if ($i == 0)
-		return "<font color=red><b>Accepted</b></font>";
-	if ($i == 7)
-		return "<font color=#1e9e00>Compile Error</font>";
-	if ($i == 2)
-		return "<font color=#ff9900>Time Limit Exceed</font>";
-	if ($i == 3)
-		return "<font color=#0692ff>Memory Limit Exceed</font>";
-	if ($i == 4)
-		return "<font color=#000000>Wrong Answer</font>";
-	if ($i == 5)
-		return "<font color=#bb338f>Runtime Error</font>";
-	if ($i == 6)
-		return "<font color=#999999>Output Limit Exceed</font>";
-	if ($i == 1)
-		return "<font color=#ff03fa>Presentation Error</font>";
-	if ($i == 10000)
-		return "<font color=green>Waiting</font>";
-	if ($i == 98)
-		return "<font color=black>System Error</font>";
-	if ($i == 99)
-		return "Validate Error";
-	else
-		return "Other";
-}
-
 function import_solution($p1=1000,$p2=1099)
 {
 	if($p1<0||$p2<0||$p1>$p2)
@@ -509,7 +511,7 @@ function import_solution($p1=1000,$p2=1099)
 	$num = 0;
 	while($solution = db_fetch_object($result))
 	{
-		$items=db_query("SELECT sid FROM {solution} WHERE sid=%d",$solution->solution_id);
+		$items=db_query("SELECT sid FROM {solution} WHERE pid=%d AND uid=%d AND in_date=%d",$solution->problem_id,$solution->user_id,$solution->in_date);
 		if($item = db_fetch_object($items))
 		{
 			if($item->sid!=null)
@@ -520,10 +522,8 @@ function import_solution($p1=1000,$p2=1099)
 		if($item = db_fetch_object($items))
 		{
 			$uid = $item->uid;
-			//debug($item);
-			//debug($solution->user_id);
 		}
-		
+		$language = array(0,1,3,2,4);
 		db_query("INSERT INTO {solution} (pid,uid,time,memory,in_date,result,language,ip,num,code_length,source,error) VALUES (%d,%d,%d,%d,%d,%d,%d,'%s',%d,%d,compress('%s'),'%s')",
 			$solution->problem_id,
 			$uid,
@@ -531,11 +531,11 @@ function import_solution($p1=1000,$p2=1099)
 			$solution->memory,
 			$solution->in_date,
 			$solution->result,
-			$solution->language,
+			$language[$solution->language],
 			$solution->ip,
 			$solution->num,
 			$solution->code_length,
-			$solution->source,
+			phpcharset($solution->source,'UTF-8'),
 			$solution->error
 			) or drupal_set_message('Insert into database error.');
 

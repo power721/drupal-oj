@@ -56,7 +56,7 @@ function oj_problem_list()
             'aoColumns' => $colwidths,
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
-			'iDisplayLength'=>50,
+			'iDisplayLength'=>25,
 			'aLengthMenu'=>array(array(25, 50, 100, 200),array('25', '50', '100', '200'))
         )
     );
@@ -171,14 +171,20 @@ function oj_problem_list_ajax()
       	}
         print $comma; $comma=",";
         $linkbeg=addslashes('<a href="' . url('problem/' . $r['field_pid_value']) . '">');
-        $linkend=addslashes('</a>');   
-        $row= '["' .$r['field_pid_value'].
-             '","' . $linkbeg . $r['title'] . $linkend .
-             '","' . $r['field_accepted_value'] .
-             '","' . $r['field_submit_value'] .
-             '","' . ($r['field_submit_value']==0?0:ceil($r['field_accepted_value']/$r['field_submit_value']*100)) .'%' . 
-             '","' . date('Y-m-d',$r['changed']) . 
-            // '","' . 'Admin' . 
+        $linkend=addslashes('</a>'); 
+		$ups = get_user_problem_status($r['field_pid_value']);
+		$path = url(drupal_get_path('module','oj').'/misc/images/');
+		$img = "";
+		if($ups==1)
+			$img = "<img title=accept src={$path}accepted.gif />";
+		else if($ups==-1)
+			$img = "<img title=wrong src={$path}wrong.gif />";
+        $row= '["'.$r['field_pid_value'].$img.
+             '","'.$linkbeg . $r['title'].$linkend.
+             '","'."<a href=".url('status')."?pid={$r['field_pid_value']}&result=0>".$r['field_accepted_value']."</a>".
+             '","'."<a href=".url('status')."?pid={$r['field_pid_value']}>".$r['field_submit_value']."</a>".
+             '","'.($r['field_submit_value']==0?0:ceil($r['field_accepted_value']/$r['field_submit_value']*100)).'%'. 
+             '","'.date('Y-m-d',$r['changed']). 
              '"]';
         print $row;
     }

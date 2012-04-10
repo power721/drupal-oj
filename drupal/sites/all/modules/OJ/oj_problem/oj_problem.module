@@ -14,19 +14,18 @@ function oj_problem_init()
 
 function oj_problem_menu()
 {
-	
 	$items['status'] = array
 	(
 		'title' => 'Status List',
 		'page callback' => 'oj_status',
-		'page arguments' => array(1,2,3,4),
+		//'page arguments' => array(1,2,3,4),
 		'access callback' => TRUE
 	);
 	
 	$items['oj_status.ajax'] = array 
 	(
 		'page callback' => 'oj_status_ajax',
-		'page arguments' => array(1,2,3,4),
+		//'page arguments' => array(1,2,3,4),
 		'type' => MENU_CALLBACK,
 		'access callback' => TRUE,
 	);
@@ -47,7 +46,7 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Submit',
 		'type' => MENU_LOCAL_TASK,
-		'weight'=>-3
+		'weight' => -3
 	);
 	$items['node/%node/status'] = array
 	(
@@ -57,7 +56,7 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Status',
 		'type' => MENU_LOCAL_TASK,
-		'weight'=>-2
+		'weight' => -2
 	);
 	$items['node/%node/discuss'] = array/*应该放在0j_message模块*/
 	(
@@ -67,7 +66,7 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Discuss',
 		'type' => MENU_LOCAL_TASK,
-		'weight'=>-1
+		'weight' => -1
 	);
 	
 	$items['problem'] = array
@@ -100,7 +99,7 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Submit',
 		'type' => MENU_LOCAL_TASK,
-		'weight'=>-3
+		'weight' => -3
 	);
 	$items['problem/%problem/status'] = array
 	(
@@ -110,7 +109,7 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Status',
 		'type' => MENU_LOCAL_TASK,
-		'weight'=>-2
+		'weight' => -2
 	);
 	$items['problem/%problem/discuss'] = array/*应该放在0j_message模块*/
 	(
@@ -120,7 +119,7 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Discuss',
 		'type' => MENU_LOCAL_TASK,
-		'weight'=>-1
+		'weight' => -1
 	);
 	$items['problem/%problem/edit'] = array
 	(
@@ -155,7 +154,7 @@ function oj_problem_menu()
 	
 	$items['status/import'] = array
 	(
-		'title' => 'Import Solutions form JudgeOnline',
+		'title' => 'Import Solutions from JudgeOnline',
 		'page callback' => 'import_solution',
 		'page arguments' => array(2,3),
         'access arguments' => array('create problem content'),
@@ -198,7 +197,7 @@ function oj_problem_theme()
 function oj_problem_form_alter(&$form, $form_state, $form_id)
 {
 	//debug($form_id,'$form_id');debug($form,'$form');debug($form_state,'$form_state');
-	if($form_id=='problem_node_form')
+	if($form_id == 'problem_node_form')
 	{
 		$form['author']['#access']='0';
 		unset($form['revision_information'],$form['comment_settings'],$form['menu'],$form['options']);
@@ -217,6 +216,7 @@ function oj_problem_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL)
 			//unset($node->field_input_path,$node->field_output_path,$node->field_solved,$node->field_submit_user);
 			//$var = parse_ini_file("C:\JudgeOnline\serverconfig.property");
 			//debug($var);
+			hook_exist('profile');
 		}
 		if($op=='view')
 		{
@@ -240,7 +240,7 @@ function oj_problem_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL)
 			if($item=db_fetch_object($items))
 			{
 				$pid=$item->pid+1;
-				if($item->pid==null)
+				if($item->pid==NULL)
 					$pid=1000;
 			}
 			else
@@ -300,7 +300,7 @@ function problem_page_edit($node)
 function problem_view_access($node)
 {
 	global $user;
-	if($user->uid==1||$user->roles['4']!=null||$user->roles['5']!=null)
+	if($user->uid==1||$user->roles['4']!=NULL||$user->roles['5']!=NULL)
 		return true;
 	if($node->status!=1)
 		return false;
@@ -318,12 +318,12 @@ function get_previous_problem($pid)
 {
 	global $user;
 	$query = "SELECT field_pid_value FROM {content_type_problem} p 
-	LEFT JOIN {node} n ON n.nid=p.nid WHERE field_pid_value<%d ";
-	if(!($user->uid==1||$user->roles['4']!=null||$user->roles['5']!=null))
+	LEFT JOIN {node} n ON n.nid=p.nid WHERE field_pid_value<%d";
+	if(!($user->uid == 1 || $user->roles['4'] != NULL || $user->roles['5'] != NULL))
 		$query .= " AND status=1";
 	$query .= " ORDER BY field_pid_value desc LIMIT 1";
 	$item = db_fetch_object(db_query($query,$pid));
-	if($item->field_pid_value!=null)
+	if($item->field_pid_value != NULL)
 		$pid = $item->field_pid_value;
 	return "<a href=".url('problem/'.$pid)."><&lt;Previous</a>";
 }
@@ -332,20 +332,34 @@ function get_next_problem($pid)
 {
 	global $user;
 	$query = "SELECT field_pid_value FROM {content_type_problem} p 
-	LEFT JOIN {node} n ON n.nid=p.nid WHERE field_pid_value>%d ";
-	if(!($user->uid==1||$user->roles['4']!=null||$user->roles['5']!=null))
+	LEFT JOIN {node} n ON n.nid=p.nid WHERE field_pid_value>%d";
+	if(!($user->uid == 1 || $user->roles['4'] != NULL || $user->roles['5'] != NULL))
 		$query .= " AND status=1";
 	$query .= " LIMIT 1";
 	$item = db_fetch_object(db_query($query,$pid));
-	if($item->field_pid_value!=null)
+	if($item->field_pid_value != NULL)
 		$pid = $item->field_pid_value;
 	return "<a href=".url('problem/'.$pid).">Next>></a>";
 }
 
+function get_user_problem_status($pid)
+{
+	global $user;
+	if(!$user->uid)
+		return 0;
+	$item = db_fetch_object(db_query("SELECT MIN(result) AS result FROM {solution} WHERE uid=%d AND pid=%d",$user->uid,$pid));
+	
+	if($item->result == NULL)
+		return 0;
+	if($item->result == 0)
+		return 1;
+	return -1;
+}
+
 function data_files(&$node)
 {
-	$items=db_query("SELECT field_pid_value AS pid FROM {content_type_problem} WHERE nid=%d",$node->nid);
-	if($item=db_fetch_object($items))
+	$items = db_query("SELECT field_pid_value AS pid FROM {content_type_problem} WHERE nid=%d",$node->nid);
+	if($item = db_fetch_object($items))
 	{
 		$pattern = $item->pid;
 	}

@@ -73,14 +73,20 @@
 
   <center>
   <p align=center>
+  <?php 
+	$result = get_user_problem_status($node->field_pid[0]['value']);
+	$path = url(drupal_get_path('module','oj').'/misc/images/');
+	if($result==1) print "<img title=accept src=".$path."accepted.gif />";
+	else if($result==-1) print "<img title=wrong src=".$path."wrong.gif />";
+  ?>
   <?php print $node->field_pid[0]['value'] ?>:
   
  <a href=<?php print url('problem/'.$node->field_pid[0]['value']) ?>><font color=blue><?php print $node->title ?></font></a>
  <br>
  <font color=blue>Time Limit</font>:<?php print $node->field_time[0]['value'] ?>MS
  <font color=blue>Memory Limit</font>:<?php print $node->field_memory[0]['value'] ?>K<br>
- <font color=red>Total Submit</font>:<a href=<?php print url('status/'.$node->field_pid[0]['value']) ?>><?php print $node->field_submit[0]['value'] ?></a>
- <font color=red>Accepted</font>:<a href=<?php print url('status/'.$node->field_pid[0]['value'].'/1') ?>><?php print $node->field_accepted[0]['value'] ?></a><br>
+ <font color=red>Total Submit</font>:<a href=<?php print url('status').'?pid='.$node->field_pid[0]['value'] ?>><?php print $node->field_submit[0]['value'] ?></a>
+ <font color=red>Accepted</font>:<a href=<?php print url('status').'?pid='.$node->field_pid[0]['value'].'&result=0' ?>><?php print $node->field_accepted[0]['value'] ?></a><br>
  <?php if($node->field_ctime[0]['value']!=30000): ?>
  <font color=green>Case Time Limit:<?php print $node->field_ctime[0]['value'] ?>MS</font><br>
  <?php endif;?>
@@ -120,7 +126,7 @@
   Sample Input
   </legend>
     <div class="field-items problem">
-	<pre><?php print $node->field_sinput[0]['value'] ?></pre>
+	<?php print oj_check_markup($node->field_sinput[0]['value'],$node->field_sinput[0]['format']);?>
 	</div>
    </fieldset>
    
@@ -129,7 +135,7 @@
   Sample Output
   </legend>
     <div class="field-items problem">
-	<pre><?php print $node->field_soutput[0]['value'] ?></pre>
+	<?php print oj_check_markup($node->field_soutput[0]['value'],$node->field_soutput[0]['format']);?>
 	</div>
    </fieldset>
    

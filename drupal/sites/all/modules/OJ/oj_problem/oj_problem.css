@@ -30,9 +30,14 @@
 {
 	color:blue;
 }
-th.ui-state-default
+th.ui-state-default,span.ui-icon,#datatable-1,.DataTables_sort_wrapper
 {
 	align:center;
+	text-align:center;
+}
+td.sorting_1
+{
+	text-align:left;
 }
 .field-items pre
 {
@@ -53,4 +58,21 @@ th.ui-state-default
 .problem p
 {
 	margin:0.5em;
+}
+.user_info a:link {
+	text-decoration:none;
+	color:blue;
+}
+.user_info a:visited {
+	text-decoration:none;
+	color:#00C;
+}
+.user_info a:hover {
+	background-color:#DFE1E3;
+}
+.user_info a:active {
+	text-decoration:none;
+}
+.SyntaxHighlighter table { 
+	margin: 1px 0 !important;
 }

@@ -12,12 +12,23 @@ function oj_user_menu()
 		'access callback' => TRUE
 	);
 	
-	$items['oj_user_list.ajax'] = array (
-     'page callback' => 'oj_user_list_ajax',
-     'type' => MENU_CALLBACK,
-		 'access callback' => TRUE,
-		);
+	$items['oj_user_list.ajax'] = array
+	(
+		'page callback' => 'oj_user_list_ajax',
+		'type' => MENU_CALLBACK,
+		'access callback' => TRUE,
+	);
 	
+	$items['user/%user/status'] = array
+	(
+		'title' => 'Status',
+		'page callback' => 'oj_user_info',
+		'page arguments' => array(1),
+		'access callback' => TRUE,
+		'type' => MENU_LOCAL_TASK,
+		'weight' => -1
+	);
+
 	$items['user/import'] = array
 	(
 		'title' => 'Import users form JudgeOnline',
@@ -47,40 +58,43 @@ function oj_user_user($op, &$edit, &$account, $category = NULL)
 		break;
 		case 'insert':oj_user_insert($edit, $account, $category);variable_del('oj_user_register');//debug($edit,'$edit');debug($account,'$account');
 		break;
-		case 'login':$result=db_query('SELECT * FROM {profile_values} WHERE fid=3 AND uid=%d',$account->uid);
-		if($item=db_fetch_object($result))
-			db_query('UPDATE {profile_values} SET value=\'%s\' WHERE fid=3 AND uid=%d',$_SERVER['REMOTE_ADDR'],$account->uid);
+		case 'login':$result = db_query('SELECT * FROM {profile_values} WHERE fid=3 AND uid=%d',$account->uid);
+		if($item = db_fetch_object($result))
+			db_query("UPDATE {profile_values} SET value='%s' WHERE fid=3 AND uid=%d",$_SERVER['REMOTE_ADDR'],$account->uid);
 		else
-			db_query('INSERT INTO {profile_values} (fid,uid,value) VALUES (3,%d,\'%s\')',$account->uid,$_SERVER['REMOTE_ADDR']);
-		if($account->uid==1||$account->roles['5']!=null)
+			db_query("INSERT INTO {profile_values} (fid,uid,value) VALUES (3,%d,'%s')",$account->uid,$_SERVER['REMOTE_ADDR']);
+		if($account->uid == 1||$account->roles['5'] != null)
 			$_SESSION['IsAuthorized'] = TRUE;
 		break;
-		case 'logout':drupal_goto($_SERVER['HTTP_REFERER']);$_SESSION['IsAuthorized'] = FALSE;
+		case 'logout':$_SESSION['IsAuthorized'] = FALSE;drupal_goto($_SERVER['HTTP_REFERER']);
 		break;
 		case 'view':global $user;
-		date_default_timezone_set('Asia/Chongqing');
-		$account->content['Basic']['profile_time']=array(
-			'#type'=>'user_profile_item',
-			'#weight'=>'21',
-			'#title'=>'Last Loginned Time',
-			'#value'=>date("Y-m-d H:i:s",$account->login),
-			'#attributes'=>array('class'=>'profile-profile_time')
-			);
-		if($user->uid==$account->uid||user_access('access administration pages'))
+		oj_user_info($account);
+		//date_default_timezone_set('Asia/Chongqing');
+		$account->content['Basic']['profile_time'] = array
+		(
+			'#type' => 'user_profile_item',
+			'#weight' => '21',
+			'#title' => 'Last Loginned Time',
+			'#value' => oj_date($account->login),
+			'#attributes' => array('class' => 'profile-profile_time')
+		);
+		if($user->uid == $account->uid || user_access('access administration pages'))
 		{
-			$account->content['Basic']['profile_ip']=array(
-				'#type'=>'user_profile_item',
-				'#weight'=>'20',
-				'#title'=>'Last Loginned IP',
-				'#value'=>$account->profile_ip,
-				'#attributes'=>array('class'=>'profile-profile_ip')
-				);
+			$account->content['Basic']['profile_ip'] = array
+			(
+				'#type' => 'user_profile_item',
+				'#weight' => '20',
+				'#title' => 'Last Loginned IP',
+				'#value' => $account->profile_ip,
+				'#attributes' => array('class' => 'profile-profile_ip')
+			);
 		}
 		break;
 		case 'validate':
-		if($edit['profile_qq']!=NULL&&!check_qq($edit['profile_qq']))
+		if($edit['profile_qq'] != NULL && !check_qq($edit['profile_qq']))
 		{
-			form_set_error(QQ,"The QQ number is Invalid.");
+			form_set_error(profile_qq,"The QQ number is Invalid.");
 		}
 		break;
 	}
@@ -93,7 +107,7 @@ function oj_user_user($op, &$edit, &$account, $category = NULL)
 function oj_user_form_alter(&$form, $form_state, $form_id)
 {
 	//debug($form,'$form');debug($form_state,'$form_state');debug($form_id,'$form_id');
-	if($form_id=='user_login'||$form_id=='user_login_block')
+	if($form_id == 'user_login'||$form_id == 'user_login_block')
 	{
 		//If the user login form is being submitted, add our validation handler.
         if (isset($form_state['post']['name']))
@@ -116,9 +130,17 @@ function oj_user_form_alter(&$form, $form_state, $form_id)
             }
         }
 	}
-	if($form_id=='user_register')
+	if($form_id == 'user_register')
 	{
 		variable_set('oj_user_register',TRUE);
+	}
+	if($form_id == 'user_profile_form')
+	{
+		$form['System']['profile_solved']['#attributes'] = array('readonly' => 'true');
+		$form['System']['profile_submissions']['#attributes'] = array('readonly' => 'true');
+		$form['System']['profile_volume']['#attributes'] = array('readonly' => 'true');
+		$form['System']['profile_ip']['#attributes'] = array('readonly' => 'true');
+		$form['account']['name']['#attributes'] = array('readonly' => 'true');
 	}
 }
 /**
@@ -135,8 +157,8 @@ function oj_user_login_validate($form, &$form_state)
     // Call our custom authentication function.
     if (!user_authenticate($form_state['values']))
 	{
-		$result=db_query("SELECT uid FROM {users} WHERE name='%s'",$form_state['values']['name']);
-		if($item=db_fetch_object($result))//just for new user
+		$result = db_query("SELECT uid FROM {users} WHERE name='%s'",$form_state['values']['name']);
+		if($item = db_fetch_object($result))//just for new user
 			if($item)
 			{
 				form_set_error('name', t('Unrecognized username.'));
@@ -167,8 +189,8 @@ function oj_user_authenticate($form_values)
 	//mysql_connect('localhost','root','123456');
 	//mysql_select_db('JudgeOnline');
 	db_set_active('JudgeOnline');
-	$query="SELECT * FROM users WHERE user_id='$username' AND password=ENCODE('$password','$encode') AND UPPER(defunct) = 'N'";
-	$result=db_query($query);
+	$query = "SELECT * FROM users WHERE user_id='%s' AND password=ENCODE('%s','%s') AND UPPER(defunct) = 'N'";
+	$result = db_query($query,$username,$password,$encode);
 	db_set_active('default');
 	//debug($query);debug($result);
     if ($user = db_fetch_object($result))
@@ -240,19 +262,19 @@ function oj_user_insert(&$edit, &$account, $category)
 	{
 		return;
 	}
-	$query="SELECT rightstr FROM privilege WHERE user_id='%s' AND UPPER(defunct) = 'N'";
-	$result=db_query($query,$username);
+	$query = "SELECT rightstr FROM privilege WHERE user_id='%s' AND UPPER(defunct) = 'N'";
+	$result = db_query($query,$username);
 	db_set_active('default');
 	while ($right = db_fetch_object($result))
 	{
 		switch($right->rightstr)
 		{
-			case 'source_browser':$edit['roles']['3']=3;
+			case 'source_browser':$edit['roles']['3'] = 3;
 			break;
-			case 'member':$edit['roles']['4']=4;
+			case 'member':$edit['roles']['4'] = 4;
 			break;
 			case 'Administrator':
-			case 'root':$edit['roles']['5']=5;
+			case 'root':$edit['roles']['5'] = 5;
 			break;
 		}
 	}
@@ -263,32 +285,200 @@ function oj_user_insert(&$edit, &$account, $category)
 	db_query("UPDATE {users} SET mail = '%s',created=%d,login=%d WHERE uid = %d", $user->email,$user->reg_time,$user->accesstime,$account->uid); 
 	//db_query("UPDATE {profile_values} SET value='%s' WHERE fid=(SELECT fid FROM {profile_fields} WHERE name='profile_nick') AND uid=%d",$user->nick,$account->uid);
 	//db_query("UPDATE {profile_values} SET value='%s' WHERE fid=(SELECT fid FROM {profile_fields} WHERE name='profile_school') AND uid=%d",$user->school,$account->uid);
-	$edit['profile_nick']=phpcharset($user->nick,'UTF-8');
-	$edit['profile_school']=phpcharset($user->school,'UTF-8');
-	$edit['profile_qq']=$user->qq;
-	$edit['profile_language']=$language[$user->language];
-	$edit['profile_share']=$user->share;
-	$edit['profile_ip']=$user->ip;
-	$edit['profile_volume']=$user->volume;
-	$edit['profile_solved']=$user->solved;
-	$edit['profile_submissions']=$user->submit;
+	$edit['profile_nick'] = phpcharset($user->nick,'UTF-8');
+	$edit['profile_school'] = phpcharset($user->school,'UTF-8');
+	$edit['profile_qq'] = $user->qq;
+	$edit['profile_language'] = $language[$user->language];
+	$edit['profile_share'] = $user->share;
+	$edit['profile_ip'] = $user->ip;
+	$edit['profile_volume'] = $user->volume;
+	$edit['profile_solved'] = $user->solved;
+	$edit['profile_submissions'] = $user->submit;
 	profile_save_profile($edit, $account, $category, TRUE);
 	db_query("INSERT INTO {profile_values} (fid, uid, value) VALUES (%d, %d, '%s')", 4, $account->uid, $user->solved);
 	db_query("INSERT INTO {profile_values} (fid, uid, value) VALUES (%d, %d, '%s')", 5, $account->uid, $user->submit);
 }
+
 function check_qq($qq)
 {
-	if(preg_match('$[1-9][0-9]{4,9}$',$qq))
+	if(preg_match('/^[1-9][0-9]{4,9}$/',$qq))
 		return TRUE;
 	return FALSE;
 }
 
-function oj_user_menu_alter()
+/*
+*	show user's problem informations
+*/
+function oj_user_info($user)
 {
-	return $items;
+	$data = unserialize($user->data);
+	$login_time = oj_date($user->login);
+	$status_url = url('status');
+	$user_url = url('user');
+	$search_user = url('search/user');
+	$bg_url = drupal_get_path('module','oj').'/misc/images/bg.jpg';
+	if($user->profile_qq != NULL)
+	{
+		$qq_url = "<a target='_blank' href='http://wpa.qq.com/msgrd?v=3&uin={$user->profile_qq}&site=qq&menu=yes'>
+			<img border=0 src='http://wpa.qq.com/pa?p=2:{$user->profile_qq}:41 &r=0.5409521391365766' 
+			alt='Contact me!' title='Contact me!'></a>";
+	}
+	$items = db_query("SELECT pid FROM {solution} WHERE uid=%d AND result=0 GROUP BY pid ORDER BY pid",$user->uid);
+	while($item = db_fetch_object($items))
+	{
+		$problem_url .= "<a href=$status_url?pid={$item->pid}&uid={$user->uid}&result=0>{$item->pid}</a>\n";
+	}
+	$sql="SELECT * FROM
+		(SELECT uid,@rank:=@rank+1 AS rank FROM 
+			(SELECT u.uid,CAST(pa.value AS SIGNED) AS solved,CAST(ps.value AS SIGNED) AS submissions FROM {users} u 
+			LEFT JOIN {profile_values} pn ON u.uid=pn.uid AND pn.fid=1 
+			LEFT JOIN {profile_values} pa ON u.uid=pa.uid AND pa.fid=4 
+			LEFT JOIN {profile_values} ps ON u.uid=ps.uid AND ps.fid=5 WHERE status=1)t,
+			(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt WHERE uid=%d";
+	$item = db_fetch_object(db_query($sql,$user->uid));
+	$rank = $item->rank;
+	
+	$sql="SELECT * FROM
+		(SELECT uid,name,nick,solved,submissions,@rank:=@rank+1 AS rank FROM 
+		(SELECT u.uid,u.name,pn.value AS nick,CAST(pa.value AS SIGNED) AS solved,
+		CAST(ps.value AS SIGNED) AS submissions FROM users u 
+		LEFT JOIN profile_values pn ON u.uid=pn.uid AND pn.fid=1 
+		LEFT JOIN profile_values pa ON u.uid=pa.uid AND pa.fid=4 
+		LEFT JOIN profile_values ps ON u.uid=ps.uid AND ps.fid=5 
+		WHERE status=1)t,(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt LIMIT %d,7";
+	$items = db_query($sql,($rank-4)<0?0:($rank-4));
+	while($item = db_fetch_object($items))
+	{
+		if ($item->rank == $rank)
+			$color = "#C0C0C0";
+		else if ($item->rank % 2 == 1)
+			$color = "#ffffff";
+		else
+			$color = "#E2E4FF";
+		$Neighbours .= "<tr align=center bgcolor=$color><td width=10%>{$item->rank}</td>
+		<td width=40%><a href=$user_url/{$item->uid}/status>{$item->name}</a></td>
+		<td width=25%>{$item->solved}</td>
+		<td width=25%>{$item->submissions}</td>
+		</tr>";
+	}
+	$output =<<<SCR
+	<center>
+		<a href=#>{$user->name}--{$user->profile_nick}</a><br/>
+		Last Loginned Time:$login_time
+		<TABLE width=80% border=1 class=user_info id=user_{$user->uid}_info style="background-image:$bg_url">
+		<tr>
+			<td align="center" valign="middle" colspan=2></td>
+			<td align="center" valign="middle" colspan=2><br>
+				<form action=usercmp method=get>Compare 
+					<input type=text size=15 name=uid1 value={$user->name}>and 
+					<input type=text size=15 name=uid2 value=>
+					<input type=submit value=GO>
+				</form>
+			</td>
+		</tr>
+		<tr>
+			<td width=15% align=left>Rank:</td>
+			<td align=center width=25%>$rank</td>
+			<td width=60% align=center>Solved Problems List</td>
+		</tr>
+		<tr>
+			<td width=15% align=left>Solved:</td>
+			<td align=center width=25%><a href=$status_url?result=0&uid={$user->uid}>{$data['profile_solved']}</a></td>
+			<td width=60% align=center rowspan=5>$problem_url</td>
+		</tr>
+		<tr>
+			<td width=15% align=left>Submissions:</td>
+			<td align=center width=25%><a href=$status_url?uid={$user->uid}>{$data['profile_submissions']}</a></td>
+		</tr>
+		<tr>
+			<td width=15% align=left>School:</td>
+			<td align=center width=25%><a href=$search_user/{$user->profile_school}>{$user->profile_school}</a></td>
+		</tr>
+		<tr>
+			<td width=15% align=left>Email:</td>
+			<td align=center width=25%><a href=mailto:{$user->mail}>{$user->mail}</a></td>
+		</tr>
+		<tr>
+			<td width=15% align=left>QQ:</td>
+			<td align=center width=25%>$qq_url</td>
+		</tr>
+		</table>
+		<font size=5>Neighbours:</font><br>
+		<TABLE width=80% border=1 bordercolorlight=#E4E9EB bordercolordark=#FFFFFF style="border-collapse: collapse">
+			<tr BGCOLOR=#6589D1 align=center style="color:#fff;">
+				<td width=10%>Rank</td>
+				<td width=40%>User</td>
+				<td width=25%>Solved</td>
+				<td width=25%>Submissions</td>
+			</tr>
+			$Neighbours
+		</table>
+	</center>
+SCR;
+	return $output;
 }
 
-function oj_user_info($uid)
+
+function oj_user_neighbours($rank)
 {
+	drupal_add_css(drupal_get_path('module', 'datatables') . 'dataTables/media/css/demo_table_jui.css');
+	drupal_add_css(drupal_get_path('module', 'datatables') . '/theme/css/redmond/jquery-ui-1.8.17.custom.css');
+	$head = array
+	(
+        array('data' => 'Rank'),
+        array('data' => 'User ID'),
+        array('data' => 'Nick Name'),
+        array('data' => 'Solved'),
+        array('data' => 'Submit'),
+        array('data' => 'Ratio'),
+    );
 	
+	$sql="SELECT * FROM
+		(SELECT uid,name,nick,solved,submissions,@rank:=@rank+1 AS rank FROM 
+		(SELECT u.uid,u.name,pn.value AS nick,CAST(pa.value AS SIGNED) AS solved,
+		CAST(ps.value AS SIGNED) AS submissions FROM users u 
+		LEFT JOIN profile_values pn ON u.uid=pn.uid AND pn.fid=1 
+		LEFT JOIN profile_values pa ON u.uid=pa.uid AND pa.fid=4 
+		LEFT JOIN profile_values ps ON u.uid=ps.uid AND ps.fid=5 
+		WHERE status=1)t,(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt LIMIT %d,7";
+	$items = db_query($sql,($rank-4)<0?0:($rank-4));
+	while($item = db_fetch_object($items))
+	{
+		$dummy_row[] = array
+		(
+			array('data' => $item->rank),
+			array('data' => "<a href=".url("user/".$item->uid."/status").">{$item->name}</a>"),
+			array('data' => $item->nick),
+			array('data' => $item->solved),
+			array('data' => $item->submissions),
+			array('data' => $item->solved/$item->submissions),
+		);
+	}
+	
+	$colwidths = array
+	(
+        array('bSortable'=>false,'sWidth'=>'6%'),
+        array('bSortable'=>false,'sWidth'=>'24%'),
+        array('bSortable'=>false,'sWidth'=>'40%'),
+        array('bSortable'=>false,'sWidth'=>'10%'),
+        array('bSortable'=>false,'sWidth'=>'10%'),
+        array('bSortable'=>false,'sWidth'=>'10%'),
+    );
+	
+	$params = array
+	(
+		'datatable_options' => array
+		(
+			'sPaginationType' => 'full_numbers',
+            'sDom' => '<"H"<"clear">>rt<"F"<"clear">><"clear">',
+            'sCookiePrefix' => 'ul_',
+            'bProcessing' => false,
+            'bServerSide' => true,
+            'aoColumns' => $colwidths,
+            'bJQueryUI' => true,
+			'bAutoWidth' => false,
+        )
+    );
+	
+	return theme_datatable($head,$dummy_row,$params);
 }
