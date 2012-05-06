@@ -10,9 +10,10 @@ function import_user($p1=0,$p2=100)
 	}
 	$start_time = time();
 	
+	set_time_limit(0);
 	$lim_off=db_escape_string($p1);
 	$lim_row=db_escape_string($p2);
-	if($lim_off==null)
+	if($lim_off==NULL)
 		$lim_off = 0;
 	
 	db_set_active('JudgeOnline');
@@ -31,7 +32,7 @@ function import_user($p1=0,$p2=100)
 		$items=db_query("SELECT uid FROM {users} WHERE name='%s'",$user->user_id);
 		if($item = db_fetch_object($items))
 		{
-			if($item->uid!=null)
+			if($item->uid!=NULL)
 				continue;
 		}
 		$name = $user->user_id;
@@ -64,14 +65,6 @@ function reset_user()
 	
 	drupal_set_message("You had delete all users.");
 	drupal_goto('user/list');
-}
-
-function reset_user_access()
-{
-	global $user;
-	if($user->uid==1)
-		return true;
-	return false;
 }
 
 function oj_user_external_register($name, $pass, $module) 

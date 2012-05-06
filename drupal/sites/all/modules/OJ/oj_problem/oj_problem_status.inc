@@ -48,9 +48,9 @@ function oj_status()
 		$url .= "&uid=".$_GET['uid'];
 	if($_GET['pid'])
 		$url .= "&pid=".$_GET['pid'];
-	if(!is_null($_GET['result']))
+	if(isset($_GET['result']))
 		$url .= "&result=".$_GET['result'];
-	if(!is_null($_GET['language']))
+	if(isset($_GET['language']))
 		$url .= "&language=".$_GET['language'];
 	$params=array
 	(
@@ -117,13 +117,29 @@ SCR;
 	drupal_add_css(drupal_get_path('module','datatables').'/theme/css/start/jquery-ui-1.8.17.custom.css');
 	global $user;
 	$inputboxes = '<table style="border:0px;background-color:#fedc6b; float:left">
-                <tr><td>Filter User:</td><td><input id="search-user" type=text size=15></td>
-                <td>Problem ID:</td><td><input id="search-pid" type=text size=10></td>
-				<td>Result:<select size=1 id=search-result><option value=\'\'  selected>All</option><option value=0>Accepted</option><option value=1>Presentation Error</option><option value=2>Time Limit Exceeded</option><option value=3>Memory Limit Exceeded</option><option value=4>Wrong Answer</option><option value=5>Runtime Error</option><option value=6>Output Limit Exceeded</option><option value=7>Compile Error</option>';
-	if($user->uid==1||$user->roles['5']!=null)
+                <tr><td>Filter User:</td><td><input id="search-user" type=text size=15 value='.$_GET['uid'].'></td>
+                <td>Problem ID:</td><td><input id="search-pid" type=text size=10 value='.$_GET['pid'].'></td>
+				<td>Result:<select size=1 id=search-result><option value=>All</option><option value=0 '.(isset($_GET['result'])&&$_GET['result']==0?'selected':'').'>Accepted</option><option value=1>Presentation Error</option><option value=2>Time Limit Exceeded</option><option value=3>Memory Limit Exceeded</option><option value=4>Wrong Answer</option><option value=5>Runtime Error</option><option value=6>Output Limit Exceeded</option><option value=7>Compile Error</option>';
+	if($user->uid==1||$user->roles['5']!=NULL)
 		$inputboxes .= '<option value=98>System Error</option><option value=99>Validate Error</option><option value=100>Data Error</option><option value=10000>Waiting</option>';
+	$results = array
+	(
+		'' 	=> 'All',
+		0 	=> 'Accepte',
+		1 	=> 'Presentation Error',
+		2 	=> 'Time Limit Exceeded',
+		3 	=> 'Memory Limit Exceeded',
+		4 	=> 'Wrong Answer',
+		5 	=> 'Runtime Error',
+		6	=> 'Output Limit Exceeded',
+		7 	=> 'Compile Error',
+		98 	=> 'System Erro',
+		99 	=> 'Validate Erro',
+		100 => 'Data Error',
+		1000 => 'Waiting',
+	);
 	$inputboxes .= '</select></td>
-				<td>Language:<select size=1 id=search-language><option value=\'\'  selected>All</option><option value=0>G++</option><option value=1>GCC</option><option value=2>Java</option><option value=3>Pascal</option></select></td></tr>
+				<td>Language:<select size=1 id=search-language><option value=>All</option><option value=0>G++</option><option value=1>GCC</option><option value=2>Java</option><option value=3>Pascal</option></select></td></tr>
 				</table>
 				<input id="search_button" type="submit" value="Search">';
 			
@@ -152,20 +168,20 @@ function oj_status_ajax()
 	else if($_GET['pid'])
 		$pid = $_GET['pid'];
     if(!empty($pid))
-		$sql.=" AND  s.pid = " . $pid;
+		$sql.=" AND  s.pid LIKE '" . $pid . "%%'";
 	
-	if($_GET['sSearch_3']!=null)
+	if($_GET['sSearch_3']!=NULL)
 		$result = $_GET['sSearch_3'];
-	else if(!is_null($_GET['result']))
+	else if(!is_NULL($_GET['result']))
 		$result = $_GET['result'];
-    if(!is_null($result))
+    if(!is_NULL($result))
 		$sql.=" AND  s.result = " . $result;
 	
-	if($_GET['sSearch_6']!=null)
+	if($_GET['sSearch_6']!=NULL)
 		$language = $_GET['sSearch_6'];
-	else if(!is_null($_GET['language']))
+	else if(!is_NULL($_GET['language']))
 		$language = $_GET['language'];
-	if(!is_null($language))
+	if(!is_NULL($language))
 		$sql.=" AND  s.language = " . $language;
 	
     // because of condition listing, one odering is always needed: based on nid
@@ -235,7 +251,7 @@ function oj_status_ajax()
 			 '","' . ($r['result']==0?$r['time'] . "MS":"") .
 			 '","' . (show_code_access($r['sid'])?'<a href=' . url('code/'.$r['sid']) . '>':'') .$languages[$r['language']] . (show_code_access($r['sid'])?'</a>':'') .
 			 '","' . $r['code_length'] . 'b' . 
-			 '","' . date('Y-m-d h:m:s',$r['in_date']) . 
+			 '","' . date('Y-m-d H:i:s',$r['in_date']) . 
 			 '"]';
 
         print $row;
@@ -243,7 +259,7 @@ function oj_status_ajax()
     print ']}';
 }
 // server side processing:
-function oj_problem_status($node=null)
+function oj_problem_status($node=NULL)
 {
 	$pid = $node->field_pid['0']['value'];
 	$head=array
@@ -404,10 +420,10 @@ function oj_problem_status_ajax($pid=0)
     if (!empty($_GET['sSearch_2']))
 		$sql.=" AND  s.pid = " . $_GET['sSearch_2'];
 	
-    if ($_GET['sSearch_3']!=null)
+    if ($_GET['sSearch_3']!=NULL)
 		$sql.=" AND  s.result = " . $_GET['sSearch_3'];
 	
-	if ($_GET['sSearch_6']!=null)
+	if ($_GET['sSearch_6']!=NULL)
 		$sql.=" AND  s.language = " . $_GET['sSearch_6'];
     // because of condition listing, one odering is always needed: based on nid
     // to be able to group the same notification (with just differenct conditions) together
@@ -436,7 +452,7 @@ function oj_problem_status_ajax($pid=0)
         }
     }
     
-	//if($pid!=null)
+	//if($pid!=NULL)
 	//	$sqlorderby.= $ordercomma . "s.time,s.memory,s.code_length"; 
     if(!empty($sqlorderby))
 		$sql.=$sqlorderby;
@@ -475,7 +491,7 @@ function oj_problem_status_ajax($pid=0)
 			 '","' . ($r['result']==0?$r['time'] . "MS":"") .
 			 '","' . (show_code_access($r['sid'])?'<a href=' . url('code/'.$r['sid']) . '>':'') .$language[$r['language']] . (show_code_access($r['sid'])?'</a>':'') .
 			 '","' . $r['code_length'] . 'b' . 
-			 '","' . date('Y-m-d h:m:s',$r['in_date']) . 
+			 '","' . date('Y-m-d H:i:s',$r['in_date']) . 
 			 '"]';
 
         print $row;
@@ -491,12 +507,14 @@ function import_solution($p1=1000,$p2=1099)
 		drupal_goto('status');
 	}
 	$start_time = time();
-	if($p1==null)
+	
+	set_time_limit(0);
+	if($p1==NULL)
 	{
 		$p1=1000;
 		$p2=1099;
 	}
-	if($p2==null)
+	if($p2==NULL)
 		$p2=1099;
 	
 	db_set_active('JudgeOnline');
@@ -514,7 +532,7 @@ function import_solution($p1=1000,$p2=1099)
 		$items=db_query("SELECT sid FROM {solution} WHERE pid=%d AND uid=%d AND in_date=%d",$solution->problem_id,$solution->user_id,$solution->in_date);
 		if($item = db_fetch_object($items))
 		{
-			if($item->sid!=null)
+			if($item->sid!=NULL)
 				continue;
 		}
 		$uid = 0;

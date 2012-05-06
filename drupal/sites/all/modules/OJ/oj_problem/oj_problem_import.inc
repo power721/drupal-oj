@@ -1,24 +1,26 @@
 <?php
 
-function import_problem($p1=1000,$p2=1099)
+function import_problem($p1 = 1000,$p2 = 1099)
 {
 	//debug($p1,'p1');debug($p2,'p2');
-	if($p1<0||$p2<0||$p1>$p2)
+	if($p1<0 || $p2<0 || $p1>$p2)
 	{
 		drupal_set_message("Invalid Arguments");
 		drupal_goto('problem/list');
 	}
 	$start_time = time();
-	if($p1==null)
+	
+	set_time_limit(0);
+	if($p1 == NULL)
 	{
-		$p1=1000;
-		$p2=1099;
+		$p1 = 1000;
+		$p2 = 1099;
 	}
-	if($p2==null)
-		$p2=1099;
+	if($p2 == NULL)
+		$p2 = 1099;
 	//$lim_off=db_escape_string($p1);
 	//$lim_row=db_escape_string($p2);
-	//if($lim_off==null)
+	//if($lim_off==NULL)
 	//	$lim_off = 0;
 	//debug($lim_off,'$lim_off');
 	//debug($lim_row,'$lim_row');
@@ -26,49 +28,55 @@ function import_problem($p1=1000,$p2=1099)
 	
 	db_set_active('JudgeOnline');
 	db_query("SET NAMES 'latin1'");
-	$query="SELECT *,UNIX_TIMESTAMP(in_date) AS in_date FROM problem WHERE problem_id>=%d AND problem_id<=%d ORDER BY problem_id";
-	$result=db_query($query,$p1,$p2);
+	$query = "SELECT *,UNIX_TIMESTAMP(in_date) AS in_date FROM problem WHERE problem_id>=%d AND problem_id<=%d ORDER BY problem_id";
+	$result = db_query($query,$p1,$p2);
 	//debug($result);
 	db_set_active('default');
 	$num = 0;
 	while($problem = db_fetch_object($result))
 	{
 		//debug($problem,'problem id:'.$problem->problem_id);
-		$items=db_query("SELECT nid FROM {content_type_problem} WHERE field_problem_id_value=%d",$problem->problem_id);
+		$items = db_query("SELECT nid FROM {content_type_problem} WHERE field_problem_id_value=%d",$problem->problem_id);
 		if($item = db_fetch_object($items))
 		{
-			if($item->nid!=null)
+			if($item->nid != NULL)
 				continue;
 		}
 		$node = new stdClass;
-		$node->type='problem';
+		$node->type = 'problem';
 		node_object_prepare($node);
-		$node->uid=1;
-		$node->language='';
-		$node->revision=0;
-		$node->status=$problem->defunct=='N'?1:0;
-		$node->title=phpcharset($problem->title,'UTF-8');
-		$node->changed=$problem->in_date;
-		$node->field_description['0']['value']=phpcharset($problem->description,'UTF-8');
-		$node->field_input['0']['value']=phpcharset($problem->input,'UTF-8');
-		$node->field_output['0']['value']=phpcharset($problem->output,'UTF-8');
-		$node->field_input_path['0']['value']=$problem->input_path;
-		$node->field_output_path['0']['value']=$problem->output_path;
-		$node->field_sinput['0']['value']=phpcharset($problem->sample_input,'UTF-8');
-		$node->field_soutput['0']['value']=phpcharset($problem->sample_output,'UTF-8');
-		$node->field_hint['0']['value']=phpcharset($problem->hint,'UTF-8');
-		$node->field_source['0']['value']=phpcharset($problem->source,'UTF-8');
-		$node->field_time['0']['value']=$problem->time_limit;
-		$node->field_memory['0']['value']=$problem->memory_limit;
-		$node->field_accepted['0']['value']=$problem->accepted;
-		$node->field_submit['0']['value']=$problem->submit;
-		$node->field_submit_user['0']['value']=$problem->submit_user;
-		$node->field_solved['0']['value']=$problem->solved;
-		$node->field_ctime['0']['value']=$problem->case_time_limit;
-		$node->field_problem_id['0']['value']=$problem->problem_id;
-		$node->field_view['0']['value']=$problem->view;
-		$node->field_error['0']['value']=$problem->error;
-		$node->field_problem_id['0']['value']=$problem->problem_id;
+		//$node->uid = 1;
+		//$node->language='';
+		//$node->revision=0;
+		$node->status = $problem->defunct=='N'?1:0;
+		$node->title = phpcharset($problem->title,'UTF-8');
+		$node->changed = $problem->in_date;
+		$fields = array
+		(
+			'description' 	=> 'description',
+			'input' 		=> 'input',
+			'output' 		=> 'output',
+			'input_path' 	=> 'input_path',
+			'output_path'	=> 'output_path',
+			'sinput'		=> 'sample_input',
+			'soutput' 		=> 'sample_output',
+			'hint' 			=> 'hint',
+			'source'		=> 'source',
+			'time' 			=> 'time_limit',
+			'memory' 		=> 'memory_limit',
+			'accepted'		=> 'accepted',
+			'submit' 		=> 'submit',
+			'submit_user' 	=> 'submit_user',
+			'solved' 		=> 'solved',
+			'ctime' 		=> 'case_time_limit',
+			'problem_id' 	=> 'problem_id',
+			'view' 			=> 'view',
+			'error' 		=> 'error',
+		);
+		foreach($fields as $key => $value)
+		{
+			$node->{"field_$key"}['0']['value'] = problem_text($problem->$value);
+		}
 		node_save($node);
 		$num++;
 	}
@@ -78,7 +86,7 @@ function import_problem($p1=1000,$p2=1099)
 		$msg.="s";
 	$msg.=", execution time: ".(time()-$start_time)."s.";
 	drupal_set_message($msg);
-	drupal_goto('problem/list');
+	drupal_goto('problem');
 	//drupal_goto('admin/content/node/overview');
 }
 
@@ -108,5 +116,29 @@ function reset_problem()
 	//db_query("DELETE FROM {url_alias} WHERE dst LIKE '%s%%'", 'problem');
 	
 	drupal_set_message("You had delete all problems.");
-	drupal_goto('problem/list');
+	drupal_goto('problem');
 }
+
+function problem_text($text)
+{
+	$text = phpcharset($text,'UTF-8');
+	$text = str_replace(array("\r\n", "\r"), "\n", $text);
+	$text = str_replace("\n", "<br>", $text);
+	//preg_replace("!<img src=\"(.*)\"/>!","<img src=\"/oj/\1\" />",$text);
+	//preg_replace("!<img src='(.*)'/>!","<img src='/oj/\1' />",$text);
+	//preg_replace("!<img src=(.*)/>!","<img src=/oj/\1 />",$text);
+	if(preg_match("!src=(.*)/>!",$text,$m))
+	{
+		$r = str_replace("\\","/",$m[1]);
+		$text = str_replace($m[1],$r,$text);
+	}
+	$text = str_replace("src=images", "src=/oj/images", $text);
+	$text = str_replace("src=\"images", "src=\"/oj/images", $text);
+	$text = str_replace("src='images", "src='/oj/images", $text);
+	
+	$text = str_replace("src=problem-images", "src=/oj/problem-images", $text);
+	$text = str_replace("src=\"problem-images", "src=\"/oj/problem-images", $text);
+	$text = str_replace("src='problem-images", "src='/oj/problem-images", $text);
+	return $text;
+}
+

@@ -1,0 +1,682 @@
+<?php
+
+require_once drupal_get_path('module','oj_contest').'/recent_contests.inc';
+require_once drupal_get_path('module','oj_contest').'/oj_contest_table.inc';
+require_once drupal_get_path('module','oj_contest').'/oj_contest_problem.inc';
+
+function oj_contest_menu()
+{
+	$items['contests'] = array
+	(
+		//'title' => t('Contests List'),
+		'page callback' => 'oj_contest_list',
+		//'page arguments' => array(),
+		'access callback' => TRUE,
+		//'access arguments' => array(),
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_contest_table.inc',
+	);
+	$items['oj_contest_list.ajax'] = array
+	(
+		//'title' => t('Contests List'),
+		'page callback' => 'oj_contest_list_ajax',
+		//'page arguments' => array(),
+		'access callback' => TRUE,
+		//'access arguments' => array(),
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_contest_table.inc',
+	);
+	$items['oj_contest_problem_list.ajax'] = array
+	(
+		//'title' => t('Contests List'),
+		'page callback' => 'oj_contest_problem_list_ajax',
+		'page arguments' => array(1),
+		'access callback' => TRUE,
+		//'access arguments' => array(),
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_contest_table.inc',
+	);
+	$items['contest/add'] = array
+	(
+		'title' => t('contest'),
+		'page callback' => '',
+		'page arguments' => array(),
+		'access callback' => '',
+		'access arguments' => array(),
+		//'type' => MENU_CALLBACK,
+	);
+	$items['contest/%'] = array
+	(
+		'title' => t('contest'),
+		'page callback' => 'oj_contest_show',
+		'page arguments' => array(1),
+		'access callback' => 'oj_contest_access',
+		'access arguments' => array(1),
+		'type' => MENU_CALLBACK,
+	);
+	$items['contest/%/show'] = array
+	(
+		'title' => t('View'),
+		'type' => MENU_DEFAULT_LOCAL_TASK,
+		'weight' => 0,
+	);
+	$items['contest/%/problem'] = array
+	(
+		'title' => t('Problems'),
+		'page callback' => 'oj_contest_problem',
+		'page arguments' => array(1,3),
+		'access callback' => 'oj_contest_access',
+		'access arguments' => array(1),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 1,
+	);
+	$items['contest/%/problem/%/submit'] = array
+	(
+		'title' => t('Problems'),
+		'page callback' => 'oj_contest_problem_submit',
+		'page arguments' => array(1,3),
+		'access callback' => 'oj_contest_access',
+		'access arguments' => array(1),
+		'type' => MENU_CALLBACK,
+	);
+	$items['contest/%/problem/%/status'] = array
+	(
+		'title' => t('Problems Status'),
+		'page callback' => 'oj_contest_problem',
+		'page arguments' => array(1,3),
+		'access callback' => 'oj_contest_access',
+		'access arguments' => array(1),
+		'type' => MENU_CALLBACK,
+	);
+	$items['contest/%/rank'] = array
+	(
+		'title' => t('Rank'),
+		'page callback' => 'oj_contest_ranklist',
+		'page arguments' => array(1),
+		'access callback' => 'oj_contest_access',
+		'access arguments' => array(1),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 2,
+	);
+	$items['oj_contest_rank.ajax'] = array 
+	(
+		'page callback' => 'oj_contest_rank_ajax',
+		'page arguments' => array(1),
+		'type' => MENU_CALLBACK,
+		'access callback' => TRUE,
+	);
+	
+	$items['contest/%/status'] = array
+	(
+		'title' => t('Status'),
+		'page callback' => 'oj_contest_status',
+		'page arguments' => array(1),
+		'access callback' => 'oj_contest_access',
+		'access arguments' => array(1),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 3,
+	);
+	$items['oj_contest_status.ajax'] = array 
+	(
+		'page callback' => 'oj_contest_status_ajax',
+		'page arguments' => array(1),
+		'type' => MENU_CALLBACK,
+		'access callback' => TRUE,
+	);
+	
+	$items['contest/%/statistics'] = array
+	(
+		'title' => t('Statistics'),
+		'page callback' => 'oj_contest_statistics',
+		'page arguments' => array(1),
+		'access callback' => 'oj_contest_access',
+		'access arguments' => array(1),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 4,
+	);
+	$items['contest/%/discuss'] = array
+	(
+		'title' => t('Discuss'),
+		'page callback' => 'oj_contest_discuss',
+		'page arguments' => array(1),
+		'access callback' => 'oj_contest_access',
+		'access arguments' => array(1),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 5,
+	);
+	$items['contest/%/rejudge'] = array
+	(
+		'title' => t('Rejudge'),
+		'page callback' => 'oj_contest_rejudge',
+		'page arguments' => array(1),
+		'access callback' => 'oj_contest_admin_access',
+		'access arguments' => array(1),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 6,
+	);
+	$items['contest/%/edit'] = array
+	(
+		'title' => t('Edit'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('oj_contest_edit_form',1),
+		'access callback' => 'oj_contest_admin_access',
+		'access arguments' => array(1),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 7,
+	);
+	$items['contest/%/admin'] = array
+	(
+		'title' => t('Admin'),
+		'page callback' => 'oj_contest_admin',
+		'page arguments' => array(1),
+		'access callback' => 'oj_contest_admin_access',
+		'access arguments' => array(1),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 8,
+	);
+	
+	$items['contest/%/rebuild_rank'] = array
+	(
+		'title' => t('Rebuild Rank'),
+		'page callback' => 'oj_contest_rank_table',
+		'page arguments' => array(1),
+		'access callback' => 'oj_contest_admin_access',
+		'access arguments' => array(1),
+		'type' => MENU_CALLBACK,
+	);
+	$items['recent_contests'] = array
+	(
+		'page callback' => 'recent_contests',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+		'file' => 'recent_contests.inc',
+	);
+	$items['recent_contests.ajax'] = array
+	(
+		'page callback' => 'recent_contests_ajax',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+		'file' => 'recent_contests.inc',
+	);
+	return $items;
+}
+
+function oj_contest_theme()
+{
+	return array
+	(
+		'contest_problem' => array
+		(
+			'arguments' => array('node' => NULL, 'cid' => NULL, 'num' => NULL),
+			'template' => 'contest-problem',
+		)
+	);
+}
+
+function template_preprocess_contest_problem(&$variables)
+{
+	$node = $variables['node'];
+	$cid = $variables['cid'];
+	$num = $variables['num'];
+	$variables['count'] = db_result(db_query("SELECT COUNT(*) FROM {contest_problem} WHERE cid=%d",$cid));
+	$result = get_user_problem_status($node->field_pid[0]['value'],$cid);
+	$variables['result'] = $result;
+	$path = url(drupal_get_path('module','oj').'/misc/images/');
+	if($result==1)
+		$variables['img'] = '<img title=accept src='.$path.'accepted.gif />';
+	else if($result==-1)
+		$variables['img'] = '<img title=wrong src='.$path.'wrong.gif />';
+	$title = 'Problem '.chr($num-1+ord('A')).': ';
+	if(is_admin_login())
+		$title .= '<a href='.url('problem/'.$node->field_pid[0]['value']).'>';
+
+	$title .= '<font color=blue>'.$node->title.'</font>';
+	if(is_admin_login())
+		$title .= '</a>';
+	$variables['title'] = $title;
+	$submit = db_result(db_query("SELECT COUNT(*) FROM {solution} WHERE cid=%d AND pid=%d",$cid,$node->field_pid[0]['value']));
+	$variables['submit'] = $submit;
+	$variables['submited_link'] = "<a href=".url("contest/$cid/status/")."&pid=$num".">$submit</a>";
+	
+	$accepted = db_result(db_query("SELECT COUNT(*) FROM {solution} WHERE result=0 AND cid=%d AND pid=%d",$cid,$node->field_pid[0]['value']));
+	$variables['accepted'] = $accepted;
+	$variables['accepted_link'] = "<a href=".url("contest/$cid/status/")."&pid=$num&result=0".">$accepted</a>";
+	$variables['submit_link'] = "";
+	$variables['status_link'] = "";
+}
+
+function oj_contest_access($cid)
+{
+	global $user;
+	if($user->uid==1||$user->roles['5']!=NULL)
+		return true;
+	if($item = db_fetch_object(db_query("SELECT * FROM {contests} WHERE cid=%d",$cid)))
+	{
+		$status = get_contest_status($cid);
+		if($status == 0)
+		{
+			drupal_set_message("Contest not start.");
+			return FALSE;
+		}
+		switch($item->access)
+		{
+			case 0:return TRUE;
+			case 1:	
+			case 2:return db_result(db_query("SELECT 1 FROM {contest_access} WHERE status = 1 AND cid=%d AND uid=%d",$cid,$user->uid));
+			case 3:return TRUE;
+			case 4:return TRUE;
+		}
+	}
+	return FALSE;
+}
+/*
+function oj_user_access_contest($cid)
+{
+	global $user;
+	return db_result(db_query("SELECT 1 FROM {contest_access} WHERE status = 1 AND cid=%d AND uid=%d",$cid,$user->uid));
+}
+*/
+function oj_contest_admin_access($cid)
+{
+	global $user;
+	if($user->uid==1||$user->roles['5']!=NULL)
+		return true;
+	return FALSE;
+}
+
+function oj_contest_show($cid)
+{
+	$item = db_fetch_object(db_query("SELECT * FROM {contests} WHERE cid=%d",$cid));
+	drupal_set_title("Contest $cid -- ".$item->title);
+	
+	$breadcrumb = array();
+	$breadcrumb[] = l('Home', '<front>');
+	$breadcrumb[] = l('Contests', 'contests');
+	drupal_set_breadcrumb($breadcrumb);
+	
+	date_default_timezone_set("Asia/Chongqing");
+	$start_time = date('Y-m-d H:i:s',$item->start_time);
+	$end_time = date('Y-m-d H:i:s',$item->end_time);
+	$current_time = date('Y-m-d H:i:s');
+	$access = get_contest_type($item->access);
+	$status = get_contest_status_desc($cid);
+	$account = user_load($item->uid);
+	$creator = "<a href=".url('user/'.$item->uid).">".$account->name."</a>";
+	
+	$out =<<< HTML
+	<table class=contest_view align=center>
+		<tr>
+			<td class=field>Current Time:</td><td class=contest_time id=cur_time>$current_time</td>
+			<td class=field>Access:</td><td>$access</td>
+		</tr>
+		<tr>
+			<td class=field>Start Time:</td><td class=contest_time>$start_time</font></td>
+			<td class=field>Status:</td><td>$status</td></tr>
+		<tr>
+			<td class=field>End Time:</td><td class=contest_time>$end_time</font></td>
+			<td class=field>Manager:</td><td>$creator</td>
+		</tr>
+		<tr>
+			<td colspan=4 align=center>{$item->description}</td>
+		</tr>
+	</table>
+	
+HTML;
+
+	$time = microtime_float();
+	drupal_add_js(drupal_get_path('module','oj').'/misc/js/time.js');
+	$js =<<<JS
+	var timeDiff = $time - new Date().valueOf();
+	
+	function updateTime() {
+		$("#cur_time").html(new Date(new Date().valueOf() + timeDiff).format("yyyy-MM-dd hh:mm:ss"));
+	}
+	updateTime();
+	setInterval(updateTime, 1000);
+JS;
+	
+	drupal_add_js($js,'inline');
+	$out .= oj_contest_problem_list($cid);
+	return $out;
+}
+
+function oj_contest_problems($cid)
+{
+	/*$items = db_query("SELECT * FROM {contest_problem} WHERE cid=%d ORDER BY num",$cid);
+	while($item = db_fetch_object($items))
+	{
+		
+	}*/
+	
+}
+
+function oj_contest_problem($cid,$num)
+{
+	if(empty($num))
+		$num = 1;
+	if(!is_numeric($num))
+		$num = ord(strtoupper($num[0]))-ord('A')+1;
+	$item = db_fetch_object(db_query("SELECT * FROM {contest_problem} WHERE cid=%d AND num=%d",$cid,$num));
+	$problem = problem_load($item->pid);
+	drupal_set_title('Contest Problem '.chr($num-1+ord('A')).': '.$problem->title);
+	$breadcrumb = array();
+	$breadcrumb[] = l('Home', '<front>');
+	$breadcrumb[] = l('Contests', 'contests');
+	$breadcrumb[] = l($cid, 'contest/'.$cid);
+	$breadcrumb[] = l('problem', 'contest/'.$cid.'/problem');
+	drupal_set_breadcrumb($breadcrumb);
+	
+	return theme('contest_problem',$problem,$cid,$num);
+}
+
+function oj_contest_rank($cid)
+{
+	
+}
+
+function oj_contest_statistics($cid)
+{
+	return "statistics";
+	$item = db_fetch_object(db_query("SELECT field_submit_value,field_accepted_value,
+				field_submit_user_value,field_solved_value
+				FROM {content_type_problem} WHERE field_pid_value=%d",$pid));
+	$submit = $item->field_submit_value;
+	$accepted = $item->field_accepted_value;
+	$submit_user = $item->field_submit_user_value;
+	$solved = $item->field_solved_value;
+	$scr = "<center><div id=\"chart1\" style=\"height:330px; width:600px;\"></div></center>
+			<script language='javascript'>
+			$(document).ready(function(){
+			  var data = [ ['Total Submissions $submit',0],
+			  ['Users (Submitted) $submit_user',0],['Users (Solved) $solved',0],
+			";
+	$items =db_query("SELECT result,COUNT(*) as sum FROM {solution} WHERE pid=%d GROUP BY result",$pid);
+	$i = 0;
+	while($item =  db_fetch_object($items))
+	{
+		$result = getResultDescript($item->result);
+		$scr .= "['<a href=\'status?pid=$pid&result={$item->result}\'>$result</a>\t{$item->sum}',{$item->sum}],";
+		$i++;
+	}
+	//seriesColors: [ \"red\", \"#ff03fa\", \"#ff9900\", \"#0692ff\", \"#000000\", \"#bb338f\", 
+    //   \"#999999\", \"#1e9e00\", \"#d8b83f\", \"#ff5800\", \"#0085cc\"],
+	$scr .= "
+			  ];
+			  var plot1 = jQuery.jqplot ('chart1', [data], 
+				{ 
+					title: 'Statistics',
+					seriesColors: [ \"#4bb2c5\", \"#c5b47f\", \"#EAA228\", \"#579575\", \"#839557\", \"#958c12\", 
+        \"#953579\", \"#4b5de4\", \"#d8b83f\", \"#ff5800\", \"#0085cc\"],
+					seriesDefaults: {
+					// Make this a pie chart.
+					renderer: jQuery.jqplot.PieRenderer, 
+					rendererOptions: {
+					  // Put data labels on the pie slices.
+					  // By default, labels show the percentage of the slice.
+					  showDataLabels: true
+					}
+				  }, 
+				  legend: { show:true, location: 'e' }
+				}
+			  );
+			});
+			</script>
+			";
+	//debug($scr);
+	return theme('page', $scr);
+}
+
+function oj_contest_discuss($cid)
+{
+	//$item = db_fetch_object(db_query("SELECT * FROM {contests} WHERE cid=%d",$cid));
+	drupal_set_title("Contest $cid -- Discuss");
+	return "Discuss";
+}
+
+function get_contest_status($cid)
+{
+	$now = time();
+	$item = db_fetch_object(db_query("SELECT start_time,end_time FROM {contests} WHERE cid=%d",$cid));
+	if($now < $item->start_time)
+		return 0;
+	if($now > $item->end_time)
+		return 2;
+	return 1;
+}
+
+function get_contest_status_desc($cid)
+{
+	$status = array
+	(
+		'<font color=black>Pending</font>',
+		'<font color=red>Running</font>',
+		'<font color=gray>Ended</font>',
+	);
+	return $status[get_contest_status($cid)];
+}
+
+function get_contest_type($id)
+{
+	$type = array
+	(
+		'<font color=blue>Public</font>',
+		'<font color=coral>Register</font>',
+		'<font color=green>Authorized</font>',//Authorized	Private
+		'<font color=purple>Password</font>',
+		'<font color=magenta>DIY</font>',
+	);
+	return $type[$id];
+}
+
+function contest_is_running($cid)
+{
+	$now = time();
+	$item = db_fetch_object(db_query("SELECT start_time,end_time FROM {contests} WHERE cid=%d",$cid));
+	return ($item->start_time <= $now && $now <= $item->end_time);
+}
+
+function contest_load($cid)
+{
+	$contest = db_fetch_object(db_query("SELECT * FROM {contests} WHERE cid=%d",$cid));
+	$contest->status = get_contest_status($cid);
+	$contest->type = get_contest_type($contest->access);
+	$contest->problem_num = db_result(db_query("SELECT COUNT(*) FROM {contest_problem} WHERE cid=%d",$cid));
+	
+	$items = db_query("SELECT pid,uid,title,num FROM {contest_problem} WHERE cid=%d ORDER BY num",$cid);
+	while($item = db_fetch_array($items))
+	{
+		$contest->problems[] = $item;
+	}
+	//debug($contest,'contest');
+	return $contest;
+}
+
+function oj_contest_rank_table($cid)
+{
+	$contest = contest_load($cid);
+	db_query("DELETE FROM {contest_rank} WHERE cid=%d",$cid);
+	$items = db_query("SELECT * FROM {solution} WHERE cid=%d ORDER BY uid,pid,sid",$cid);
+	while($item = db_fetch_object($items))
+	{
+		if($item->in_date < $contest->start_time || $item->in_date > $contest->end_time)
+			continue;
+		$id = db_result(db_query("SELECT id FROM {contest_rank} WHERE cid=%d AND uid=%d",$cid,$item->uid));
+		if(empty($id))
+		{
+			db_query("INSERT INTO {contest_rank} (cid,uid) VALUES (%d,%d)",$cid,$item->uid);
+			$id = db_result(db_query("SELECT LAST_INSERT_ID()"));
+		}
+		
+		$field_1 = chr($item->num-1+ord('A'))."_time";
+		$accepted_time = db_result(db_query("SELECT $field_1 FROM {contest_rank} WHERE id=%d",$id));
+		//debug($accepted_time,'time');
+		//debug($item->uid,'$uid');
+		//debug($item->pid,'$pid');
+		if(!empty($accepted_time))
+			continue;
+		$field_2 = chr($item->num-1+ord('A'))."_WrongSubmits";
+		//debug($field_1,'$field_1');
+		//debug($field_2,'$field_2');
+		if($item->result)
+		{
+			if($item->result < 98)
+				db_query("UPDATE {contest_rank} SET $field_2=$field_2+1 WHERE id=%d",$id);
+		}
+		else
+		{
+			//debug($item->in_date,'$item->in_date');
+			//debug($contest->start_time,'$contest->start_time');
+			$accepted_time = $item->in_date - $contest->start_time;
+			$submit = db_result(db_query("SELECT $field_2 FROM {contest_rank} WHERE id=%d",$id));
+			$penalty = $accepted_time + 20*60*$submit;
+			//debug($accepted_time,'$accepted_time');
+			//debug($submit,'$submit');
+			//debug($penalty,'$penalty');
+			db_query("
+			UPDATE 
+				{contest_rank} 
+			SET 
+				accepts = accepts + 1,
+				penalty = penalty + $penalty,
+				$field_1 = $accepted_time
+			WHERE id=%d
+			",$id);
+		}
+	}
+	drupal_set_message("The contest rank had rebuild.");
+	drupal_goto("contest/$cid/rank");
+}
+
+
+function oj_contest_rank_update($sid)
+{
+	if(empty($sid))
+	{
+		return false;
+	}
+	$item = db_fetch_object(db_query("SELECT * FROM {solution} WHERE sid=%d",$sid));
+	$cid = $item->cid;
+	if(empty($cid))
+		return FALSE;
+	$contest = contest_load($cid);
+	if($item->in_date < $contest->start_time || $item->in_date > $contest->end_time)
+	{
+		return false;
+	}
+	$id = db_result(db_query("SELECT id FROM {contest_rank} WHERE cid=%d AND uid=%d",$cid,$item->uid));
+	if(empty($id))
+	{
+		db_query("INSERT INTO {contest_rank} (cid,uid) VALUES (%d,%d)",$cid,$item->uid);
+		$id = db_result(db_query("SELECT LAST_INSERT_ID()"));
+	}
+		
+	$field_1 = chr($item->num-1+ord('A'))."_time";
+	$accepted_time = db_result(db_query("SELECT $field_1 FROM {contest_rank} WHERE id=%d",$id));
+	if(!empty($accepted_time))
+		return false;
+		
+	$field_2 = chr($item->num-1+ord('A'))."_WrongSubmits";
+	if($item->result)
+	{
+		if($item->result < 98)
+			db_query("UPDATE {contest_rank} SET $field_2=$field_2+1 WHERE id=%d",$id);
+	}
+	else
+	{
+		$accepted_time = $item->in_date - $contest->start_time;
+		$submit = db_result(db_query("SELECT $field_2 FROM {contest_rank} WHERE id=%d",$id));
+		$penalty = $accepted_time + 20*60*$submit;
+		db_query("
+		UPDATE
+			{contest_rank}
+		SET
+			accepts = accepts + 1,
+			penalty = penalty + $penalty,
+			$field_1 = $accepted_time
+		WHERE id=%d
+		",$id);
+	}
+	return true;
+}
+
+function oj_contest_penalty($penalty)
+{
+	//$minutes = (int)($penalty/60);
+	$sec = $penalty % 60;
+	$min = (int)($penalty / 60) % 60;
+	$hour = (int)($penalty / 3600);
+	$penalty = $hour.':'.sprintf("%02d",$min).':'.sprintf("%02d",$sec);
+	return $penalty;
+	//return $minutes;
+}
+
+function oj_contest_rejudge($cid)
+{
+	return drupal_get_form('oj_rejudge_form');
+}
+
+function oj_contest_edit($cid)
+{
+	return drupal_get_form('oj_contest_admin_form',$cid);
+}
+
+function oj_contest_admin($cid)
+{
+	return "oj_contest_admin";
+}
+
+function oj_contest_edit_form($form_state,$cid)
+{
+	drupal_set_title('Contest Edit');
+	
+	$contest = contest_load($cid);
+	$form['cid'] = array
+	(
+		'#type' => 'item',
+		'#value' => "Contest -- $cid",
+	);
+	$form['uid'] = array
+	(
+		'#type' => 'item',
+		'#value' => $contest->uid,
+	);
+	$form['title'] = array
+	(
+		'#title' => t('Title'),
+		'#type' => 'textfield',
+		'#value' => $contest->title,
+	);
+	$form['access'] = array
+	(
+		'#title' => t('Access'),
+		'#type' => 'textfield',
+		'#value' => $contest->access,
+	);
+	$form['start_time'] = array
+	(
+		'#title' => t('Start Time'),
+		'#type' => 'textfield',
+		'#value' => $contest->start_time,
+	);
+	$form['end_time'] = array
+	(
+		'#title' => t('End Time'),
+		'#type' => 'textfield',
+		'#value' => $contest->end_time,
+	);
+	$form['description'] = array
+	(
+		'#title' => t('Description'),
+		'#type' => 'textarea',
+		'#value' => $contest->description,
+	);
+	
+	$form['submit'] = array
+	(
+		'#type' => 'submit',
+		'#value' => t('Submit'),
+	);
+	return $form;
+}
+
+?>

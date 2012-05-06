@@ -30,12 +30,12 @@ function oj_problem_submit_form(&$form_state=NULL,$node)
 	//debug($user_account->profile_language);
 	$form['nid']=array
 	(
-		'#type' => 'hidden',
+		'#type' => 'value',
 		'#value' => $node->nid,
 	);
 	$form['pid']=array
 	(
-		'#type' => 'hidden',
+		'#type' => 'value',
 		'#value' => $node->field_pid['0']['value'],
 	);
 	$form['problem_id']=array
@@ -49,7 +49,7 @@ function oj_problem_submit_form(&$form_state=NULL,$node)
 	/*
 	$form['problem_title_value']=array
 	(
-		'#type' => 'hidden',
+		'#type' => 'value',
 		'#value' => $node->title,
 	);
 	$form['problem_title']=array
@@ -124,7 +124,7 @@ function problem_submit(&$form, &$form_state)
 	//$language = array('G++'=>0,'GCC'=>1,'JAVA'=>2,'Pascal'=>3,'Masm32'=>4);
 	$item = db_fetch_object(db_query("SELECT sid FROM {solution} WHERE uid=%d AND pid=%d LIMIT 1"
 			,$user->uid,$form_state['values']['pid']));
-	if($item->sid==null)
+	if($item->sid==NULL)
 		db_query("UPDATE {content_type_problem} SET field_submit_user_value=field_submit_user_value+1 
 				WHERE field_pid_value=%d",$form_state['values']['pid']);
 	db_query("UPDATE {content_type_problem} SET field_submit_value=field_submit_value+1 
@@ -167,7 +167,7 @@ function reset_problem_submit(&$form, &$form_state)
 
 function show_code($sid)
 {
-	if($sid==null)
+	if($sid==NULL)
 	{
 		drupal_set_message("No such solution.");
 		drupal_goto('status');
@@ -206,8 +206,13 @@ function show_code($sid)
 			<font color=#006600>Problem ID</font>:<a href={$problem_url}>{$item->pid}</a>  
 			<font color=#006600>User ID</font>:<a href={$user_url}>{$item->name}</a> <br>
 			<font color=#006600>Memory</font>:{$item->memory}K  <font color=#006600>Time</font>:{$item->time}MS <br>
-			<font color=#006600>Language</font>:{$language[$item->language]}  <font color=#006600>Result</font>:{$result} <br></p>
+			<font color=#006600>Language</font>:{$language[$item->language]}  <font color=#006600>Result</font>:{$result} <br>
 SCR;
+		if(oj_rejudge_access())
+		{
+			$output .= "<a href=".url("rejudge/sid/$sid").">Rejudge</a>";
+		}
+		$output .= "</p>";
 		if($item->result == 7)
 		{
 			drupal_add_js('misc/collapse.js');
@@ -237,20 +242,20 @@ SCR;
 
 function show_code_access($sid)
 {
-	if($sid==null)
+	if($sid==NULL)
 		return false;
 	global $user;
 	if($user->uid==0)
 		return false;
 	if($user->uid==1)
 		return true;
-	if($user->roles['4']!=null||$user->roles['5']!=null)
+	if($user->roles['4']!=NULL||$user->roles['5']!=NULL)
 		return true;
 	//关闭了view code
 	//题目处于比赛中，以前提交的代码
 	
 	//Source Browser
-	if($user->roles['3']!=null)
+	if($user->roles['3']!=NULL)
 		return true;
 	
 	$items = db_query("SELECT s.uid,s.pid,p.value FROM {solution} s LEFT JOIN {profile_values} p ON s.uid=p.uid AND p.fid=8 WHERE sid=%d",$sid);
@@ -263,7 +268,7 @@ function show_code_access($sid)
 		if($item->value!=1)
 			return false;
 		$result=db_fetch_object(db_query("SELECT p.*,min(result) AS result FROM {solution} s LEFT JOIN {profile_values} p ON s.uid=p.uid AND p.fid=8 WHERE s.uid=%d AND s.pid=%d",$user->uid,$item->pid));
-		if($result->result==null||$result->result!=0)
+		if($result->result==NULL||$result->result!=0)
 			return false;
 		//debug($result);
 		return true;
@@ -278,7 +283,7 @@ function show_code_access($sid)
 
 function show_compile_info($sid)
 {
-	if($sid==null)
+	if($sid==NULL)
 	{
 		drupal_set_message("No such solution.");
 		drupal_goto('status');
@@ -314,16 +319,16 @@ SCR;
 
 function show_compile_info_access($sid)
 {
-	if($sid==null)
+	if($sid==NULL)
 		return false;
 	$item = db_fetch_object(db_query("SELECT error FROM {solution} WHERE sid=%d AND result=7",$sid));
-	if($item->error==null)
+	if($item->error==NULL)
 		return false;
 	global $user;
 	if($user->uid==0)
 		return false;
 	if($user->uid==1)
 		return true;
-	if($user->roles['3']!=null||$user->roles['4']!=null||$user->roles['5']!=null)
+	if($user->roles['3']!=NULL||$user->roles['4']!=NULL||$user->roles['5']!=NULL)
 		return true;
 }

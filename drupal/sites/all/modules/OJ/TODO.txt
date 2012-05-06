@@ -1,0 +1,11 @@
+1.X normal user can't see system category
+make sure user can't change solved and submissions in account edit page.
+Not just use readonly attribute. 
+2. run corn to import users, solutions and problems from old OJ.
+3. rejudge form can search problems to rejudge.
+4. fill problem ID and go to the problem page or search problem as old OJ.
+5. search problems in source as old OJ.
+6. submit time of solution is incorrect.
+7. submit source code from file?
+8. export problems?
+9. automatically award when contest finish.

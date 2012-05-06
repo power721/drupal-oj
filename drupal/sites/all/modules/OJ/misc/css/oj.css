@@ -1,0 +1,129 @@
+table.contest_view
+{
+	align:center;
+	margin:auto;
+}
+
+table.contest_view td
+{
+	font-family: Arial,Helvetica,sans-serif;
+    font-size: 12pt;
+    /*text-align: center;*/
+}
+
+table.contest_view td.contest_time
+{
+	color:orchid;
+}
+
+table.contest_view .field
+{
+	font-weight:bold;
+	text-align:right;
+	padding-left:20px;
+}
+
+.contest-problem-tab td
+{
+    border: 1px solid blue;
+    font-size: 18px;
+	text-align:center;
+}
+
+.fieldset-wrapper div.contest-problem
+{
+	margin:0px;
+	white-space: pre-wrap;       
+	white-space: -moz-pre-wrap;  
+	white-space: -pre-wrap;      
+	white-space: -o-pre-wrap;    
+	word-wrap: break-word;       
+
+}
+.fieldset-wrapper div.contest-problem p
+{
+	margin:0;
+}
+.field-field-pid .field-label,.field-field-pid .field-items
+{
+	display:inline-block;
+}
+.field-field-time .field-label,.field-field-time .field-items
+{
+	display:inline-block;
+}
+.field-field-memory .field-label,.field-field-memory .field-items
+{
+	display:inline-block;
+}
+.field-field-submit .field-label,.field-field-submit .field-items
+{
+	display:inline-block;
+}
+.field-field-accepted .field-label,.field-field-accepted .field-items
+{
+	display:inline-block;
+}
+.field-field-ctime .field-label,.field-field-ctime .field-items
+{
+	display:inline-block;
+}
+.problem-info,.problem-info tr,.problem-info td
+{
+	align:center;
+}
+.fieldgroup .collapse-processed a:link
+{
+	color:blue;
+}
+th.ui-state-default,span.ui-icon,#datatable-1,.DataTables_sort_wrapper
+{
+	align:center;
+	text-align:center;
+}
+td.sorting_1
+{
+	text-align:left;
+}
+.field-items pre
+{
+	background-color:transparent;
+	border-width:medium;
+	border-style:none;
+	border-color:transparent;
+	padding:0 0.75em;
+}
+/*table
+{
+	border-collapse:separate;
+}*/
+.field-compile-error  a:link
+{
+	color:red;
+}
+
+.user_info a:link {
+	text-decoration:none;
+	color:blue;
+}
+.user_info a:visited {
+	text-decoration:none;
+	color:#00C;
+}
+.user_info a:hover {
+	background-color:#DFE1E3;
+}
+.user_info a:active {
+	text-decoration:none;
+}
+.SyntaxHighlighter table { 
+	margin: 1px 0 !important;
+}
+
+a.user-cmp:link,
+a.user-cmp:visited,
+a.user-cmp:hover,
+a.user-cmp:active
+{
+	color:blue;
+}

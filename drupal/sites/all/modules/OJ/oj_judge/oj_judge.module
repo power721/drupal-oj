@@ -2,7 +2,6 @@
 
 require_once drupal_get_path('module', 'oj_judge').'/oj_rejudge.inc';
 require_once 'PHPLock.class.php';
-global $php_path,$judge_php;
 
 function oj_judge_init()
 {
@@ -24,8 +23,8 @@ function oj_judge_menu()
 	$items['rejudge/sid/%'] = array
 	(
 		'title' => 'Rejudge Solution',
-		'page callback' => 'oj_rejudge_one',
-		'page arguments' => array(2),
+		'page callback' => 'oj_rejudge',
+		'page arguments' => array('sid',2),
 		'access callback' => 'oj_rejudge_access',
 		'type' => MENU_CALLBACK
 	);
@@ -45,6 +44,16 @@ function oj_judge_menu()
 		'access callback' => 'oj_rejudge_access',
 		'type' => MENU_CALLBACK
 	);
+	$items['problem/%/rejudge'] = array
+	(
+		'page callback' => 'oj_rejudge',
+		'page arguments' => array('problem',1),
+		'access callback' => 'oj_rejudge_access',
+		'access arguments' => array(1),
+		'title' => 'Rejudge',
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 5
+	);
 	return $items;
 }
 
@@ -62,7 +71,12 @@ function oj_judge($sid)
 	 * The security is very important.
 	 */
 	global $php_path,$judge_php;
+	//debug($php_path,'$php_path');
+	//debug($judge_php,'$judge_php');
+	//debug($sid,'sid-');
 	$pid = start_proc($php_path.' '.$judge_php.' judge '.$sid);
+	//debug($php_path.' '.$judge_php.' judge '.$sid);
+	//debug($pid,'pid');
 	//if($pid)
 	//	proc_kill($pid);
 }
@@ -130,10 +144,10 @@ function oj_compile($sid)
 
 function oj_run($sid)
 {
-	$item = db_fetch_object(db_query("SELECT s.sid,s.pid,s.uid,p.nid,p.field_time_value,p.field_memory_value,
+	$item = db_fetch_object(db_query("SELECT s.sid,s.pid,s.uid,s.cid,p.nid,p.field_time_value,p.field_memory_value,
 		p.field_ctime_value,s.language,p.field_input_path_value,p.field_output_path_value FROM {solution} s 
 		LEFT JOIN {content_type_problem} p ON s.pid=p.field_pid_value WHERE sid=%d",$sid));
-	$node = node_load($item->nid);
+	$node = node_load($item->nid,NULL,TRUE);
 	$input_path = $item->field_input_path_value;
 	$output_path = $item->field_output_path_value;
 	if(!is_dir($input_path))
@@ -248,15 +262,15 @@ function oj_run($sid)
 function have_solved($sid)
 {
 	$item = db_fetch_object(db_query("SELECT * FROM {solution} WHERE sid=%d",$sid));
-	$item = db_fetch_object(db_query("SELECT sid FROM {solution} WHERE sid<%d AND pid=%d AND uid=%d
+	$sid = db_result(db_query("SELECT sid FROM {solution} WHERE sid<%d AND pid=%d AND uid=%d
 			AND result=0 LIMIT 1",$sid,$item->pid,$item->uid));
-	return $item->sid!=null;
+	return $sid;
 }
 
 function delete_last($sid)
 {
 	$item = db_fetch_object(db_query("SELECT result FROM {solution} WHERE sid=%d",$sid));
-	if($item->result==null||$item->result==10000)
+	if($item->result==NULL||$item->result==10000)
 		return;
 	$path = oj_get_value('WorkingPath').$sid."\\";
 	if(is_dir($path))
@@ -283,6 +297,7 @@ function start_proc($comm)
     fclose($pipes[2]);
     proc_close($fpr);
     $pid = FALSE;
+	//debug($error,'$error');
     if(preg_match("/process ID ([\d]{1,10})\./im",$error,$matches))
       $pid = $matches[1];
     else
@@ -343,6 +358,9 @@ function proc_kill($pid)
 class Judge_thread
 {
 	private $sid;
+	//private $uid;
+	//private $pid;
+	//private $cid;
 	private $is_rejudge;
 	private $lock;
 	function __construct($sid,$is_rejudge = FALSE)
@@ -350,7 +368,10 @@ class Judge_thread
 		$this->sid = $sid;
 		$this->is_rejudge = $is_rejudge;
 		$this->lock = new File_Lock(dirname(dirname(__FILE__)) . "/FileLock.lock");
-		
+		//$item = db_fetch_object(db_query("SELECT * FROM {solution} WHERE sid=%d",$sid));
+		//$this->uid = $item->uid;
+		//$this->pid = $item->pid;
+		//$this->cid = $item->cid;
 		$this->run();
 	}
 	function get_sid()
@@ -363,20 +384,21 @@ class Judge_thread
 	}
 	function run()
 	{
-		while($this->lock->is_lock())
-		{
-			usleep(1000);
-		}
+		// while($this->lock->is_lock())
+		// {
+			// usleep(1000);
+		// }
 		//debug($this->is_rejudge,'judge');
 		if(!$this->is_rejudge())
 		{
-			$this->lock->writeLock();
+			//$this->lock->writeLock();
 			//oj_judge($this->sid);
 			if(!oj_compile($this->sid))
 			{
 				oj_run($this->sid);
 				//debug($this->sid,'sid');
 			}
+			oj_contest_rank_update($this->sid);
 		}
 		else
 		{
@@ -389,6 +411,3 @@ class Judge_thread
 		$this->lock->unlock();
 	}
 };
-
-global $judge_list;
-$judge_list = array();

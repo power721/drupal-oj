@@ -1,15 +1,13 @@
 <?php
 
-require_once drupal_get_path('module', 'oj_user').'/oj_user_list.inc';
-require_once drupal_get_path('module', 'oj_user').'/oj_user_import.inc';
-
 function oj_user_menu()
 {
 	$items['user/list'] = array
 	(
 		'title' => 'User Ranklist',
 		'page callback' => 'oj_user_ranklist',
-		'access callback' => TRUE
+		'access callback' => TRUE,
+		'file' => 'oj_user_list.inc',
 	);
 	
 	$items['oj_user_list.ajax'] = array
@@ -17,6 +15,7 @@ function oj_user_menu()
 		'page callback' => 'oj_user_list_ajax',
 		'type' => MENU_CALLBACK,
 		'access callback' => TRUE,
+		'file' => 'oj_user_list.inc',
 	);
 	
 	$items['user/%user/status'] = array
@@ -26,23 +25,41 @@ function oj_user_menu()
 		'page arguments' => array(1),
 		'access callback' => TRUE,
 		'type' => MENU_LOCAL_TASK,
-		'weight' => -1
+		'weight' => -1,
 	);
-
+	$items['user/cmp'] = array
+	(
+		'title' => 'User Compare',
+		'page callback' => 'oj_user_cmp',
+		'page arguments' => array(2,3),
+        'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_user_cmp.inc',
+	);
 	$items['user/import'] = array
 	(
 		'title' => 'Import users form JudgeOnline',
 		'page callback' => 'import_user',
 		'page arguments' => array(2,3),
         'access arguments' => array('create problem content'),
-		'type' => MENU_CALLBACK
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_user_import.inc',
 	);
 	$items['user/reset'] = array
 	(
+		'title' => 'Reset Users',
 		'page callback' => 'reset_user',
-        'access callback' => 'reset_user_access'
+        'access callback' => 'reset_user_access',
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_user_import.inc',
 	);
-	
+	$items['user/rebuild_problem_info'] = array
+	(
+		'title' => 'Rebuild User Problem Info',
+		'page callback' => 'rebuild_problem_info',
+        'access arguments' => array('administer users'),
+		'type' => MENU_CALLBACK,
+	);
 	return $items;
 }
 /**
@@ -63,7 +80,7 @@ function oj_user_user($op, &$edit, &$account, $category = NULL)
 			db_query("UPDATE {profile_values} SET value='%s' WHERE fid=3 AND uid=%d",$_SERVER['REMOTE_ADDR'],$account->uid);
 		else
 			db_query("INSERT INTO {profile_values} (fid,uid,value) VALUES (3,%d,'%s')",$account->uid,$_SERVER['REMOTE_ADDR']);
-		if($account->uid == 1||$account->roles['5'] != null)
+		if($account->uid == 1||$account->roles['5'] != NULL)
 			$_SESSION['IsAuthorized'] = TRUE;
 		break;
 		case 'logout':$_SESSION['IsAuthorized'] = FALSE;drupal_goto($_SERVER['HTTP_REFERER']);
@@ -280,7 +297,7 @@ function oj_user_insert(&$edit, &$account, $category)
 	}
 	//debug($user,'$user')
 	$language=array('G++','GCC','JAVA','Pascal','Masm32');
-	if($user->email == null)
+	if($user->email == NULL)
 		$user->email = $user->user_id;
 	db_query("UPDATE {users} SET mail = '%s',created=%d,login=%d WHERE uid = %d", $user->email,$user->reg_time,$user->accesstime,$account->uid); 
 	//db_query("UPDATE {profile_values} SET value='%s' WHERE fid=(SELECT fid FROM {profile_fields} WHERE name='profile_nick') AND uid=%d",$user->nick,$account->uid);
@@ -309,43 +326,50 @@ function check_qq($qq)
 /*
 *	show user's problem informations
 */
-function oj_user_info($user)
+function oj_user_info($account)
 {
-	$data = unserialize($user->data);
-	$login_time = oj_date($user->login);
+	global $user;
+	//$data = unserialize($account->data);
+	$login_time = oj_date($account->login);
 	$status_url = url('status');
 	$user_url = url('user');
 	$search_user = url('search/user');
 	$bg_url = drupal_get_path('module','oj').'/misc/images/bg.jpg';
-	if($user->profile_qq != NULL)
+	if($account->profile_qq != NULL)
 	{
-		$qq_url = "<a target='_blank' href='http://wpa.qq.com/msgrd?v=3&uin={$user->profile_qq}&site=qq&menu=yes'>
-			<img border=0 src='http://wpa.qq.com/pa?p=2:{$user->profile_qq}:41 &r=0.5409521391365766' 
+		$qq_url = "<a target='_blank' href='http://wpa.qq.com/msgrd?v=3&uin={$account->profile_qq}&site=qq&menu=yes'>
+			<img border=0 src='http://wpa.qq.com/pa?p=2:{$account->profile_qq}:41 &r=0.5409521391365766' 
 			alt='Contact me!' title='Contact me!'></a>";
 	}
-	$items = db_query("SELECT pid FROM {solution} WHERE uid=%d AND result=0 GROUP BY pid ORDER BY pid",$user->uid);
+	$items = db_query("SELECT pid FROM {solution} WHERE uid=%d AND result=0 GROUP BY pid ORDER BY pid",$account->uid);
 	while($item = db_fetch_object($items))
 	{
-		$problem_url .= "<a href=$status_url?pid={$item->pid}&uid={$user->uid}&result=0>{$item->pid}</a>\n";
+		$problem_url .= "<a href=$status_url?pid={$item->pid}&uid={$account->uid}&result=0>{$item->pid}</a>\n";
 	}
-	$sql="SELECT * FROM
-		(SELECT uid,@rank:=@rank+1 AS rank FROM 
-			(SELECT u.uid,CAST(pa.value AS SIGNED) AS solved,CAST(ps.value AS SIGNED) AS submissions FROM {users} u 
-			LEFT JOIN {profile_values} pn ON u.uid=pn.uid AND pn.fid=1 
-			LEFT JOIN {profile_values} pa ON u.uid=pa.uid AND pa.fid=4 
-			LEFT JOIN {profile_values} ps ON u.uid=ps.uid AND ps.fid=5 WHERE status=1)t,
-			(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt WHERE uid=%d";
-	$item = db_fetch_object(db_query($sql,$user->uid));
+	$sql="
+		SELECT
+			*
+		FROM
+			(SELECT *,@rank:=@rank+1 AS rank FROM (SELECT * FROM user_rank)t,(SELECT @rank:=0) r)tt
+		WHERE
+			uid=%d";
+	$item = db_fetch_object(db_query($sql,$account->uid));
 	$rank = $item->rank;
 	
-	$sql="SELECT * FROM
-		(SELECT uid,name,nick,solved,submissions,@rank:=@rank+1 AS rank FROM 
-		(SELECT u.uid,u.name,pn.value AS nick,CAST(pa.value AS SIGNED) AS solved,
-		CAST(ps.value AS SIGNED) AS submissions FROM users u 
-		LEFT JOIN profile_values pn ON u.uid=pn.uid AND pn.fid=1 
-		LEFT JOIN profile_values pa ON u.uid=pa.uid AND pa.fid=4 
-		LEFT JOIN profile_values ps ON u.uid=ps.uid AND ps.fid=5 
-		WHERE status=1)t,(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt LIMIT %d,7";
+	/*$Neighbours = <<<HTML
+		<TABLE width=80% border=1 bordercolorlight=#E4E9EB bordercolordark=#FFFFFF style="border-collapse: collapse">
+			<tr BGCOLOR=#6589D1 align=center style="color:#fff;">
+				<td width=10%>Rank</td>
+				<td width=40%>User</td>
+				<td width=25%>Solved</td>
+				<td width=25%>Submissions</td>
+			</tr>
+HTML;
+	$sql="
+		SELECT
+			*
+		FROM
+			(SELECT *,@rank:=@rank+1 AS rank FROM (SELECT * FROM user_rank)t,(SELECT @rank:=0) r)tt LIMIT %d,7";
 	$items = db_query($sql,($rank-4)<0?0:($rank-4));
 	while($item = db_fetch_object($items))
 	{
@@ -361,17 +385,22 @@ function oj_user_info($user)
 		<td width=25%>{$item->submissions}</td>
 		</tr>";
 	}
+	$Neighbours .= "</table>";*/
+	$Neighbours = oj_user_neighbours($rank);
+	if(is_admin_login())
+		$login_ip = "\n<BR>".$account->profile_ip;
 	$output =<<<SCR
 	<center>
-		<a href=#>{$user->name}--{$user->profile_nick}</a><br/>
+		<a href=#>{$account->name}--{$account->profile_nick}</a><br/>
 		Last Loginned Time:$login_time
-		<TABLE width=80% border=1 class=user_info id=user_{$user->uid}_info style="background-image:$bg_url">
+		$login_ip
+		<TABLE width=80% border=1 class=user_info id=user_{$account->uid}_info style="background-image:$bg_url">
 		<tr>
 			<td align="center" valign="middle" colspan=2></td>
 			<td align="center" valign="middle" colspan=2><br>
-				<form action=usercmp method=get>Compare 
-					<input type=text size=15 name=uid1 value={$user->name}>and 
-					<input type=text size=15 name=uid2 value=>
+				<form action=../cmp method=get>Compare 
+					<input type=text size=15 name=uid1 value={$account->name}>and 
+					<input type=text size=15 name=uid2 value={$user->name}>
 					<input type=submit value=GO>
 				</form>
 			</td>
@@ -383,20 +412,20 @@ function oj_user_info($user)
 		</tr>
 		<tr>
 			<td width=15% align=left>Solved:</td>
-			<td align=center width=25%><a href=$status_url?result=0&uid={$user->uid}>{$data['profile_solved']}</a></td>
+			<td align=center width=25%><a href=$status_url?result=0&uid={$account->uid}>{$account->profile_solved}</a></td>
 			<td width=60% align=center rowspan=5>$problem_url</td>
 		</tr>
 		<tr>
 			<td width=15% align=left>Submissions:</td>
-			<td align=center width=25%><a href=$status_url?uid={$user->uid}>{$data['profile_submissions']}</a></td>
+			<td align=center width=25%><a href=$status_url?uid={$account->uid}>{$account->profile_submissions}</a></td>
 		</tr>
 		<tr>
 			<td width=15% align=left>School:</td>
-			<td align=center width=25%><a href=$search_user/{$user->profile_school}>{$user->profile_school}</a></td>
+			<td align=center width=25%><a href=$search_user/{$account->profile_school}>{$account->profile_school}</a></td>
 		</tr>
 		<tr>
 			<td width=15% align=left>Email:</td>
-			<td align=center width=25%><a href=mailto:{$user->mail}>{$user->mail}</a></td>
+			<td align=center width=25%><a href=mailto:{$account->mail}>{$account->mail}</a></td>
 		</tr>
 		<tr>
 			<td width=15% align=left>QQ:</td>
@@ -404,15 +433,7 @@ function oj_user_info($user)
 		</tr>
 		</table>
 		<font size=5>Neighbours:</font><br>
-		<TABLE width=80% border=1 bordercolorlight=#E4E9EB bordercolordark=#FFFFFF style="border-collapse: collapse">
-			<tr BGCOLOR=#6589D1 align=center style="color:#fff;">
-				<td width=10%>Rank</td>
-				<td width=40%>User</td>
-				<td width=25%>Solved</td>
-				<td width=25%>Submissions</td>
-			</tr>
 			$Neighbours
-		</table>
 	</center>
 SCR;
 	return $output;
@@ -433,14 +454,11 @@ function oj_user_neighbours($rank)
         array('data' => 'Ratio'),
     );
 	
-	$sql="SELECT * FROM
-		(SELECT uid,name,nick,solved,submissions,@rank:=@rank+1 AS rank FROM 
-		(SELECT u.uid,u.name,pn.value AS nick,CAST(pa.value AS SIGNED) AS solved,
-		CAST(ps.value AS SIGNED) AS submissions FROM users u 
-		LEFT JOIN profile_values pn ON u.uid=pn.uid AND pn.fid=1 
-		LEFT JOIN profile_values pa ON u.uid=pa.uid AND pa.fid=4 
-		LEFT JOIN profile_values ps ON u.uid=ps.uid AND ps.fid=5 
-		WHERE status=1)t,(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt LIMIT %d,7";
+	$sql="
+		SELECT
+			*
+		FROM
+			(SELECT *,@rank:=@rank+1 AS rank FROM (SELECT * FROM user_rank)t,(SELECT @rank:=0) r)tt LIMIT %d,7";
 	$items = db_query($sql,($rank-4)<0?0:($rank-4));
 	while($item = db_fetch_object($items))
 	{
@@ -451,7 +469,7 @@ function oj_user_neighbours($rank)
 			array('data' => $item->nick),
 			array('data' => $item->solved),
 			array('data' => $item->submissions),
-			array('data' => $item->solved/$item->submissions),
+			array('data' => sprintf("%.0f",$item->solved/$item->submissions*100).'%'),
 		);
 	}
 	
@@ -469,11 +487,10 @@ function oj_user_neighbours($rank)
 	(
 		'datatable_options' => array
 		(
-			'sPaginationType' => 'full_numbers',
             'sDom' => '<"H"<"clear">>rt<"F"<"clear">><"clear">',
-            'sCookiePrefix' => 'ul_',
-            'bProcessing' => false,
-            'bServerSide' => true,
+            //'sCookiePrefix' => 'ul_',
+            //'bProcessing' => false,
+            //'bServerSide' => true,
             'aoColumns' => $colwidths,
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
@@ -481,4 +498,35 @@ function oj_user_neighbours($rank)
     );
 	
 	return theme_datatable($head,$dummy_row,$params);
+}
+
+function rebuild_problem_info()
+{
+	$items = db_query("SELECT uid FROM {users} WHERE uid>0");
+	while($uid = db_fetch_object($items)->uid)
+	{
+		$account = user_load($uid);
+		$info = array
+		(
+			'profile_submissions' => db_result(db_query("SELECT COUNT(*) FROM {solution} WHERE uid=%d",$uid)),
+			'profile_solved' => db_result(db_query("SELECT COUNT(DISTINCT pid) FROM {solution} WHERE result=0 AND uid=%d",$uid)),
+		);
+		user_save($account,$info,'System');
+	}
+	drupal_set_message('Rebuild problem information done.');
+	drupal_goto('user/list');
+}
+
+function oj_user_nick($uid)
+{
+	$account = user_load($uid);
+	return $account->profile_nick;
+}
+
+function reset_user_access()
+{
+	global $user;
+	if($user->uid==1)
+		return true;
+	return false;
 }
