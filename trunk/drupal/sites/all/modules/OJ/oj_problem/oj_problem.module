@@ -7,10 +7,10 @@ require_once drupal_get_path('module', 'oj_problem').'/oj_problem_status.inc';
 require_once drupal_get_path('module', 'node').'/node.pages.inc';
 
 
-function oj_problem_init()
+/*function oj_problem_init()
 {
 	drupal_add_css(drupal_get_path('module', 'oj_problem') . '/oj_problem.css');
-}
+}*/
 
 function oj_problem_menu()
 {
@@ -131,6 +131,19 @@ function oj_problem_menu()
 		'weight' => 1,
 		'type' => MENU_LOCAL_TASK,
 	);
+	if(function_exists('devel_load_object'))
+	{
+		$items['problem/%problem/devel'] = array
+		(
+			'title' => 'Devel',
+			'page callback' => 'devel_load_object',
+			'page arguments' => array(1, 'node'),
+			'access callback' => 'user_access',
+			'access arguments' => array('access devel information'),
+			'type' => MENU_LOCAL_TASK,
+			'weight' => 100,
+		);
+	}
 	$items['oj_problem_list.ajax'] = array 
 	(
 		'page callback' => 'oj_problem_list_ajax',
@@ -186,7 +199,7 @@ function oj_problem_theme()
 {
 	return array
 	(
-		'node-porblem' => array
+		'node_porblem' => array
 		(
 			'arguments' => array('node' => NULL, 'teaser' => FALSE, 'page' => FALSE),
 			'template' => 'node-problem',
@@ -216,7 +229,7 @@ function oj_problem_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL)
 			//unset($node->field_input_path,$node->field_output_path,$node->field_solved,$node->field_submit_user);
 			//$var = parse_ini_file("C:\JudgeOnline\serverconfig.property");
 			//debug($var);
-			hook_exist('profile');
+			//hook_exist('profile');
 		}
 		if($op=='view')
 		{
@@ -233,20 +246,14 @@ function oj_problem_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL)
 				$node->field_submit_user['0']['value']=0;
 			if(isset($node->field_solved)&&$node->field_solved['0']['value']==NULL)
 				$node->field_solved['0']['value']=0;
+			if(isset($node->field_error)&&$node->field_error['0']['value']==NULL)
+				$node->field_error['0']['value']=0;
+			if(empty($node->field_pid['0']['value']))
+				$node->field_pid['0']['value'] = oj_get_next_pid();
 		}
 		if($op=='insert')
 		{
-			$items=db_query("SELECT max(field_pid_value) AS pid FROM {content_type_problem}");
-			if($item=db_fetch_object($items))
-			{
-				$pid=$item->pid+1;
-				if($item->pid==NULL)
-					$pid=1000;
-			}
-			else
-				$pid=1000;
-			$node->field_pid['0']['value']=$pid;
-			db_query("UPDATE {content_type_problem} SET field_pid_value=%d WHERE nid=%d",$pid,$node->nid);
+			//db_query("UPDATE {content_type_problem} SET field_pid_value=%d WHERE nid=%d",$pid,$node->nid);
 			$items=db_query("SELECT field_pid_value AS pid FROM {content_type_problem} WHERE nid=%d",$node->nid);
 			if($item=db_fetch_object($items))
 			{
@@ -342,13 +349,15 @@ function get_next_problem($pid)
 	return "<a href=".url('problem/'.$pid).">Next>></a>";
 }
 
-function get_user_problem_status($pid)
+function get_user_problem_status($pid,$cid=NULL)
 {
 	global $user;
 	if(!$user->uid)
 		return 0;
-	$item = db_fetch_object(db_query("SELECT MIN(result) AS result FROM {solution} WHERE uid=%d AND pid=%d",$user->uid,$pid));
-	
+	if(empty($cid))
+		$item = db_fetch_object(db_query("SELECT MIN(result) AS result FROM {solution} WHERE uid=%d AND pid=%d",$user->uid,$pid));
+	else
+		$item = db_fetch_object(db_query("SELECT MIN(result) AS result FROM {solution} WHERE uid=%d AND pid=%d AND cid=%d",$user->uid,$pid,$cid));
 	if($item->result == NULL)
 		return 0;
 	if($item->result == 0)
@@ -413,4 +422,17 @@ function data_files(&$node)
 	{
 		drupal_set_message("No files.\n");
 	}
+}
+
+function oj_get_next_pid()
+{
+	if($pid = db_result(db_query("SELECT max(field_pid_value) AS pid FROM {content_type_problem}")))
+	{
+		++$pid;
+		if(empty($pid) || $pid<1000)
+			$pid = 1000;
+	}
+	else
+		$pid = 1000;
+	return $pid;
 }

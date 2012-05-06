@@ -1,5 +1,12 @@
 <?php
 
+function oj_init()
+{
+	$path = drupal_get_path('module','oj').'/misc/';
+	drupal_add_css($path.'css/oj.css');
+	//drupal_add_js($path.'js/oj.js');
+}
+
 function oj_menu()
 {
 	$items['faq'] = array
@@ -17,33 +24,15 @@ function oj_menu()
 		'access callback' => TRUE,
 		'type' => MENU_CALLBACK
 	);
+	$items['test'] = array
+	(
+		'title' => 'Test',
+		'page callback' => 'oj_test',
+		'page arguments' => array(1),
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK
+	);
 	return $items;
-}
-
-// debug function to dump an array into a temp file
-function debug($var,$head = NULL,$filename = NULL)
-{
-	if($filename == NULL)
-		$filename = 'debug.txt';
-	$f = fopen($filename,'a');
-	ob_start();
-	print("===== ".$head." =====\r\n");
-	print_r($var);
-	print("\n\n");
-	fwrite($f,ob_get_contents());
-	ob_end_clean();
-	fclose($f);
-}
-
-/*
-* Convert charset
-*/
-function phpcharset($data, $to)
-{
-	$encode_array = array('ASCII', 'UTF-8', 'GBK', 'GB2312', 'BIG5');
-	$encoded = mb_detect_encoding($data, $encode_array);
-	$data = mb_convert_encoding($data, $to, $encoded);
-	return $data;
 }
 
 function oj_faq()
@@ -478,7 +467,7 @@ function oj_date($time = NULL)
 
 function hook_exist($type = NULL)
 {
-	print "<pre>\n";
+	//print "<pre>\n";
 	if($type == NULL)
 	{
 		
@@ -493,5 +482,54 @@ function hook_exist($type = NULL)
 		$function = $module . '_' . $type . '_alter';
 		print $function."\n";
 	}*/
-	print "</pre>\n";
+	//print "</pre>\n";
 }
+
+function oj_test($par=NULL)
+{
+	$text = "";
+	return problem_text($text);
+}
+
+function microtime_float()
+{
+    list($usec, $sec) = explode(" ", microtime());
+    return ($usec + $sec) * 1000;
+}
+
+function is_admin_login()
+{
+	global $user;
+	if($user->uid==1)
+		return true;
+	if($user->roles['5']!=NULL)
+		return true;
+	return false;
+}
+
+// debug function to dump an array into a temp file
+function debug($var,$title = NULL,$filename = NULL)
+{
+	if($filename == NULL)
+		$filename = 'debug.txt';
+	$f = fopen($filename,'a');
+	ob_start();
+	print("===== $title(".gettype($var).") =====\r\n");
+	print_r($var);
+	print("\n\n");
+	fwrite($f,ob_get_contents());
+	ob_end_clean();
+	fclose($f);
+}
+
+/*
+* Convert charset
+*/
+function phpcharset($data, $to)
+{
+	$encode_array = array('ASCII', 'UTF-8', 'GBK', 'GB2312', 'BIG5');
+	$encoded = mb_detect_encoding($data, $encode_array);
+	$data = mb_convert_encoding($data, $to, $encoded);
+	return $data;
+}
+

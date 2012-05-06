@@ -28,7 +28,7 @@ function oj_user_ranklist()
               );
 
   $colwidths=array(
-                   array('bSortable'=>true,'sWidth'=>'6%'),
+                   array('bSortable'=>false,'sWidth'=>'6%'),
                    array('bSortable'=>true,'sWidth'=>'24%'),
                    array('bSortable'=>false,'sWidth'=>'40%'),
                    array('bSortable'=>true,'sWidth'=>'10%'),
@@ -96,25 +96,19 @@ function oj_user_list_ajax() {
     
 	$allrecord=db_result(db_query("SELECT COUNT(*) FROM {users} WHERE uid>0"));
    
-	/*$sql="SELECT SQL_CALC_FOUND_ROWS 
-           u.uid,
-		   u.name,
-		   pv.fid,
-		   pv.value
-        FROM users u,
-           profile_fields pf,
-           profile_values pv
-       WHERE u.status=1 AND pv.uid=u.uid AND pf.fid=pv.fid AND (pf.name='profile_nick' OR pf.name='profile_solved' OR pf.name='profile_submissions')";
-*/
-	$sql="SELECT SQL_CALC_FOUND_ROWS * FROM
+	/*$sql="SELECT SQL_CALC_FOUND_ROWS * FROM
 		(SELECT uid,name,nick,solved,submissions,@rank:=@rank+1 AS rank FROM 
 		(SELECT u.uid,u.name,pn.value AS nick,CAST(pa.value AS SIGNED) AS solved,
 		CAST(ps.value AS SIGNED) AS submissions FROM users u 
 		LEFT JOIN profile_values pn ON u.uid=pn.uid AND pn.fid=1 
 		LEFT JOIN profile_values pa ON u.uid=pa.uid AND pa.fid=4 
 		LEFT JOIN profile_values ps ON u.uid=ps.uid AND ps.fid=5 
-		WHERE status=1)t,(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt WHERE 1";
-   
+		WHERE status=1)t,(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt WHERE 1";*/
+	$sql = "
+		SELECT
+			SQL_CALC_FOUND_ROWS *
+		FROM
+			(SELECT *,@rank:=@rank+1 AS rank FROM (SELECT * FROM user_rank)t,(SELECT @rank:=0) r)tt WHERE 1";
       // NOTE: use double %, because drupal printf()s it before sending to mysql...
       if (!empty($_GET['sSearch_1'])) {
         $sql.=" AND name LIKE '%%" . $_GET['sSearch_1']  . "%%' ";
@@ -191,5 +185,5 @@ function oj_user_list_ajax() {
         print $row;
 		$idx++;
       }
-      print ']}';
+      print ' ]}';
 }

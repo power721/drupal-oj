@@ -1,0 +1,528 @@
+<?php
+
+function oj_contest_install()
+{
+	//contests
+	//contest_access
+	//contest_problem
+	//
+	drupal_install_schema('oj_contest');
+	db_query("ALTER TABLE {contests} AUTO_INCREMENT=1000");
+}
+
+function oj_contest_uninstall()
+{
+	drupal_uninstall_schema('oj_contest');
+}
+
+function oj_contest_schema()
+{
+	$schema['contests'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'cid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'uid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'title' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => TRUE,
+    ),
+    'description' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'text',
+      'not null' => FALSE,
+    ),
+    'start_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'end_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'access' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'password' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '32',
+      'not null' => FALSE,
+    ),
+    'language' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'onsite' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'grand_prize' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'gold' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'silver' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'bronze' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'honor' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+  ),
+  'primary key' => array('cid'),
+);
+
+	$schema['contest_access'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'id' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not NULL' => TRUE,
+    ),
+    'cid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not NULL' => TRUE,
+    ),
+    'uid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not NULL' => TRUE,
+    ),
+    'status' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not NULL' => TRUE,
+      'default' => 0,
+    ),
+  ),
+  'primary key' => array('id'),
+);
+
+$schema['contest_problem'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'id' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not NULL' => TRUE,
+    ),
+    'cid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not NULL' => TRUE,
+    ),
+    'pid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not NULL' => TRUE,
+    ),
+    'uid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not NULL' => FALSE,
+    ),
+    'title' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '255',
+      'not NULL' => FALSE,
+    ),
+    'num' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not NULL' => TRUE,
+    ),
+  ),
+  'primary key' => array('id'),
+);
+
+$schema['contest_rank'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'id' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'cid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'uid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'accepts' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'penalty' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'A_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'A_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'B_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'B_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'C_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'C_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'D_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'D_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'E_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'E_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'F_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'F_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'G_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'G_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'H_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'H_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'I_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'I_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'J_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'J_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'K_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'K_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'L_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'L_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'M_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'M_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'N_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'N_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'O_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'O_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'P_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'P_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'Q_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'Q_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'R_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'R_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'S_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'S_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'T_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'T_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'U_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'U_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'V_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'V_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'W_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'W_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'X_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'X_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'Y_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'Y_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'Z_time' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'Z_WrongSubmits' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+  ),
+  'primary key' => array('id'),
+);
+
+	return $schema;
+}
+
+?>

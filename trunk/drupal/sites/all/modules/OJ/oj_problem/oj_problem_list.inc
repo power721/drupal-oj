@@ -48,7 +48,7 @@ function oj_problem_list()
 		(
 			'sPaginationType' => 'full_numbers',
             'sDom' => '<"H"lp<"clear">>rt<"F"ip<"clear">><"clear">',
-            //'bStateSave'  => true,  // needs work to remember the independent input search box values
+            'bStateSave'  => true,  // needs work to remember the independent input search box values
             'sCookiePrefix' => 'pl_',
             'bProcessing' => true,
             'bServerSide' => true,
@@ -65,18 +65,22 @@ function oj_problem_list()
 	$script=<<<SCR
 $(document).ready(function() 
 	{
-        $("#searchid").keyup( 
-		function () 
-		{
-                t=$('#datatable-1').dataTable();
-                t.fnFilter( this.value, 0 );
-        });
-        $("#searchtitle").keyup( 
-		function () 
-		{
-            t=$('#datatable-1').dataTable();
-            t.fnFilter( this.value, 1 );
-         });
+        $("#searchid").keyup
+		( 
+			function () 
+			{
+				t=$('#datatable-1').dataTable();
+				t.fnFilter( this.value, 0 );
+			}
+		);
+        $("#searchtitle").keyup
+		( 
+			function () 
+			{
+				t=$('#datatable-1').dataTable();
+				t.fnFilter( this.value, 1 );
+			}
+		);
         $("#search_button").click( function ()
 		{
          	t=$('#datatable-1').dataTable();
@@ -109,7 +113,7 @@ function oj_problem_list_ajax()
    
       // NOTE: use double %, because drupal printf()s it before sending to mysql...
     if (!empty($_GET['sSearch_0']))
-		$sql.=" AND p.field_pid_value = " . $_GET['sSearch_0'];
+		$sql.=" AND p.field_pid_value LIKE '" . $_GET['sSearch_0'] . "%%'";
     if (!empty($_GET['sSearch_1']))
         $sql.=" AND n.title LIKE '%%" . $_GET['sSearch_1']  . "%%' ";
      
