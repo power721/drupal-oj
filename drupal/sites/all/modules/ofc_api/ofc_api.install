@@ -1,0 +1,8 @@
+<?php
+// $Id: ofc_api.install,v 1.1 2009/04/03 15:43:44 kong Exp $
+
+function ofc_api_uninstall() {
+  variable_del('ofc_api_use_swfobject');
+  variable_del('ofc_api_use_library');
+  variable_del('ofc_api_library');
+}
