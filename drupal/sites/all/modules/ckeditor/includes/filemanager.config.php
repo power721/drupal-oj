@@ -2,7 +2,7 @@
 
 /**
  * CKEditor - The text editor for the Internet - http://ckeditor.com
- * Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+ * Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
  *
  * == BEGIN LICENSE ==
  *
@@ -79,12 +79,12 @@ function CheckAuthentication() {
 }
 
 CheckAuthentication();
-$config['LicenseName'] = trim($_SESSION['ckeditor']['license_name']);
-$config['LicenseKey'] = trim(substr($_SESSION['ckeditor']['license_key'],15));
+
 if (!empty($ckfinder_user_files_path)) {
   $baseUrl = $ckfinder_user_files_path;
   $baseDir = $ckfinder_user_files_absolute_path;
-}else {
+}
+else {
   // Nothing in session? Shouldn't happen... anyway let's try to upload it in the (almost) right place
   // Path to user files relative to the document root.
   $baseUrl = strtr(base_path(), array(

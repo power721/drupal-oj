@@ -46,6 +46,7 @@ function import_user($p1=0,$p2=100)
 		$msg.="s";
 	$msg.=", execution time: ".(time()-$start_time)."s.";
 	drupal_set_message($msg);
+	drupal_set_message('Then you should import problems data.');
 	drupal_goto('user/list');
 }
 

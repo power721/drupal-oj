@@ -74,11 +74,9 @@ SCR;
   drupal_add_js($script,'inline');
   
   # add the themeroller widget set (bJQueryUI=true)
-  drupal_add_css(drupal_get_path('module', 'datatables') .
-                 'dataTables/media/css/demo_table_jui.css');
+  drupal_add_css(drupal_get_path('module', 'datatables').'dataTables/media/css/demo_table_jui.css');
 
-  drupal_add_css(drupal_get_path('module', 'datatables') .
-                 '/theme/css/redmond/jquery-ui-1.8.17.custom.css');
+	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/redmond/jquery-ui-1.7.3.custom.css');
 
   $inputboxes='<table style="border:0px;background-color:#fedc6b; float:left">
                       <tr><td>Filter User:</td>

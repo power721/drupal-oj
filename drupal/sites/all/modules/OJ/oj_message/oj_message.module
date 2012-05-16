@@ -1,0 +1,19 @@
+<?php
+
+function oj_message_menu()
+{
+	$items['discuss'] = array
+	(
+		'title' => 'Discuss Board',
+		'page callback' => 'oj_discuss_list',
+		'access callback' => '',
+		'type' => MENU_CALLBACK,
+	);
+	
+	return $items;
+}
+
+function oj_discuss_list()
+{
+	
+}

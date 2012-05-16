@@ -65,8 +65,9 @@ function oj_contest_schema()
     ),
     'language' => array(
       'description' => t('TODO: please describe this field!'),
-      'type' => 'int',
-      'not null' => TRUE,
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => FALSE,
     ),
     'onsite' => array(
       'description' => t('TODO: please describe this field!'),
@@ -108,73 +109,6 @@ function oj_contest_schema()
   ),
   'primary key' => array('cid'),
 );
-
-	$schema['contest_access'] = array(
-  'description' => t('TODO: please describe this table!'),
-  'fields' => array(
-    'id' => array(
-      'description' => t('TODO: please describe this field!'),
-      'type' => 'serial',
-      'not NULL' => TRUE,
-    ),
-    'cid' => array(
-      'description' => t('TODO: please describe this field!'),
-      'type' => 'int',
-      'not NULL' => TRUE,
-    ),
-    'uid' => array(
-      'description' => t('TODO: please describe this field!'),
-      'type' => 'int',
-      'not NULL' => TRUE,
-    ),
-    'status' => array(
-      'description' => t('TODO: please describe this field!'),
-      'type' => 'int',
-      'not NULL' => TRUE,
-      'default' => 0,
-    ),
-  ),
-  'primary key' => array('id'),
-);
-
-$schema['contest_problem'] = array(
-  'description' => t('TODO: please describe this table!'),
-  'fields' => array(
-    'id' => array(
-      'description' => t('TODO: please describe this field!'),
-      'type' => 'serial',
-      'not NULL' => TRUE,
-    ),
-    'cid' => array(
-      'description' => t('TODO: please describe this field!'),
-      'type' => 'int',
-      'not NULL' => TRUE,
-    ),
-    'pid' => array(
-      'description' => t('TODO: please describe this field!'),
-      'type' => 'int',
-      'not NULL' => TRUE,
-    ),
-    'uid' => array(
-      'description' => t('TODO: please describe this field!'),
-      'type' => 'int',
-      'not NULL' => FALSE,
-    ),
-    'title' => array(
-      'description' => t('TODO: please describe this field!'),
-      'type' => 'varchar',
-      'length' => '255',
-      'not NULL' => FALSE,
-    ),
-    'num' => array(
-      'description' => t('TODO: please describe this field!'),
-      'type' => 'int',
-      'not NULL' => TRUE,
-    ),
-  ),
-  'primary key' => array('id'),
-);
-
 $schema['contest_rank'] = array(
   'description' => t('TODO: please describe this table!'),
   'fields' => array(
@@ -521,6 +455,71 @@ $schema['contest_rank'] = array(
   ),
   'primary key' => array('id'),
 );
+$schema['contest_problem'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'id' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'cid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'pid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'uid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => FALSE,
+    ),
+    'alias' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => FALSE,
+    ),
+    'num' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('id'),
+);
+$schema['contest_access'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'id' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'cid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'uid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'status' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+  ),
+  'primary key' => array('id'),
+);
+
 
 	return $schema;
 }

@@ -35,19 +35,20 @@ function import_problem($p1 = 1000,$p2 = 1099)
 	$num = 0;
 	while($problem = db_fetch_object($result))
 	{
-		//debug($problem,'problem id:'.$problem->problem_id);
-		$items = db_query("SELECT nid FROM {content_type_problem} WHERE field_problem_id_value=%d",$problem->problem_id);
+		$node = new stdClass;
+		//node_object_prepare($node);
+		
+		$items = db_query("SELECT nid,vid FROM {content_type_problem} WHERE field_problem_id_value=%d",$problem->problem_id);
 		if($item = db_fetch_object($items))
 		{
-			if($item->nid != NULL)
-				continue;
+			//if($item->nid != NULL)
+			//	continue;
+			$node->nid = $item->nid;
+			$node->vid = $item->vid;
 		}
-		$node = new stdClass;
+		
 		$node->type = 'problem';
-		node_object_prepare($node);
-		//$node->uid = 1;
-		//$node->language='';
-		//$node->revision=0;
+		$node->uid = 1;
 		$node->status = $problem->defunct=='N'?1:0;
 		$node->title = phpcharset($problem->title,'UTF-8');
 		$node->changed = $problem->in_date;
@@ -86,6 +87,7 @@ function import_problem($p1 = 1000,$p2 = 1099)
 		$msg.="s";
 	$msg.=", execution time: ".(time()-$start_time)."s.";
 	drupal_set_message($msg);
+	drupal_set_message('Then you should import contests data.');
 	drupal_goto('problem');
 	//drupal_goto('admin/content/node/overview');
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -61,12 +61,6 @@ CKEDITOR.editorConfig = function(config) {
     config.bodyClass = 'singlepage';
     config.bodyId = 'primary';
   }
-   config.filebrowserBrowseUrl = '/ckfinder/browse.php?type=files';
-   config.filebrowserImageBrowseUrl = '/ckfinder/browse.php?type=images';
-   config.filebrowserFlashBrowseUrl = '/ckfinder/browse.php?type=flash';
-   config.filebrowserUploadUrl = '/ckfinder/upload.php?type=files';
-   config.filebrowserImageUploadUrl = '/ckfinder/upload.php?type=images';
-   config.filebrowserFlashUploadUrl = '/ckfinder/upload.php?type=flash';
 };
 
 /*

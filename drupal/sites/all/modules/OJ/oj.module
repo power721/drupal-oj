@@ -4,7 +4,14 @@ function oj_init()
 {
 	$path = drupal_get_path('module','oj').'/misc/';
 	drupal_add_css($path.'css/oj.css');
-	//drupal_add_js($path.'js/oj.js');
+	drupal_add_css($path.'css/contactable.css');
+	drupal_add_css($path.'jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
+	
+	drupal_add_js($path.'jquery-ui/js/jquery-ui-1.7.3.custom.min.js');
+	drupal_add_js($path.'js/oj.js');
+	
+	$js ='$(function(){$("#logout").click(function(){window.location="'.url('logout').'";});});';
+	drupal_add_js($js,'inline');
 }
 
 function oj_menu()
@@ -16,6 +23,7 @@ function oj_menu()
 		'access callback' => TRUE,
 		'type' => MENU_SUGGESTED_ITEM
 	);
+	
 	$items['hook_exist'] = array
 	(
 		'title' => 'Hook Exist',
@@ -24,6 +32,16 @@ function oj_menu()
 		'access callback' => TRUE,
 		'type' => MENU_CALLBACK
 	);
+	
+	$items['oj_submissions_statistics'] = array
+	(
+		'title' => 'Submissions Statistics',
+		'page callback' => 'oj_submissions_statistics',
+		'page arguments' => array(1),
+		'access callback' => TRUE,
+		//'type' => MENU_CALLBACK
+	);
+	
 	$items['test'] = array
 	(
 		'title' => 'Test',
@@ -33,6 +51,49 @@ function oj_menu()
 		'type' => MENU_CALLBACK
 	);
 	return $items;
+}
+
+function oj_perm()
+{
+	return array('oj_import_data');
+}
+
+function oj_login_form($form_state)
+{
+	$form = array
+	(
+		'#action' => url($_GET['q'], array('query' => drupal_get_destination())),
+		'#id' => 'oj-login-form',
+	);
+    $form['name'] = array
+    (
+		'#type' => 'textfield',
+		'#title' => t('Username'),
+		'#maxlength' => USERNAME_MAX_LENGTH,
+		'#size' => 15,
+		'#required' => TRUE,
+    );
+	$form['pass'] = array
+	(
+		'#type' => 'password',
+		'#title' => t('Password'),
+		'#maxlength' => 60,
+		'#size' => 15,
+		'#required' => TRUE,
+	);
+	$form['submit'] = array
+	(
+		'#type' => 'submit',
+		'#value' => t('Log in'),
+		'#validate' => user_login_default_validators(),
+		'#submit' => array('oj_login_submit','user_login_submit'),
+	);
+	$form['register'] = array
+	(
+		'#value' => '<a href=user/register>Register</a>',
+	);
+	
+	return $form;
 }
 
 function oj_faq()
@@ -403,6 +464,26 @@ function oj_get_status_result($flag = FALSE)
 	return $status_result;
 }
 
+function oj_get_status_color($num = NULL)
+{
+	$colors = array
+	(
+		0 => '#ff0000',
+		1 => '#ff03fa',
+		2 => '#ff9900',
+		3 => '#0692ff',
+		4 => '#000000',
+		5 => '#bb338f',
+		6 => '#999999',
+		7 => '#1e9e00',
+		98 => '#579575',
+		99 => '#839557',
+		100 => '#958c12',
+		10000 => '#00ff00',
+	);
+	return $colors;
+}
+
 function getResultDescript($i)
 {
 	if ($i == 0)
@@ -500,11 +581,17 @@ function microtime_float()
 function is_admin_login()
 {
 	global $user;
-	if($user->uid==1)
+	if($user->uid == 1)
 		return true;
-	if($user->roles['5']!=NULL)
+	if($user->roles['5'] != NULL)
 		return true;
 	return false;
+}
+
+function is_root_login()
+{
+	global $user;
+	return $user->uid == 1;
 }
 
 // debug function to dump an array into a temp file
@@ -533,3 +620,77 @@ function phpcharset($data, $to)
 	return $data;
 }
 
+
+/**
+ * Does the very standard things that must be done in any normal callback.
+ * Used by each callback in this example module.
+ */
+function ahah_callback_helper() {
+  $form_state = array('storage' => NULL, 'submitted' => FALSE);
+  $form_build_id = $_POST['form_build_id'];
+  $form = form_get_cache($form_build_id, $form_state);
+  $args = $form['#parameters'];
+  $form_id = array_shift($args);
+  $form_state['post'] = $form['#post'] = $_POST;
+  // Enable the submit/validate handlers to determine whether AHAH-submittted.
+  $form_state['ahah_submission'] = TRUE;
+  $form['#programmed'] = $form['#redirect'] = FALSE;
+  drupal_process_form($form_id, $form, $form_state);
+  $form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
+  return $form;
+}
+
+function oj_submissions_statistics($days)
+{
+	$width = 800;
+	if($days<1)
+		$days = 7;
+	if($days>30)
+		$days = 30;
+	if($days>20)
+		$width = 1200;
+	return _oj_submissions_statistics($days,$width);
+}
+
+function _oj_submissions_statistics($days = 7,$width = 800)
+{
+	date_default_timezone_set("Asia/Chongqing");
+	$title = new title("Daily Submissions(".date("D M d Y H:i:s").")");
+	$title->set_style('{color: #567300; font-size: 14px}');
+	
+	$max_y = 0;
+	$data = array();
+	
+	for($i=$days-1;$i>=0;$i--)
+	{
+		$item = db_fetch_object(db_query("SELECT COUNT(*) AS num,DATE_SUB(CURDATE(),INTERVAL %d DAY) AS date FROM solution WHERE FROM_UNIXTIME(in_date,'%Y-%m-%%d') = DATE_SUB(CURDATE(),INTERVAL %d DAY)",$i,$i));
+        $data[] = (int)$item->num;
+		$x_label[] = substr($item->date,5);
+		$max_y = max($max_y,$item->num);
+	}
+	
+	$d = new solid_dot();
+	$d->size(3)->halo_size(1)->colour('#ff0000');
+
+	$line = new line();
+	$line->set_default_dot_style($d);
+	$line->set_values($data);
+	$line->set_width(2);
+	$line->set_colour('#3D5C56');
+
+	$chart = new open_flash_chart();
+	$chart->set_title($title);
+	$chart->add_element($line);
+	
+	$max_y_t = (int)round($max_y/10)*10;
+	$max_y += $max_y_t/10;
+	$y = new y_axis();
+	$y->set_range(0,$max_y,(int)round($max_y/10));
+	
+	$x = new x_axis();
+	$x->set_labels_from_array($x_label);
+	$chart->set_x_axis($x);
+	$chart->add_y_axis($y);
+	
+	return "<div class=open_flash_chart>".ofc_api_render($chart,$width)."</div>";
+}

@@ -3,6 +3,11 @@
 function oj_contest_problem_submit($cid,$num)
 {
 	$status = get_contest_status($cid);
+	if($status == 0)
+	{
+		drupal_set_message("Contest $cid not start.",'info');
+		drupal_goto("contest/$cid");
+	}
 	if($status == 2)
 	{
 		drupal_set_message("Contest $cid is ended.",'info');
@@ -11,6 +16,13 @@ function oj_contest_problem_submit($cid,$num)
 	}
 	$title = db_result(db_query("SELECT title FROM {contests} WHERE cid=%d",$cid));
 	drupal_set_title(check_plain("contest $cid -- Submit"));
+	$breadcrumb = array();
+	$breadcrumb[] = l('Home', '<front>');
+	$breadcrumb[] = l('Contests', 'contests');
+	$breadcrumb[] = l($cid, 'contest/'.$cid);
+	$breadcrumb[] = l('problem', 'contest/'.$cid.'/problem');
+	drupal_set_breadcrumb($breadcrumb);
+	
 	$output = "<center>";
 	$output .= drupal_get_form('oj_contest_problem_submit_form',$cid,$num);
 	$output .= "</center>";
@@ -68,7 +80,7 @@ function oj_contest_problem_submit_form(&$form_state=NULL,$cid,$num)
 		'#prefix' => '<div class=container-inline>',
 		'#suffix' => '</div>'
 	);
-	$languages = oj_languages();
+	$languages = oj_contest_language($cid);
 	$form['language']=array
 	(
 		'#type'=>'select',

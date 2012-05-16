@@ -25,12 +25,12 @@ function oj_contest_list()
 	
 	$colwidths=array
 	(
-		array('bSortable'=>true,'sWidth'=>'10%'),
+		array('bSortable'=>true,'sWidth'=>'10%','asSorting'=>array('desc','asc')),
 		array('bSortable'=>true,'sWidth'=>'30%'),
 		array('bSortable'=>true,'sWidth'=>'20%'),
 		array('bSortable'=>true,'sWidth'=>'20%'),
-		array('bSortable'=>true,'sWidth'=>'11%'),
-		array('bSortable'=>false,'sWidth'=>'11%'),
+		array('bSortable'=>true,'sWidth'=>'10%'),
+		array('bSortable'=>false,'sWidth'=>'10%'),
 	);
 	
 	$params=array
@@ -39,7 +39,7 @@ function oj_contest_list()
 		(
 			'sPaginationType' => 'full_numbers',
             'sDom' => '<"H"lp<"clear">>rt<"F"ip<"clear">><"clear">',
-            //'bStateSave'  => true,  // needs work to remember the independent input search box values
+            'bStateSave'  => true,  // needs work to remember the independent input search box values
             'sCookiePrefix' => 'pl_',
             'bProcessing' => true,
             'bServerSide' => true,
@@ -53,7 +53,7 @@ function oj_contest_list()
     );
 	
 	$script=<<<SCR
-$(document).ready(function() 
+	$(document).ready(function() 
 	{
         $("#searchid").keyup( 
 		function () 
@@ -76,15 +76,23 @@ $(document).ready(function()
 } );
 SCR;
 	drupal_add_js($script,'inline');
+	drupal_add_js(drupal_get_path('module','oj_contest').'/oj_contest.js');
 	
-	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	drupal_add_css(drupal_get_path('module','datatables').'/theme/css/cupertino/jquery-ui-1.8.19.custom.css');
-	
+	drupal_add_css(drupal_get_path('module','datatables').'/dataTables/media/css/demo_table_jui.css');
+	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/cupertino/jquery-ui-1.7.3.custom.css');
 	$inputboxes='<table style="border:0px;background-color:#fedc6b; float:left">
                 <tr><td>Filter ID:</td><td><input id="searchid" type=text size=15></td></tr>
                 <tr><td>Contest Title:</td><td><input id="searchtitle" type=text size=15></td></tr>
 				</table>
-				<input id="search_button" type="submit" value="Search">';
+				<input id="search_button" type="submit" value="Search">
+				';
+	if(user_access('create contest'))
+	{
+		$inputboxes .= '<div style="float:right;">
+						<a href="contest/add" id="add_contest" style="color:black">Add a contest</a>
+						</div>';
+		drupal_add_js($js,'inline');
+	}
 	return $inputboxes . theme_datatable($head,$dummy_row,$params);
 }
 
@@ -94,7 +102,7 @@ function oj_contest_list_ajax()
 	$lim_rowc=db_escape_string($_GET['iDisplayLength']);
 	
 	$allrecord=db_result(db_query("SELECT COUNT(*) FROM {contests}"));
-	$sql="SELECT SQL_CALC_FOUND_ROWS * FROM {contests} c WHERE 1";
+	$sql="SELECT SQL_CALC_FOUND_ROWS * FROM {contests} c WHERE defunct=0";
 	
 	if (!empty($_GET['sSearch_0']))
 		$sql.=" AND cid LIKE '" . $_GET['sSearch_0'] . "%%'";
@@ -113,16 +121,16 @@ function oj_contest_list_ajax()
 				case 0: $sqlorderby.= $ordercomma . "cid " . $_GET["sSortDir_$s"];
 						$ordercomma=",";
 						break;
-				case 1: $sqlorderby.= $ordercomma . "title " . $_GET["sSortDir_$s"].",cid";  
+				case 1: $sqlorderby.= $ordercomma . "title " . $_GET["sSortDir_$s"].",cid desc";  
 						$ordercomma=",";
 						break;
-				case 2: $sqlorderby.= $ordercomma . "start_time " . $_GET["sSortDir_$s"].",cid";  
+				case 2: $sqlorderby.= $ordercomma . "start_time " . $_GET["sSortDir_$s"].",cid desc";  
 						$ordercomma=",";
 						break;
-				case 3: $sqlorderby.= $ordercomma . "end_time " . $_GET["sSortDir_$s"].",cid";  
+				case 3: $sqlorderby.= $ordercomma . "end_time " . $_GET["sSortDir_$s"].",cid desc";  
 						$ordercomma=",";
 						break;
-				case 4: $sqlorderby.= $ordercomma . "access " . $_GET["sSortDir_$s"].",cid";  
+				case 4: $sqlorderby.= $ordercomma . "access " . $_GET["sSortDir_$s"].",cid desc";  
 						$ordercomma=",";
 						break;
 				//case 5: $sqlorderby.= $ordercomma . "status " . $_GET["sSortDir_$s"].",cid";  
@@ -145,7 +153,7 @@ function oj_contest_list_ajax()
     $out.='"iTotalDisplayRecords": ' . $filteredrec . ', ';
     $out.='"aaData": [ ';
     print $out;
-   
+	date_default_timezone_set("Asia/Chongqing");
     $comma="";
     while ($r = db_fetch_array($result))
 	{
@@ -171,6 +179,12 @@ function oj_contest_list_ajax()
 }
 function oj_contest_problem_list($cid)
 {
+	oj_contest_password_access($cid);
+	global $user;
+	$path = url(drupal_get_path('module','oj').'/misc/images/');
+	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
+	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/sunny/jquery-ui-1.7.3.custom.css');
+
 	$head=array
 	(
 		array('data' => ''),
@@ -179,56 +193,11 @@ function oj_contest_problem_list($cid)
 		array('data' => 'Ratio(AC/Submit)'),
 	);
 
-	$dummy_row[]=array
-	(
-		array('data' => "Loading..."),
-		array('data' => "Loading..."),
-		array('data' => "Loading..."),
-		array('data' => "Loading..."),
-	);
-	
-	$colwidths=array
-	(
-		array('bSortable'=>false,'sWidth'=>'5%'),
-		array('bSortable'=>false,'sWidth'=>'18%'),
-		array('bSortable'=>false,'sWidth'=>'67%'),
-		array('bSortable'=>false,'sWidth'=>'10%'),
-	);
-	
-	$params=array
-	(
-		'datatable_options' =>array
-		(
-            'sDom' 			=> '<"H"<"clear">>rt<"F"<"clear">><"clear">',
-            'bServerSide' 	=> true,
-            'sAjaxSource' 	=> '?q=oj_contest_problem_list.ajax/'.$cid,
-            'aoColumns' 	=> $colwidths,
-            'bJQueryUI' 	=> true,
-			'bAutoWidth'	=> false,
-			'iDisplayLength' => 30,
-        )
-    );
-	
-	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	drupal_add_css(drupal_get_path('module','datatables').'/theme/css/sunny/jquery-ui-1.8.17.custom.css');
-
-	return theme_datatable($head,$dummy_row,$params);
-}
-
-function oj_contest_problem_list_ajax($cid)
-{
-	global $user;
-	$path = url(drupal_get_path('module','oj').'/misc/images/');
-	
-	print '{"aaData": [ ';
-    $comma = '';
-	
 	$items = db_query("SELECT * FROM {contest_problem} WHERE cid=%d ORDER BY num",$cid);
-    while($item = db_fetch_object($items))
+	while($item = db_fetch_object($items))
 	{
-        print $comma; $comma=',';
-        $linkbeg = addslashes('<a href="' . url("contest/$cid/problem/".chr($item->num-1+ord('A'))) . '">');
-        $linkend = addslashes('</a>');
+		$linkbeg = '<a href="' . url("contest/$cid/problem/".chr($item->num-1+ord('A'))) . '">';
+        $linkend = '</a>';
 		$status = "";
 		if($user->uid)
 		{
@@ -258,18 +227,45 @@ function oj_contest_problem_list_ajax($cid)
 			$ratio .= "%";
 		}
 		$ratio .= "(<a href=".url("contest/$cid/status/")."&pid=".chr($item->num-1+ord('A'))."&result=0".">$accepted</a>/<a href=".url("contest/$cid/status/")."&pid=".chr($item->num-1+ord('A')).">$submit</a>)";
-		$valueow =  '["' . $status .
-					'","' . $num .
-					'","' . $linkbeg . $title . $linkend .
-					'","' . $ratio .
-					'"]';
-        print $valueow;
-    }
-    print ']}';
+		
+		$dummy_row[] = array
+		(
+			array('data' => $status),
+			array('data' => $num),
+			array('data' => $linkbeg . $title . $linkend),
+			array('data' => $ratio),
+		);
+	}
+	if(!isset($dummy_row))
+		$dummy_row[] = array('','','','',);
+	
+	$colwidths=array
+	(
+		array('bSortable'=>false,'sWidth'=>'5%'),
+		array('bSortable'=>false,'sWidth'=>'18%'),
+		array('bSortable'=>false,'sWidth'=>'67%'),
+		array('bSortable'=>false,'sWidth'=>'10%'),
+	);
+	
+	$params=array
+	(
+		'datatable_options' =>array
+		(
+            'sDom' => '<"H"<"clear">>rt<"F"<"clear">><"clear">',
+            'aoColumns' => $colwidths,
+            'bJQueryUI' => true,
+			'bAutoWidth' => false,
+			'aaSorting' => array(),
+			'iDisplayLength'=>26,
+        )
+    );
+	
+	return theme_datatable($head,$dummy_row,$params);
 }
 
 function oj_contest_status($cid)
 {
+	oj_contest_password_access($cid);
 	$breadcrumb = array();
 	$breadcrumb[] = l('Home', '<front>');
 	$breadcrumb[] = l('Contests', 'contests');
@@ -377,17 +373,32 @@ SCR;
 	drupal_add_js($script,'inline');
 	
 	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	drupal_add_css(drupal_get_path('module','datatables').'/theme/css/start/jquery-ui-1.8.17.custom.css');
+	//drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
+
 	global $user;
 	$pid = $_GET['pid'];
 	if(is_numeric($pid))
 		$pid = chr($pid-1+ord('A'));
+	if(isset($_GET['result']))
+		$result = $_GET['result'];
 	$inputboxes = '<table style="border:0px;background-color:#fedc6b; float:left">
-                <tr><td>Filter User:</td><td><input id="search-user" type=text size=15></td>
+                <tr><td>Filter User:</td><td><input id="search-user" type=text size=15 value='.$_GET['uid'].'></td>
                 <td>Problem ID:</td><td><input id="search-pid" type=text size=10 value='.$pid.'></td>
-				<td>Result:<select size=1 id=search-result><option value=>All</option><option value=0 '.(isset($_GET['result'])?'selected':'').'>Accepted</option><option value=1>Presentation Error</option><option value=2>Time Limit Exceeded</option><option value=3>Memory Limit Exceeded</option><option value=4>Wrong Answer</option><option value=5>Runtime Error</option><option value=6>Output Limit Exceeded</option><option value=7>Compile Error</option>';
+				<td>Result:<select size=1 id=search-result>
+				<option value=>All</option>
+				<option value=0 '.(isset($result)&&$result==0?'selected':'').'>Accepted</option>
+				<option value=1 '.($result==1?'selected':'').'>Presentation Error</option>
+				<option value=2 '.($result==2?'selected':'').'>Time Limit Exceeded</option>
+				<option value=3 '.($result==3?'selected':'').'>Memory Limit Exceeded</option>
+				<option value=4 '.($result==4?'selected':'').'>Wrong Answer</option>
+				<option value=5 '.($result==5?'selected':'').'>Runtime Error</option>
+				<option value=6 '.($result==6?'selected':'').'>Output Limit Exceeded</option>
+				<option value=7 '.($result==7?'selected':'').'>Compile Error</option>';
 	if($user->uid==1||$user->roles['5']!=NULL)
-		$inputboxes .= '<option value=98>System Error</option><option value=99>Validate Error</option><option value=100>Data Error</option><option value=10000>Waiting</option>';
+		$inputboxes .= '<option value=98 '.($result==98?'selected':'').'>System Error</option>
+						<option value=99 '.($result==99?'selected':'').'>Validate Error</option>
+						<option value=100 '.($result==100?'selected':'').'>Data Error</option>
+						<option value=10000 '.($result==10000?'selected':'').'>Waiting</option>';
 	
 	$inputboxes .= '</select></td>
 				<td>Language:<select size=1 id=search-language><option value=\'\'  selected>All</option><option value=0>G++</option><option value=1>GCC</option><option value=2>Java</option><option value=3>Pascal</option></select></td></tr>
@@ -486,15 +497,19 @@ function oj_contest_status_ajax($cid)
       		$r[$key] = trim($value);
       	}
         print $comma; $comma = ",";
-		//$nick = user_load($r['uid'])->profile_nick;
+		
 		$num = db_result(db_query("SELECT num FROM {contest_problem} WHERE cid=%d AND pid=%d",$cid,$r['pid']));
         $num = chr($num-1+ord('A'));
 		$linkbeg = addslashes('<a href="' . url("contest/$cid/problem/".$num) . '">');
         $linkend = addslashes('</a>');
 		
+		$nick = oj_user_nick($r['uid']);
+        $user_linkbeg = addslashes('<a href="' . url('user/') . $r['uid'] . '/status" title="'.$nick.'">');
+        $user_linkend = addslashes('</a>');
+		
 		date_default_timezone_set("Asia/Chongqing");
 		$row= '["' . $r['sid'] .
-			 '","' . "<a href=" . url('user/'.$r['uid']) . " title=".$nick.">"  .  $r['name'] . "</a>" . 
+			 '","' . $user_linkbeg . $r['name'] . $user_linkend . 
 			 '","' . $linkbeg . $num . $linkend .
 			 '","' . getResultDescript($r['result']) .
 			 '","' . ($r['result']==0?$r['memory']."K":"") .
@@ -509,9 +524,21 @@ function oj_contest_status_ajax($cid)
     print ']}';
 }
 
-function oj_contest_problem_status($node=NULL)
+function oj_contest_problem_status($num=NULL,$cid=NULL)
 {
-	$pid = $node->field_pid['0']['value'];
+	oj_contest_password_access($cid);
+	$breadcrumb = array();
+	$breadcrumb[] = l('Home', '<front>');
+	$breadcrumb[] = l('Contests', 'contests');
+	$breadcrumb[] = l($cid, 'contest/'.$cid);
+	$breadcrumb[] = l('problem', 'contest/'.$cid.'/problem');
+	$breadcrumb[] = l($num, 'contest/'.$cid.'/problem/'.$num);
+	drupal_set_breadcrumb($breadcrumb);
+	drupal_set_title("Contest Problems $num Status");
+	
+	$num = ord($num)-ord('A')+1;
+	$pid = db_result(db_query("SELECT pid FROM {contest_problem} WHERE cid=%d AND num=%d",$cid,$num));
+	
 	$head=array
 	(
 		array('data' => 'Run ID'),
@@ -523,7 +550,6 @@ function oj_contest_problem_status($node=NULL)
 		array('data' => 'Submit Time'),
 	);
 
-	// one dummy row, needed for initialization
 	$dummy_row[]=array
 	(
 		array('data' => "Loading..."),
@@ -556,7 +582,7 @@ function oj_contest_problem_status($node=NULL)
             'sCookiePrefix' => 'pl_',
             'bProcessing' => true,
             'bServerSide' => true,
-            'sAjaxSource' => '?q=oj_problem_status.ajax/'.$pid,
+            'sAjaxSource' => "?q=oj_contest_problem_status.ajax/$pid/$cid",
             'aoColumns' => $colwidths,
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
@@ -565,7 +591,6 @@ function oj_contest_problem_status($node=NULL)
         )
     );
 	$params['datatable_options']['aaSorting']=array(array(3,'asc'),array(2,'asc'),array(5,'asc'),array(1,'desc'));
-	// script to initialize field seach box events
 	
 	$script=<<<SCR
 $(document).ready(function() 
@@ -580,15 +605,9 @@ $(document).ready(function()
 SCR;
 	drupal_add_js($script,'inline');
 	
-	# add the themeroller widget set (bJQueryUI=true)
 	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	drupal_add_css(drupal_get_path('module','datatables').'/theme/css/start/jquery-ui-1.8.17.custom.css');
-	$path = drupal_get_path('module','oj').'/misc/js/dist/';
-	drupal_add_js($path.'jquery.min.js');
-	drupal_add_js($path.'jquery.jqplot.min.js');
-	drupal_add_js($path.'plugins/jqplot.pieRenderer.min.js');
-	drupal_add_js($path.'plugins/jqplot.donutRenderer.min.js');
-	drupal_add_css($path.'jquery.jqplot.min.css');
+	//drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
+
 	$inputboxes='<table style="border:0px;background-color:#fedc6b; float:right">
                 <tr>
 				<td>
@@ -604,80 +623,32 @@ SCR;
 				</table>
 				';
 	
-	$item = db_fetch_object(db_query("SELECT field_submit_value,field_accepted_value,
-				field_submit_user_value,field_solved_value
-				FROM {content_type_problem} WHERE field_pid_value=%d",$pid));
-	$submit = $item->field_submit_value;
-	$accepted = $item->field_accepted_value;
-	$submit_user = $item->field_submit_user_value;
-	$solved = $item->field_solved_value;
-	$scr = "<center><div id=\"chart1\" style=\"height:330px; width:600px;\"></div></center>
-			<script language='javascript'>
-			$(document).ready(function(){
-			  var data = [ ['Total Submissions $submit',0],
-			  ['Users (Submitted) $submit_user',0],['Users (Solved) $solved',0],
-			";
-	$items =db_query("SELECT result,COUNT(*) as sum FROM {solution} WHERE pid=%d GROUP BY result",$pid);
-	$i = 0;
+	$sql = "SELECT result,COUNT(*) as sum FROM {solution} WHERE pid=%d AND cid=%d GROUP BY result";
+	$items =db_query($sql,$pid,$cid);
+	$oj_result = oj_get_status_result();
 	while($item =  db_fetch_object($items))
 	{
-		$result = getResultDescript($item->result);
-		$scr .= "['<a href=\'status?pid=$pid&result={$item->result}\'>$result</a>\t{$item->sum}',{$item->sum}],";
-		$i++;
+		$data[$oj_result[$item->result]] = (int)$item->sum;
+		$links[$oj_result[$item->result]] = url("contest/$cid/status",array('absolute'=>TRUE))."&pid=$num&result=".$item->result;
 	}
-	//seriesColors: [ \"red\", \"#ff03fa\", \"#ff9900\", \"#0692ff\", \"#000000\", \"#bb338f\", 
-    //   \"#999999\", \"#1e9e00\", \"#d8b83f\", \"#ff5800\", \"#0085cc\"],
-	$scr .= "
-			  ];
-			  var plot1 = jQuery.jqplot ('chart1', [data], 
-				{ 
-					title: 'Statistics',
-					seriesColors: [ \"#4bb2c5\", \"#c5b47f\", \"#EAA228\", \"#579575\", \"#839557\", \"#958c12\", 
-        \"#953579\", \"#4b5de4\", \"#d8b83f\", \"#ff5800\", \"#0085cc\"],
-					seriesDefaults: {
-					// Make this a pie chart.
-					renderer: jQuery.jqplot.PieRenderer, 
-					rendererOptions: {
-					  // Put data labels on the pie slices.
-					  // By default, labels show the percentage of the slice.
-					  showDataLabels: true
-					}
-				  }, 
-				  legend: { show:true, location: 'e' }
-				}
-			  );
-			});
-			</script>
-			";
-	//debug($scr);
-	return $scr.$inputboxes . theme_datatable($head,$dummy_row,$params);
+	$scr = problem_status_generate_pie_chart_2($data,$links);
+	return $scr . $inputboxes . theme_datatable($head,$dummy_row,$params);
 }
 
-function oj_contest_problem_status_ajax($pid=0)
+function oj_contest_problem_status_ajax($pid=NULL,$cid=NULL)
 {
 	$lim_off=db_escape_string($_GET['iDisplayStart']);
 	$lim_rowc=db_escape_string($_GET['iDisplayLength']);
 	
-	$allrecord=db_result(db_query("SELECT COUNT(*) FROM {solution} WHERE pid=%d",$pid));
+	$allrecord=db_result(db_query("SELECT COUNT(*) FROM {solution} WHERE pid=%d AND cid=%d",$pid,$cid));
 	$sql="SELECT SQL_CALC_FOUND_ROWS s.sid,u.name,s.uid,s.pid,s.result,s.memory,s.time,s.language,s.code_length,s.in_date FROM {solution} s LEFT JOIN {users} u ON u.uid=s.uid WHERE 1";
 	
 	$sql.=" AND s.pid=$pid AND s.result=0";
-    // NOTE: use double %, because drupal printf()s it before sending to mysql...
-	
-	if (!empty($_GET['sSearch_1']))
-        $sql.=" AND u.name LIKE '" . $_GET['sSearch_1']  . "%%' ";
-	
-    if (!empty($_GET['sSearch_2']))
-		$sql.=" AND  s.pid = " . $_GET['sSearch_2'];
-	
-    if ($_GET['sSearch_3']!=NULL)
-		$sql.=" AND  s.result = " . $_GET['sSearch_3'];
 	
 	if ($_GET['sSearch_6']!=NULL)
 		$sql.=" AND  s.language = " . $_GET['sSearch_6'];
-    // because of condition listing, one odering is always needed: based on nid
-    // to be able to group the same notification (with just differenct conditions) together
-    $sqlorderby=" ORDER BY "; 
+	$sql .= " AND cid=%d";
+	$sqlorderby=" ORDER BY "; 
     $ordercomma="";  
 	
     if ($_GET['iSortingCols'] > 0)
@@ -702,29 +673,21 @@ function oj_contest_problem_status_ajax($pid=0)
         }
     }
     
-	//if($pid!=NULL)
-	//	$sqlorderby.= $ordercomma . "s.time,s.memory,s.code_length"; 
     if(!empty($sqlorderby))
 		$sql.=$sqlorderby;
     
-    # limit is simply based on user choice
     $sql.=" LIMIT $lim_off, $lim_rowc";
-    // Query that mess finally!
-    $result=db_query($sql);
+    $result=db_query($sql,$cid);
 	$language = oj_languages(TRUE);
-    //$language = array('G++','GCC','JAVA','Pascal','Masm32');
 	$result_type =oj_get_status_result();
-    // Query the rows counted without the limit
     $filteredrec=db_result(db_query("SELECT FOUND_ROWS()"));
 	
-    // Start constructing JSON data
     $out= '{ "sEcho":' . $_GET['sEcho'] . ', ';
     $out.='"iTotalRecords": ' . $allrecord .', ';
     $out.='"iTotalDisplayRecords": ' . $filteredrec . ', ';
     $out.='"aaData": [ ';
     print $out;
-    // deliver the rows 
-    $comma=""; // comma must not be written after the last row (IE)
+    $comma="";
     while ($r = db_fetch_array($result))
 	{
       	foreach ($r as $key => $value)
@@ -751,25 +714,31 @@ function oj_contest_problem_status_ajax($pid=0)
 
 function oj_contest_ranklist($cid)
 {
+	$contest = contest_load($cid);
+	oj_contest_password_access($cid);
+	
 	$breadcrumb = array();
 	$breadcrumb[] = l('Home', '<front>');
 	$breadcrumb[] = l('Contests', 'contests');
 	$breadcrumb[] = l($cid, 'contest/'.$cid);
 	drupal_set_breadcrumb($breadcrumb);
-	drupal_set_title(t('Contest Rank'));
+	$title = 'Contest Rank';
+	if(oj_contest_rank_frozen($contest))
+		$title .= '(frozen)';
+	drupal_set_title($title);
 	
-	$contest = contest_load($cid);
 	//oj_contest_rank_table($cid);
 	$head=array
 	(
         array('data' => 'Rank'),
         array('data' => 'User ID'),
-        array('data' => 'Nick Name'),
+       // array('data' => 'Nick Name'),
         array('data' => 'Solved'),
         array('data' => 'Penalty'),
 	);
-	foreach($contest->problems as $problem)
-		$head[] = array('data' => '<a href=./problem/'.chr($problem['num']-1+ord('A')).'>'.chr($problem['num']-1+ord('A')).'</a>');
+	if(!empty($contest->problems))
+		foreach($contest->problems as $problem)
+			$head[] = array('data' => '<a href=./problem/'.chr($problem['num']-1+ord('A')).'>'.chr($problem['num']-1+ord('A')).'</a>');
 	
 	$dummy_row=array();
 	foreach($head as $r)
@@ -777,14 +746,15 @@ function oj_contest_ranklist($cid)
 	
 	$colwidths=array
 	(
-        array('bSortable'=>false,'sWidth'=>'6%'),
-        array('bSortable'=>false,'sWidth'=>'24%'),
-		array('bSortable'=>false,'sWidth'=>'40%'),
-        array('bSortable'=>false,'sWidth'=>'10%'),
-        array('bSortable'=>false,'sWidth'=>'10%'),
+        array('bSortable'=>false,'sWidth'=>'8px'),
+        array('bSortable'=>false,'sWidth'=>'1em'),
+		//array('bSortable'=>false,'sWidth'=>'1em'),
+        array('bSortable'=>false,'sWidth'=>'8px'),
+        array('bSortable'=>false,'sWidth'=>'1.5em'),
     );
-	foreach($contest->problems as $problem)
-		$colwidths[] = array('bSortable'=>false,'sWidth'=>'5%');
+	if(!empty($contest->problems))
+		foreach($contest->problems as $problem)
+			$colwidths[] = array('bSortable'=>false,'sWidth'=>'1em');
 	
 	$params=array('datatable_options' =>
            array('sPaginationType' => 'full_numbers',
@@ -823,11 +793,8 @@ SCR;
   drupal_add_js($script,'inline');
   
   # add the themeroller widget set (bJQueryUI=true)
-  drupal_add_css(drupal_get_path('module', 'datatables') .
-                 'dataTables/media/css/demo_table_jui.css');
-
-  drupal_add_css(drupal_get_path('module', 'datatables') .
-                 '/theme/css/redmond/jquery-ui-1.8.17.custom.css');
+	drupal_add_css(drupal_get_path('module', 'datatables') .'dataTables/media/css/demo_table_jui.css');
+	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/redmond/jquery-ui-1.7.3.custom.css');
 
   $inputboxes='<table style="border:0px;background-color:#fedc6b; float:left">
                       <tr><td>Filter User:</td>
@@ -835,7 +802,10 @@ SCR;
                       <tr><td>Nick Name:</td>
                           <td><input id="searchauth" type=text size=15></td></tr></table><input id="search_button" type="submit" value="Search"><br>
                           <p id="opInfo"></p>';     
-				  
+	if(is_admin_login())
+		$inputboxes .= '<div style="float:right;">
+						<a href="rebuild_rank">Rebuild contest rank</a>
+						</div>';
   return $inputboxes . theme_datatable($head,$dummy_row,$params);
 }
 
@@ -845,13 +815,16 @@ function oj_contest_rank_ajax($cid)
 	$lim_off=db_escape_string($_GET['iDisplayStart']);
 	$lim_rowc=db_escape_string($_GET['iDisplayLength']);
     
-	$allrecord=db_result(db_query("SELECT COUNT(*) FROM {contest_rank} WHERE cid=%d",$cid));
+	$table = "contest_rank";
+	if(oj_contest_rank_frozen($contest))
+		$table = "contest_rank_temp";
+	$allrecord=db_result(db_query("SELECT COUNT(*) FROM { $table} WHERE cid=%d",$cid));
    
 	$sql="
 		SELECT
 			SQL_CALC_FOUND_ROWS * 
 		FROM
-			{contest_rank} r
+			{ $table} r
 		LEFT JOIN
 			{users} u
 		ON
@@ -883,13 +856,14 @@ function oj_contest_rank_ajax($cid)
       		$r[$key] = trim($value);
       	}
         print $comma; $comma=",";
-    
-        $linkbeg=addslashes('<a href="' . url('user/') . $r['uid'] . '/status">');
-        $linkend=addslashes('</a>');
+		
+		$nick = oj_user_nick($r['uid']);
+        $linkbeg = addslashes('<a href="' . url('user/') . $r['uid'] . '/status" title="'.$nick.'">');
+        $linkend = addslashes('</a>');
                 
         $row = '["' . $idx .
              '","' . $linkbeg . $r['name'] . $linkend .
-             '","' . oj_user_nick($r['uid']) .
+            // '","' . $nick .
              '","' . $r['accepts'] .
              '","' . oj_contest_penalty($r['penalty']);
         foreach($contest->problems as $problem)
@@ -904,6 +878,33 @@ function oj_contest_rank_ajax($cid)
         print $row;
 		$idx++;
       }
-      print ']}';
+	/*
+	$row = ',["' . ' ' .
+             '","' . ' ' .
+             '","' . ' ' .
+             '","' . ' ' .
+             '","' . ' ';
+    foreach($contest->problems as $problem)
+	{
+		$accepted = db_result(db_query("SELECT COUNT(*) FROM {solution} WHERE result=0 AND cid=%d AND pid=%d",$cid,$problem['pid']));
+		$submit = db_result(db_query("SELECT COUNT(*) FROM {solution} WHERE cid=%d AND pid=%d",$cid,$problem['pid']));
+		$row .= '","' . "$accepted/$submit";
+	}
+    $row .=  '"]';
+    print $row;
+	*/
+    print ']}';
 }
 
+/***** is the contest freeze board *****/
+function oj_contest_rank_frozen($contest)
+{
+	$cur_time = time();
+	$result = db_result(db_query("SELECT 1 FROM {contest_rank_temp} WHERE cid=%d LIMIT 1",$contest->cid));
+	if(!$result)
+		return FALSE;
+	$diff = $contest->end_time - $cur_time;
+	if(!is_admin_login() && $diff <= 3600 && $diff >= 0)
+		return TRUE;
+	return FALSE;
+}

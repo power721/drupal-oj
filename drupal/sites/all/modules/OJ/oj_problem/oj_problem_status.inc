@@ -114,14 +114,32 @@ SCR;
 	
 	# add the themeroller widget set (bJQueryUI=true)
 	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	drupal_add_css(drupal_get_path('module','datatables').'/theme/css/start/jquery-ui-1.8.17.custom.css');
+	//drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
+
 	global $user;
+	
+	$pid = $_GET['pid'];
+	if(isset($_GET['result']))
+		$result = $_GET['result'];
+	
 	$inputboxes = '<table style="border:0px;background-color:#fedc6b; float:left">
                 <tr><td>Filter User:</td><td><input id="search-user" type=text size=15 value='.$_GET['uid'].'></td>
-                <td>Problem ID:</td><td><input id="search-pid" type=text size=10 value='.$_GET['pid'].'></td>
-				<td>Result:<select size=1 id=search-result><option value=>All</option><option value=0 '.(isset($_GET['result'])&&$_GET['result']==0?'selected':'').'>Accepted</option><option value=1>Presentation Error</option><option value=2>Time Limit Exceeded</option><option value=3>Memory Limit Exceeded</option><option value=4>Wrong Answer</option><option value=5>Runtime Error</option><option value=6>Output Limit Exceeded</option><option value=7>Compile Error</option>';
+                <td>Problem ID:</td><td><input id="search-pid" type=text size=10 value='.$pid.'></td>
+				<td>Result:<select size=1 id=search-result>
+				<option value=>All</option>
+				<option value=0 '.(isset($result)&&$result==0?'selected':'').'>Accepted</option>
+				<option value=1 '.($result==1?'selected':'').'>Presentation Error</option>
+				<option value=2 '.($result==2?'selected':'').'>Time Limit Exceeded</option>
+				<option value=3 '.($result==3?'selected':'').'>Memory Limit Exceeded</option>
+				<option value=4 '.($result==4?'selected':'').'>Wrong Answer</option>
+				<option value=5 '.($result==5?'selected':'').'>Runtime Error</option>
+				<option value=6 '.($result==6?'selected':'').'>Output Limit Exceeded</option>
+				<option value=7 '.($result==7?'selected':'').'>Compile Error</option>';
 	if($user->uid==1||$user->roles['5']!=NULL)
-		$inputboxes .= '<option value=98>System Error</option><option value=99>Validate Error</option><option value=100>Data Error</option><option value=10000>Waiting</option>';
+		$inputboxes .= '<option value=98 '.($result==98?'selected':'').'>System Error</option>
+						<option value=99 '.($result==99?'selected':'').'>Validate Error</option>
+						<option value=100 '.($result==100?'selected':'').'>Data Error</option>
+						<option value=10000 '.($result==10000?'selected':'').'>Waiting</option>';
 	$results = array
 	(
 		'' 	=> 'All',
@@ -138,8 +156,17 @@ SCR;
 		100 => 'Data Error',
 		1000 => 'Waiting',
 	);
+	
+	$languages = oj_languages(TRUE);
+	$options = "<option value=>All</option>";
+	foreach($languages as $key => $value)
+	{
+		$options .= "<option value=$key>$value</option>\n";
+	}
 	$inputboxes .= '</select></td>
-				<td>Language:<select size=1 id=search-language><option value=>All</option><option value=0>G++</option><option value=1>GCC</option><option value=2>Java</option><option value=3>Pascal</option></select></td></tr>
+				<td>Language:<select size=1 id=search-language>'.
+				$options
+				.'</select></td></tr>
 				</table>
 				<input id="search_button" type="submit" value="Search">';
 			
@@ -152,7 +179,7 @@ function oj_status_ajax()
 	$lim_rowc=db_escape_string($_GET['iDisplayLength']);
 	
 	$allrecord=db_result(db_query("SELECT COUNT(*) FROM {solution}"));
-	$sql="SELECT SQL_CALC_FOUND_ROWS s.sid,u.name,s.uid,s.pid,s.result,s.memory,s.time,s.language,s.code_length,s.in_date FROM {solution} s LEFT JOIN {users} u ON u.uid=s.uid WHERE 1";
+	$sql="SELECT SQL_CALC_FOUND_ROWS s.sid,s.cid,s.num,u.name,s.uid,s.pid,s.result,s.memory,s.time,s.language,s.code_length,s.in_date FROM {solution} s LEFT JOIN {users} u ON u.uid=s.uid WHERE 1";
     // NOTE: use double %, because drupal printf()s it before sending to mysql...
 	if(!empty($_GET['sSearch_1']))
         $sql.=" AND u.name LIKE '" . $_GET['sSearch_1']  . "%%' ";
@@ -239,13 +266,25 @@ function oj_status_ajax()
       	{
       		$r[$key] = trim($value);
       	}
+		if(!empty($r['cid'])&&contest_is_running($r['cid']))
+		{
+			$problem_num = chr($r['num']-1+ord('A'));
+			$linkbeg=addslashes('<a href="' . url("contest/{$r['cid']}/problem/".$problem_num) . '">');
+			$linkend=addslashes('</a>');
+			$problem_url = $linkbeg . $r['cid'].'-'.$problem_num . $linkend;
+		}
+		else
+		{
+			$linkbeg=addslashes('<a href="' . url('problem/' . $r['pid']) . '">');
+			$linkend=addslashes('</a>');
+			$problem_url = $linkbeg . $r['pid'] . $linkend;
+		}
         print $comma; $comma=",";
-        $linkbeg=addslashes('<a href="' . url('problem/' . $r['pid']) . '">');
-        $linkend=addslashes('</a>');   
+        
 		date_default_timezone_set("Asia/Chongqing");
 		$row= '["' .$r['sid'].
 			 '","' . "<a href=" . url('user/'.$r['uid']) . ">"  .  $r['name'] . "</a>" . 
-			 '","' . $linkbeg . $r['pid'] . $linkend .
+			 '","' . $problem_url .
 			 '","' . getResultDescript($r['result']) .
 			 '","' . ($r['result']==0?$r['memory']."K":"") .
 			 '","' . ($r['result']==0?$r['time'] . "MS":"") .
@@ -258,6 +297,7 @@ function oj_status_ajax()
     }
     print ']}';
 }
+
 // server side processing:
 function oj_problem_status($node=NULL)
 {
@@ -332,28 +372,25 @@ SCR;
 	
 	# add the themeroller widget set (bJQueryUI=true)
 	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	drupal_add_css(drupal_get_path('module','datatables').'/theme/css/start/jquery-ui-1.8.17.custom.css');
-	$path = drupal_get_path('module','oj').'/misc/js/dist/';
-	drupal_add_js($path.'jquery.min.js');
-	drupal_add_js($path.'jquery.jqplot.min.js');
-	drupal_add_js($path.'plugins/jqplot.pieRenderer.min.js');
-	drupal_add_js($path.'plugins/jqplot.donutRenderer.min.js');
-	drupal_add_css($path.'jquery.jqplot.min.css');
+	//drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');	
+	
+	$languages = oj_languages(TRUE);
+	$options = "<option value=>All</option>";
+	foreach($languages as $key => $value)
+	{
+		$options .= "<option value=$key>$value</option>\n";
+	}
 	$inputboxes='<table style="border:0px;background-color:#fedc6b; float:right">
                 <tr>
 				<td>
-				Language:<select size=1 id=search-language>
-				<option value=\'\'  selected>All</option>
-				<option value=0>G++</option>
-				<option value=1>GCC</option>
-				<option value=2>Java</option>
-				<option value=3>Pascal</option>
-				</select>
+				Language:<select size=1 id=search-language>'.
+				$options
+				.'</select>
 				</td>
 				</tr>
 				</table>
 				';
-	
+	/*
 	$item = db_fetch_object(db_query("SELECT field_submit_value,field_accepted_value,
 				field_submit_user_value,field_solved_value
 				FROM {content_type_problem} WHERE field_pid_value=%d",$pid));
@@ -361,46 +398,16 @@ SCR;
 	$accepted = $item->field_accepted_value;
 	$submit_user = $item->field_submit_user_value;
 	$solved = $item->field_solved_value;
-	$scr = "<center><div id=\"chart1\" style=\"height:330px; width:600px;\"></div></center>
-			<script language='javascript'>
-			$(document).ready(function(){
-			  var data = [ ['Total Submissions $submit',0],
-			  ['Users (Submitted) $submit_user',0],['Users (Solved) $solved',0],
-			";
+	*/
 	$items =db_query("SELECT result,COUNT(*) as sum FROM {solution} WHERE pid=%d GROUP BY result",$pid);
-	$i = 0;
+	$oj_result = oj_get_status_result();
 	while($item =  db_fetch_object($items))
 	{
-		$result = getResultDescript($item->result);
-		$scr .= "['<a href=\'status?pid=$pid&result={$item->result}\'>$result</a>\t{$item->sum}',{$item->sum}],";
-		$i++;
+		$data[$oj_result[$item->result]] = (int)$item->sum;
+		$links[$oj_result[$item->result]] = url("status",array('absolute'=>TRUE))."?pid=$pid&result=".$item->result;
 	}
-	//seriesColors: [ \"red\", \"#ff03fa\", \"#ff9900\", \"#0692ff\", \"#000000\", \"#bb338f\", 
-    //   \"#999999\", \"#1e9e00\", \"#d8b83f\", \"#ff5800\", \"#0085cc\"],
-	$scr .= "
-			  ];
-			  var plot1 = jQuery.jqplot ('chart1', [data], 
-				{ 
-					title: 'Statistics',
-					seriesColors: [ \"#4bb2c5\", \"#c5b47f\", \"#EAA228\", \"#579575\", \"#839557\", \"#958c12\", 
-        \"#953579\", \"#4b5de4\", \"#d8b83f\", \"#ff5800\", \"#0085cc\"],
-					seriesDefaults: {
-					// Make this a pie chart.
-					renderer: jQuery.jqplot.PieRenderer, 
-					rendererOptions: {
-					  // Put data labels on the pie slices.
-					  // By default, labels show the percentage of the slice.
-					  showDataLabels: true
-					}
-				  }, 
-				  legend: { show:true, location: 'e' }
-				}
-			  );
-			});
-			</script>
-			";
-	//debug($scr);
-	return $scr.$inputboxes . theme_datatable($head,$dummy_row,$params);
+	$scr = problem_status_generate_pie_chart_2($data,$links);
+	return $scr . $inputboxes . theme_datatable($head,$dummy_row,$params);
 }
 
 function oj_problem_status_ajax($pid=0)
@@ -517,33 +524,50 @@ function import_solution($p1=1000,$p2=1099)
 	if($p2==NULL)
 		$p2=1099;
 	
+	$num = 0;
 	db_set_active('JudgeOnline');
 	db_query("SET NAMES 'latin1'");
 	
-	$query="SELECT *,s.solution_id,uncompress(c.source) AS source,UNIX_TIMESTAMP(s.in_date) AS in_date FROM solution s 
-	LEFT JOIN source_code c ON s.solution_id=c.solution_id 
-	LEFT JOIN compileinfo e ON s.solution_id=e.solution_id 
-	WHERE s.solution_id>=%d AND s.solution_id<=%d ORDER BY s.solution_id";
+	$query="SELECT
+				*,
+				UNIX_TIMESTAMP(in_date) AS in_date
+			FROM
+				solution
+			WHERE
+				solution_id>=%d
+				AND solution_id<=%d
+			ORDER BY
+				solution_id";
 	$result=db_query($query,$p1,$p2);
 	db_set_active('default');
-	$num = 0;
 	while($solution = db_fetch_object($result))
 	{
+		
 		$items=db_query("SELECT sid FROM {solution} WHERE pid=%d AND uid=%d AND in_date=%d",$solution->problem_id,$solution->user_id,$solution->in_date);
 		if($item = db_fetch_object($items))
 		{
 			if($item->sid!=NULL)
 				continue;
 		}
+		
 		$uid = 0;
 		$items=db_query("SELECT uid FROM {users} WHERE name='%s'",$solution->user_id);
 		if($item = db_fetch_object($items))
 		{
 			$uid = $item->uid;
 		}
+		db_set_active('JudgeOnline');
+		$source_code = db_result(db_query("SELECT uncompress(source) FROM source_code WHERE solution_id=%d",$solution->solution_id));
+		$compileinfo = db_result(db_query("SELECT error FROM compileinfo WHERE solution_id=%d",$solution->solution_id));
+		db_set_active('default');
+		$pid = db_result(db_query("SELECT field_pid_value FROM {content_type_problem} WHERE field_problem_id_value=%d",$solution->problem_id));
+		$cid = db_result(db_query("SELECT cid FROM {contests} WHERE contest_id=%d",$solution->contest_id));
 		$language = array(0,1,3,2,4);
-		db_query("INSERT INTO {solution} (pid,uid,time,memory,in_date,result,language,ip,num,code_length,source,error) VALUES (%d,%d,%d,%d,%d,%d,%d,'%s',%d,%d,compress('%s'),'%s')",
-			$solution->problem_id,
+		db_query("INSERT INTO {solution} 
+		(pid,cid,uid,time,memory,in_date,result,language,ip,num,code_length,source,error) VALUES 
+		(%d,%d,%d,%d,%d,%d,%d,%d,'%s',%d,%d,compress('%s'),'%s')",
+			$pid,
+			$cid,
 			$uid,
 			$solution->time,
 			$solution->memory,
@@ -551,10 +575,10 @@ function import_solution($p1=1000,$p2=1099)
 			$solution->result,
 			$language[$solution->language],
 			$solution->ip,
-			$solution->num,
+			$solution->num+1,
 			$solution->code_length,
-			phpcharset($solution->source,'UTF-8'),
-			$solution->error
+			phpcharset($source_code,'UTF-8'),
+			$compileinfo
 			) or drupal_set_message('Insert into database error.');
 
 		$num++;
@@ -599,4 +623,79 @@ function oj_problem_status_callback($node)
 {
 	return 'Problem Status';
 }
+/*
+function problem_status_generate_pie_chart($data)
+{
+	$pie = ofc_api_element('pie');
+	$pie->set('alpha', 0.8);
 
+	$fade = ofc_api_element('fade');
+
+	$bounce = ofc_api_element('bounce');
+	$bounce->set('distance', 5);
+
+	$pie->set('animate', array($fade, $bounce));
+	$pie->set('start-angle', 0);
+	$pie->set('tip', '#val# of #total#<br>#percent#');
+	$chart_colors = array("#579575","#839557","#958c12","#953579","#4b5de4","#d8b83f","#ff5800","#0085cc");
+	$pie->set('colours', $chart_colors);
+
+	foreach($data as $key => $value)
+	{
+		$item = array
+		(
+			'value' => $value,
+			'label' => $key,
+		);
+		$pie->add('value', $item);
+	}
+
+	$chart = ofc_api_chart();
+	$chart->add('element', $pie);
+	
+	$title = array
+	(
+		'text' => 'Statistics',
+		'style' => 'color: #f0f0f0; font-size: 20px',
+	);
+	$bg_colour = '#202020';
+	$chart->set('title', $title);
+	$chart->set('bg_colour', $bg_colour);
+
+	return "<div class=open_flash_chart>".ofc_api_render($chart)."</div>";
+}
+*/
+function problem_status_generate_pie_chart_2($data,$links = array())
+{
+	if(empty($data))
+		return "";
+	foreach($data as $key => $value)
+	{
+		$slice = new pie_value($value,$key);
+		$slice->on_click($links[$key]);
+		$d[] = $slice;
+	}
+	$pie = new pie();
+	
+	$pie->set_animate(true);
+	$bounce = new pie_bounce(5);
+	$pie->add_animation($bounce);
+	//$pie->set_label_colour('#432BAF');
+	$pie->set_alpha(0.8);
+	$pie->set_tooltip('#label#:#percent#<br>#val# of #total#');
+	
+	//$chart_colors = array("#579575","#839557","#958c12","#953579","#4b5de4","#d8b83f","#ff5800","#0085cc");
+	$chart_colors = array_values(oj_get_status_color());
+	$pie->set_colours($chart_colors);
+
+	$pie->set_values($d);
+
+	$chart = new open_flash_chart();
+	$chart->add_element($pie);
+	$title = new title('Statistics');
+	$title->set_style('color: #f0f0f0; font-size: 20px');
+	$chart->set_title($title);
+	$chart->set_bg_colour('#202020');
+
+	return "<div class=open_flash_chart>".ofc_api_render($chart)."</div>";
+}

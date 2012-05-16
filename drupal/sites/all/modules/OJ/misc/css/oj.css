@@ -30,7 +30,8 @@ table.contest_view .field
 	text-align:center;
 }
 
-.fieldset-wrapper div.contest-problem
+.fieldset-wrapper div.contest-problem,
+.contest_view td#contest-desc
 {
 	margin:0px;
 	white-space: pre-wrap;       
@@ -127,3 +128,73 @@ a.user-cmp:active
 {
 	color:blue;
 }
+
+#edit-start-time-date-wrapper,
+#edit-start-time-hour-wrapper,
+#edit-start-time-min-wrapper,
+#edit-start-time-sec-wrapper,
+#edit-end-time-date-wrapper,
+#edit-end-time-hour-wrapper,
+#edit-end-time-min-wrapper,
+#edit-end-time-sec-wrapper
+{
+	float:left;
+	margin:3px;
+}
+
+table#contest-problems th
+{
+	text-align: center;
+}
+
+div.open_flash_chart
+{
+	text-align:center;
+}
+
+#contactable
+{
+    background-color: #333333;
+    background-image: url("../images/contact.png");
+    color: #FFFFFF;
+    cursor: pointer;
+    height: 102px;
+    left: 0;
+    margin-left: -5px;
+    overflow: hidden;
+    position: fixed;
+    text-indent: -100000px;
+    top: 280px;
+    width: 44px;
+    z-index: 100000;
+}
+
+#sidebar-left
+{
+    border: 3px solid #007DCA;
+    color: #FFFFFF;
+    left: 0;
+    margin-left: -400px;
+    margin-top: -10px;
+    overflow: hidden;
+    position: fixed;
+    top: 150px;
+    z-index: 99;
+}
+/*
+#sidebar-left a:link {
+  text-decoration: none;
+  font-weight: bold;
+  color: #ffffff;
+}
+#sidebar-left a:visited {
+  text-decoration: none;
+  font-weight: bold;
+  color: #ffffff;
+}
+#sidebar-left a:hover,#sidebar-left a:active {
+  font-weight: bold;
+  color: #ffffff;
+  text-decoration: underline;
+}
+*/
