@@ -33,7 +33,7 @@ function oj_problem_menu()
 	$items['oj_problem_status.ajax'] = array 
 	(
 		'page callback' => 'oj_problem_status_ajax',
-		'page arguments' => array(1),
+		'page arguments' => array(1,2),
 		'type' => MENU_CALLBACK,
 		'access callback' => TRUE,
 	);
@@ -48,6 +48,7 @@ function oj_problem_menu()
 		'type' => MENU_LOCAL_TASK,
 		'weight' => -3
 	);
+	
 	$items['node/%node/status'] = array
 	(
 		'page callback' => 'oj_problem_status',
@@ -58,6 +59,7 @@ function oj_problem_menu()
 		'type' => MENU_LOCAL_TASK,
 		'weight' => -2
 	);
+	
 	$items['node/%node/discuss'] = array/*应该放在0j_message模块*/
 	(
 		'page callback' => 'oj_problem_discuss_callback',
@@ -75,6 +77,7 @@ function oj_problem_menu()
 		'page callback' => 'oj_problem_list',
 		'access callback' => TRUE
 	);
+	
 	$items['problem/%problem'] = array
 	(
 		'title callback' => 'problem_page_title',
@@ -85,12 +88,14 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'type' => MENU_CALLBACK
 	);
+	
 	$items['problem/%problem/view'] = array
 	(
 		'title' => 'View',
 		'type' => MENU_DEFAULT_LOCAL_TASK,
 		'weight' => -10
 	);
+	
 	$items['problem/%problem/submit'] = array
 	(
 		'page callback' => 'oj_problem_submit_callback',
@@ -101,6 +106,7 @@ function oj_problem_menu()
 		'type' => MENU_LOCAL_TASK,
 		'weight' => -3
 	);
+	
 	$items['problem/%problem/status'] = array
 	(
 		'page callback' => 'oj_problem_status',
@@ -111,6 +117,7 @@ function oj_problem_menu()
 		'type' => MENU_LOCAL_TASK,
 		'weight' => -2
 	);
+	
 	$items['problem/%problem/discuss'] = array/*应该放在0j_message模块*/
 	(
 		'page callback' => 'oj_problem_discuss_callback',
@@ -121,6 +128,7 @@ function oj_problem_menu()
 		'type' => MENU_LOCAL_TASK,
 		'weight' => -1
 	);
+	
 	$items['problem/%problem/edit'] = array
 	(
 		'title' => 'Edit',
@@ -131,6 +139,7 @@ function oj_problem_menu()
 		'weight' => 1,
 		'type' => MENU_LOCAL_TASK,
 	);
+	
 	if(function_exists('devel_load_object'))
 	{
 		$items['problem/%problem/devel'] = array
@@ -144,6 +153,7 @@ function oj_problem_menu()
 			'weight' => 100,
 		);
 	}
+	
 	$items['oj_problem_list.ajax'] = array 
 	(
 		'page callback' => 'oj_problem_list_ajax',
@@ -159,6 +169,7 @@ function oj_problem_menu()
         'access arguments' => array('create problem content'),
 		'type' => MENU_CALLBACK
 	);
+	
 	$items['problem/reset'] = array
 	(
 		'page callback' => 'reset_problem',
@@ -173,11 +184,13 @@ function oj_problem_menu()
         'access arguments' => array('create problem content'),
 		'type' => MENU_CALLBACK
 	);
+	
 	$items['status/reset'] = array
 	(
 		'page callback' => 'reset_solution',
         'access callback' => 'reset_solution_access'
 	);
+	
 	$items['code'] = array
 	(
 		'page callback' => 'show_code',
@@ -185,6 +198,7 @@ function oj_problem_menu()
         'access callback' => 'show_code_access',
 		'access arguments' => array(1)
 	);
+	
 	$items['compileinfo'] = array
 	(
 		'page callback' => 'show_compile_info',
@@ -192,6 +206,7 @@ function oj_problem_menu()
         'access callback' => 'show_compile_info_access',
 		'access arguments' => array(1)
 	);
+	
 	return $items;
 }
 
@@ -212,10 +227,25 @@ function oj_problem_form_alter(&$form, $form_state, $form_id)
 	//debug($form_id,'$form_id');debug($form,'$form');debug($form_state,'$form_state');
 	if($form_id == 'problem_node_form')
 	{
-		$form['author']['#access']='0';
-		unset($form['revision_information'],$form['comment_settings'],$form['menu'],$form['options']);
+		$form['author']['#access']=0;
+		//$form['options']['#collapsed'] = 0;
+		unset($form['revision_information'],$form['comment_settings'],$form['menu'],$form['path'],$form['attachments'],$form['options']);
+		//unset($form['options']['promote'],$form['options']['sticky']);
 		unset($form['field_pid'],$form['field_submit'],$form['field_accepted'],$form['field_submit_user'],$form['field_solved']);
 		unset($form['field_input_path'],$form['field_output_path'],$form['field_view'],$form['field_error'],$form['field_problem_id']);
+		//$contest_form = (oj_problem_to_contest($form_state));
+		//$form = array_merge($form,$contest_form);
+		//debug($contest_form,'$contest_form');
+		//debug($form['#node'],'$form');
+		//drupal_add_js(drupal_get_path('module','oj_problem').'/oj_problem.js');
+	}
+	if($form_id == 'search_theme_form')
+	{
+		$pid = $form_state['post']['search_theme_form'];
+		if(is_numeric($pid) && is_problem_exists($pid))
+		{
+			drupal_goto("problem/$pid");
+		}
 	}
 }
 
@@ -272,7 +302,31 @@ function oj_problem_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL)
 	}
 	//debug($op,'op');debug($node,'node');
 }
-
+/*
+function oj_problem_to_contest(&$form_state)
+{
+	$now = time();
+	$contests = array('none');
+	$items = db_query("SELECT cid,title FROM {contests} WHERE start_time>%d",$now);
+	while($item = db_fetch_object($items))
+		$contests[$item->cid] = $item->title;
+	$form['contest'] = array
+	(
+		'#type' => 'select',
+		'#title' => 'Scheduled Contest',
+		'#description' => '',
+		'#options' => $contests,
+		'#default_value' => '',
+		'#weight' => '50',
+		'#ahah' => array
+		(
+			'path' => '',
+			'wrapper' => '',
+		),
+	);
+	return $form;
+}
+*/
 function oj_problem_discuss_access($node)/*应该放在0j_message模块*/
 {
 	global $user;
@@ -307,21 +361,37 @@ function problem_page_edit($node)
 function problem_view_access($node)
 {
 	global $user;
-	if($user->uid==1||$user->roles['4']!=NULL||$user->roles['5']!=NULL)
+	if(is_admin_login())
 		return true;
 	if($node->status!=1)
 		return false;
+	if(function_exists('get_contest_status'))
+	{
+		$cid = $node->field_cid[0]['value'];
+		$status = get_contest_status($cid);
+		if($cid && $status && $status<2)
+		{
+			return FALSE;
+		}
+	}
 	return true;
 }
 
-function problem_load($pid)
+function problem_load($pid,$flag = FALSE)
 {
 	$item = db_fetch_object(db_query("SELECT n.nid FROM {content_type_problem} p LEFT JOIN {node} n ON n.nid=p.nid WHERE field_pid_value=%d",$pid));
 	$node = node_load($item->nid);
+	if($flag && !$node->status)
+		return NULL;
 	return $node;
 }
 
-function get_previous_problem($pid)
+function is_problem_exists($pid)
+{
+	return db_result(db_query("SELECT 1 FROM {content_type_problem} WHERE field_pid_value=%d",$pid));
+}
+
+function get_previous_problem($pid,$num = FALSE)
 {
 	global $user;
 	$query = "SELECT field_pid_value FROM {content_type_problem} p 
@@ -332,20 +402,24 @@ function get_previous_problem($pid)
 	$item = db_fetch_object(db_query($query,$pid));
 	if($item->field_pid_value != NULL)
 		$pid = $item->field_pid_value;
+	if($num)
+		return $pid;
 	return "<a href=".url('problem/'.$pid)."><&lt;Previous</a>";
 }
 
-function get_next_problem($pid)
+function get_next_problem($pid,$num = FALSE)
 {
 	global $user;
 	$query = "SELECT field_pid_value FROM {content_type_problem} p 
 	LEFT JOIN {node} n ON n.nid=p.nid WHERE field_pid_value>%d";
 	if(!($user->uid == 1 || $user->roles['4'] != NULL || $user->roles['5'] != NULL))
 		$query .= " AND status=1";
-	$query .= " LIMIT 1";
+	$query .= " ORDER BY field_pid_value LIMIT 1";
 	$item = db_fetch_object(db_query($query,$pid));
 	if($item->field_pid_value != NULL)
 		$pid = $item->field_pid_value;
+	if($num)
+		return $pid;
 	return "<a href=".url('problem/'.$pid).">Next>></a>";
 }
 
@@ -429,7 +503,7 @@ function oj_get_next_pid()
 	if($pid = db_result(db_query("SELECT max(field_pid_value) AS pid FROM {content_type_problem}")))
 	{
 		++$pid;
-		if(empty($pid) || $pid<1000)
+		if(empty($pid) || $pid < 1000)
 			$pid = 1000;
 	}
 	else

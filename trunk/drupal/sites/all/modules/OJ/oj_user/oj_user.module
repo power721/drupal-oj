@@ -62,6 +62,20 @@ function oj_user_menu()
 	);
 	return $items;
 }
+
+function oj_user_access($access,$account = NULL)
+{
+	global $user;
+	if(empty($account))
+		$account = user_load($user->uid);
+	$items = db_query("SELECT * FROM {role} ORDER BY rid");
+	while($item = db_fetch_object($items))
+	{
+		$roles[$item->rid] = $item->name;
+	}
+	
+}
+
 /**
  * Implementation of hook_user().
  * http://api.drupal.org/api/drupal/developer--hooks--core.php/function/hook_user/6
@@ -160,6 +174,7 @@ function oj_user_form_alter(&$form, $form_state, $form_id)
 		$form['account']['name']['#attributes'] = array('readonly' => 'true');
 	}
 }
+
 /**
  * Form validation handler.
  */
@@ -323,19 +338,88 @@ function check_qq($qq)
 	return FALSE;
 }
 
+function oj_user_block($op = 'list', $delta = 0, $edit = array())
+{
+	if ($op == 'list')
+	{
+		$blocks[0] = array
+		(
+			'info' => t('User information'), 
+			'weight' => 0, 
+			'status' => 1, 
+			'region' => 'left',
+		);
+		return $blocks;
+	}
+    /*else if ($op == 'configure' && $delta == 0)
+    {
+		$form['items'] = array
+		(
+			'#type' => 'select', 
+			'#title' => t('Number of items'), 
+			'#default_value' => variable_get('mymodule_block_items', 0), 
+			'#options' => array('1', '2', '3'),
+		);
+		return $form;
+	}
+	else if ($op == 'save' && $delta == 0)
+	{
+		variable_set('mymodule_block_items', $edit['items']);
+	}*/
+	else if ($op == 'view')
+	{
+		switch ($delta)
+		{
+			case 0:
+			$block = array
+			(
+				'subject' => t('User Information'), 
+				'content' => oj_user_block_html(),
+			);
+			break;
+		}
+		return $block;
+	}
+}
+
+function oj_user_block_html()
+{
+	global $user;
+	$user = user_load($user->uid);
+	date_default_timezone_set("Asia/Chongqing");
+	
+	$out = "<b>UID</b>:{$user->uid}<br>\n";
+	$out .= "<b>Name</b>:{$user->name}<br>\n";
+	$out .= "<b>Nick</b>:{$user->profile_nick}<br>\n";
+	$out .= "<b>School</b>:{$user->profile_school}<br>\n";
+	if(!empty($user->email))
+		$out .= "<b>Email</b>:{$user->email}<br>\n";
+	if(check_qq($user->profile_qq))
+		$out .= "<b>QQ</b>:{$user->profile_qq}<br>\n";
+	$out .= "<b>Login Time</b>:<br>".date('Y-m-d H:i:s',$user->login)."<br>\n";
+	$out .= "<b>Login IP</b>:<br>{$user->profile_ip}<br>\n";
+	
+	$out .= "<b>Language</b>:{$user->profile_language}<br>\n";
+	$out .= "<b>Share Code</b>:".($user->profile_share?"Yes":"No")."<br>\n";
+	$out .= "<b>Solved</b>:{$user->profile_solved}<br>\n";
+	$out .= "<b>Submissions</b>:{$user->profile_submissions}<br>\n";
+	
+	return $out;
+}
+
 /*
 *	show user's problem informations
 */
 function oj_user_info($account)
 {
 	global $user;
-	//$data = unserialize($account->data);
 	$login_time = oj_date($account->login);
 	$status_url = url('status');
 	$user_url = url('user');
 	$search_user = url('search/user');
 	$bg_url = drupal_get_path('module','oj').'/misc/images/bg.jpg';
-	if($account->profile_qq != NULL)
+	
+	if(check_qq($account->profile_qq))
 	{
 		$qq_url = "<a target='_blank' href='http://wpa.qq.com/msgrd?v=3&uin={$account->profile_qq}&site=qq&menu=yes'>
 			<img border=0 src='http://wpa.qq.com/pa?p=2:{$account->profile_qq}:41 &r=0.5409521391365766' 
@@ -356,36 +440,6 @@ function oj_user_info($account)
 	$item = db_fetch_object(db_query($sql,$account->uid));
 	$rank = $item->rank;
 	
-	/*$Neighbours = <<<HTML
-		<TABLE width=80% border=1 bordercolorlight=#E4E9EB bordercolordark=#FFFFFF style="border-collapse: collapse">
-			<tr BGCOLOR=#6589D1 align=center style="color:#fff;">
-				<td width=10%>Rank</td>
-				<td width=40%>User</td>
-				<td width=25%>Solved</td>
-				<td width=25%>Submissions</td>
-			</tr>
-HTML;
-	$sql="
-		SELECT
-			*
-		FROM
-			(SELECT *,@rank:=@rank+1 AS rank FROM (SELECT * FROM user_rank)t,(SELECT @rank:=0) r)tt LIMIT %d,7";
-	$items = db_query($sql,($rank-4)<0?0:($rank-4));
-	while($item = db_fetch_object($items))
-	{
-		if ($item->rank == $rank)
-			$color = "#C0C0C0";
-		else if ($item->rank % 2 == 1)
-			$color = "#ffffff";
-		else
-			$color = "#E2E4FF";
-		$Neighbours .= "<tr align=center bgcolor=$color><td width=10%>{$item->rank}</td>
-		<td width=40%><a href=$user_url/{$item->uid}/status>{$item->name}</a></td>
-		<td width=25%>{$item->solved}</td>
-		<td width=25%>{$item->submissions}</td>
-		</tr>";
-	}
-	$Neighbours .= "</table>";*/
 	$Neighbours = oj_user_neighbours($rank);
 	if(is_admin_login())
 		$login_ip = "\n<BR>".$account->profile_ip;
@@ -432,6 +486,7 @@ HTML;
 			<td align=center width=25%>$qq_url</td>
 		</tr>
 		</table>
+		<br/>
 		<font size=5>Neighbours:</font><br>
 			$Neighbours
 	</center>
@@ -443,7 +498,8 @@ SCR;
 function oj_user_neighbours($rank)
 {
 	drupal_add_css(drupal_get_path('module', 'datatables') . 'dataTables/media/css/demo_table_jui.css');
-	drupal_add_css(drupal_get_path('module', 'datatables') . '/theme/css/redmond/jquery-ui-1.8.17.custom.css');
+	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/redmond/jquery-ui-1.7.3.custom.css');
+
 	$head = array
 	(
         array('data' => 'Rank'),
@@ -469,7 +525,7 @@ function oj_user_neighbours($rank)
 			array('data' => $item->nick),
 			array('data' => $item->solved),
 			array('data' => $item->submissions),
-			array('data' => sprintf("%.0f",$item->solved/$item->submissions*100).'%'),
+			array('data' => @sprintf("%.0f",$item->solved/$item->submissions*100).'%'),
 		);
 	}
 	
@@ -488,9 +544,6 @@ function oj_user_neighbours($rank)
 		'datatable_options' => array
 		(
             'sDom' => '<"H"<"clear">>rt<"F"<"clear">><"clear">',
-            //'sCookiePrefix' => 'ul_',
-            //'bProcessing' => false,
-            //'bServerSide' => true,
             'aoColumns' => $colwidths,
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
@@ -529,4 +582,12 @@ function reset_user_access()
 	if($user->uid==1)
 		return true;
 	return false;
+}
+
+function get_uid_by_name($name)
+{
+	//$user = user_load(array('name'=>$name));
+	//return $user->uid;
+	$uid = db_result(db_query("SELECT uid FROM {users} WHERE name='%s'",$name));
+	return $uid;
 }

@@ -88,8 +88,8 @@
  *   $db_url = 'mysqli://username:password@localhost/databasename';
  *   $db_url = 'pgsql://username:password@localhost/databasename';
  */
-$db_url['default'] = 'mysql://root:123456@localhost/drupal6';
-$db_url['JudgeOnline'] = 'mysql://root:123456@localhost/JudgeOnline';
+$db_url['default'] = 'mysqli://root:123456@localhost/drupal6';
+$db_url['JudgeOnline'] = 'mysqli://root:123456@localhost/JudgeOnline';
 
 $db_prefix = '';
 

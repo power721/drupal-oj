@@ -176,7 +176,7 @@ function show_code($sid)
 	$items = db_query($query,$sid);
 	$language = oj_languages(TRUE);
 	//$language = array('G++','GCC','JAVA','Pascal','Masm32');
-	$type = array('cpp','c','java','pascal','xml','c','cpp');
+	$type = array('cpp','c','java','pascal','xml','c','cpp','perl','php');
 	if($item = db_fetch_object($items))
 	{
 		$result = getResultDescript($item->result);
@@ -195,16 +195,28 @@ function show_code($sid)
 			case 4:drupal_add_js($path.'Scripts/shBrushXml.js');break;
 			case 5:
 			case 6:drupal_add_js($path.'Scripts/shBrushCpp.js');break;
+			case 7:drupal_add_js($path.'Scripts/shBrushPerl.js');break;
+			case 8:drupal_add_js($path.'Scripts/shBrushPhp.js');break;
 		}
-		$problem_url = url('problem/'.$item->pid);
+		
+		if(!empty($item->cid)&&contest_is_running($item->cid))
+		{
+			$problem_num = chr($item->num-1+ord('A'));
+			$problem_url = url("contest/{$item->cid}/problem/".$problem_num);
+		}
+		else
+		{
+			$problem_url = url('problem/'.$item->pid);
+			$problem_num = $item->pid;
+		}
 		$user_url = url('user/'.$item->uid);
 		$item->memory = (int)$item->memory;
 		$item->time = (int)$item->time;
 		$output =<<<SCR
 			<p align=center><font size=5 color=#333399>View Code</font></p>
 			<p align=center>
-			<font color=#006600>Problem ID</font>:<a href={$problem_url}>{$item->pid}</a>  
-			<font color=#006600>User ID</font>:<a href={$user_url}>{$item->name}</a> <br>
+			<font color=#006600>Problem ID</font>:<a href=$problem_url>$problem_num</a>  
+			<font color=#006600>User ID</font>:<a href=$user_url>{$item->name}</a> <br>
 			<font color=#006600>Memory</font>:{$item->memory}K  <font color=#006600>Time</font>:{$item->time}MS <br>
 			<font color=#006600>Language</font>:{$language[$item->language]}  <font color=#006600>Result</font>:{$result} <br>
 SCR;
@@ -240,6 +252,18 @@ SCR;
 	}
 }
 
+function is_problem_in_contest($pid)
+{
+	$now = time();
+	$items = db_query("SELECT cid FROM {contests} WHERE start_time<=%d AND end_time>=%d",$now,$now);
+	while($cid = db_result($items))
+	{
+		if(db_result(db_query("SELECT 1 FROM {contest_problem} WHERE cid=%d AND pid=%d",$cid,$pid)))
+			return TRUE;
+	}
+	return false;
+}
+
 function show_code_access($sid)
 {
 	if($sid==NULL)
@@ -247,37 +271,41 @@ function show_code_access($sid)
 	global $user;
 	if($user->uid==0)
 		return false;
+	//Administrator
 	if($user->uid==1)
 		return true;
-	if($user->roles['4']!=NULL||$user->roles['5']!=NULL)
+	if($user->roles['5']!=NULL)
 		return true;
-	//关闭了view code
-	//题目处于比赛中，以前提交的代码
 	
+	//关闭了view code
+	if(!oj_get_value('Source'))
+		return false;
+	
+	//题目处于比赛中，以前提交的代码
+	$item = db_fetch_object(db_query("SELECT s.uid,s.cid,s.pid,s.in_date,p.value FROM {solution} s LEFT JOIN {profile_values} p ON s.uid=p.uid AND p.fid=8 WHERE sid=%d",$sid));
+	if(is_problem_in_contest($item->pid))
+	{
+		if($user->uid != $item->uid)//只能看自己提交的代码
+			return false;
+	}
+	
+	//Team member
+	if($user->roles['4']!=NULL)
+		return true;
 	//Source Browser
 	if($user->roles['3']!=NULL)
 		return true;
 	
-	$items = db_query("SELECT s.uid,s.pid,p.value FROM {solution} s LEFT JOIN {profile_values} p ON s.uid=p.uid AND p.fid=8 WHERE sid=%d",$sid);
-	if($item = db_fetch_object($items))
-	{
-		if($item->uid==$user->uid)
-			return true;
-		//AC共享计划
-		//debug($item,'item');
-		if($item->value!=1)
-			return false;
-		$result=db_fetch_object(db_query("SELECT p.*,min(result) AS result FROM {solution} s LEFT JOIN {profile_values} p ON s.uid=p.uid AND p.fid=8 WHERE s.uid=%d AND s.pid=%d",$user->uid,$item->pid));
-		if($result->result==NULL||$result->result!=0)
-			return false;
-		//debug($result);
+	if($item->uid==$user->uid)//自己的代码
 		return true;
-	}
-	else
+	//AC共享计划
+	//debug($item,'item');
+	if($item->value!=1)
 		return false;
-	//debug($sid);
-	//debug($user,'$user');
-	//debug($user_account,'$user_account');
+	$result=db_fetch_object(db_query("SELECT p.*,min(result) AS result FROM {solution} s LEFT JOIN {profile_values} p ON s.uid=p.uid AND p.fid=8 WHERE s.uid=%d AND s.pid=%d",$user->uid,$item->pid));
+	if($result->result==NULL || $result->result!=0)
+		return false;
+	
 	return false;
 }
 

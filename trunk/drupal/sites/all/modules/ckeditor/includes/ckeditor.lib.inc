@@ -1,7 +1,7 @@
 <?php
 /**
  * CKEditor - The text editor for the Internet - http://ckeditor.com
- * Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+ * Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
  *
  * == BEGIN LICENSE ==
  *
@@ -137,19 +137,16 @@ function ckeditor_load_lang_options() {
   $arr = array();
   $editor_local_path = ckeditor_path(TRUE);
   $lang_file = $editor_local_path . '/lang/_languages.js';
-  if (file_exists($lang_file))
-  {
-   $f = fopen($lang_file, 'r');
-   $file = fread($f, filesize($lang_file));
-   $tmp = explode('{', $file);
-   if (isset($tmp[2]))
-   {
-     $tmp = explode('}', $tmp[2]);
-   }
+  if (file_exists($lang_file)) {
+    $f = fopen($lang_file, 'r');
+    $file = fread($f, filesize($lang_file));
+    $tmp = explode('{', $file);
+    if (isset($tmp[2])) {
+      $tmp = explode('}', $tmp[2]);
+    }
     $langs = explode(',', $tmp[0]);
-    foreach ($langs AS $key => $lang)
-    {
-      preg_match("/(\w+-?\w+):'(\w+)'/i",$lang, $matches);
+    foreach ($langs AS $key => $lang) {
+      preg_match("/(\w+-?\w+):'(\w+)'/i", $lang, $matches);
       if (isset($matches[1]) && isset($matches[2]))
         $arr[$matches[1]] = $matches[2];
     }
@@ -232,6 +229,7 @@ function ckeditor_load_plugins($render = FALSE) {
   $ckeditor_path = '%ckeditor_path%';
   $plugin_dir = '%plugin_dir%';
   $plugin_dir_additional = '%plugin_dir_extra%';
+  $pattern = '#\.addButton\([\s]*[\'"](.*?)[\'"][\s]*\,[\s]*\{[\s]*(.*?)[\s]*\}#s';
 
   /*
    * External plugins
@@ -241,7 +239,7 @@ function ckeditor_load_plugins($render = FALSE) {
       'name' => 'swf',
       'desc' => t('Support for the CKEditor SWF module'),
       'path' => $base_path . drupal_get_path('module', 'ckeditor_swf') . '/plugins/swf/',
-      'buttons' => false,
+      'buttons' => FALSE,
       'default' => 't'
       );
   }
@@ -251,7 +249,7 @@ function ckeditor_load_plugins($render = FALSE) {
       'name' => 'drupal_path',
       'desc' => t('Support for the CKEditor Link module'),
       'path' => $base_path . drupal_get_path('module', 'ckeditor_link') . '/plugins/link/',
-      'buttons' => false,
+      'buttons' => FALSE,
       'default' => 't'
     );
   }
@@ -280,7 +278,7 @@ function ckeditor_load_plugins($render = FALSE) {
       'name' => 'tableresize',
       'desc' => t('Table Resize plugin'),
       'path' => $base_path . $editor_path . 'plugins/tableresize/',
-      'buttons' => false,
+      'buttons' => FALSE,
       'default' => 't'
     );
   }
@@ -290,7 +288,7 @@ function ckeditor_load_plugins($render = FALSE) {
       'name' => 'autogrow',
       'desc' => t('Auto Grow plugin'),
       'path' => $base_path . $editor_path . 'plugins/autogrow/',
-      'buttons' => false,
+      'buttons' => FALSE,
       'default' => 'f'
     );
   }
@@ -304,9 +302,9 @@ function ckeditor_load_plugins($render = FALSE) {
       if (is_dir($_plugin_dir . $file) && file_exists($_plugin_dir . $file . '/plugin.js')) {
         $source = file_get_contents($_plugin_dir . $file . '/plugin.js');
         $buttons = array();
-        if (preg_match_all('#\.addButton\([\s]*\'(.*?)\'[\s]*\,[\s]*\{[\s]*(.*?)[\s]*\}#s', $source, $matches)) {
-          foreach ($matches[1] as $i => $button_name){
-            if (preg_match('#(icon)[\s]*\:[\s]*([^\,\n]*)#', $matches[2][$i], $matches2)){
+        if (preg_match_all($pattern, $source, $matches)) {
+          foreach ($matches[1] as $i => $button_name) {
+            if (preg_match('#(icon)[\s]*\:[\s]*([^\,\n]*)#', $matches[2][$i], $matches2)) {
               $buttons[$button_name] = array();
               $buttons[$button_name]['label'] = $button_name;
               $matches2[2] = str_replace(array('this.path', '+', '\'', '"'), array('', '', '', ''), $matches2[2]);
@@ -337,6 +335,7 @@ function ckeditor_load_plugins($render = FALSE) {
 
     closedir($handle);
   }
+
   /*
    * CKEditor module plugins - additional directory
    */
@@ -346,9 +345,9 @@ function ckeditor_load_plugins($render = FALSE) {
       if (is_dir($_plugin_dir_additional . $file) && file_exists($_plugin_dir_additional . $file . '/plugin.js')) {
         $source = file_get_contents($_plugin_dir_additional . $file . '/plugin.js');
         $buttons = array();
-        if (preg_match_all('#\.addButton\([\s]*\'(.*?)\'[\s]*\,[\s]*\{[\s]*(.*?)[\s]*\}#s', $source, $matches)) {
-          foreach ($matches[1] as $i => $button_name){
-            if (preg_match('#(icon)[\s]*\:[\s]*([^\,\n]*)#', $matches[2][$i], $matches2)){
+        if (preg_match_all($pattern, $source, $matches)) {
+          foreach ($matches[1] as $i => $button_name) {
+            if (preg_match('#(icon)[\s]*\:[\s]*([^\,\n]*)#', $matches[2][$i], $matches2)) {
               $buttons[$button_name] = array();
               $buttons[$button_name]['label'] = $button_name;
               $matches2[2] = str_replace(array('this.path', '+', '\'', '"'), array('', '', '', ''), $matches2[2]);
@@ -391,9 +390,9 @@ function ckeditor_load_plugins($render = FALSE) {
       $plugins[$i]['path'] = $base_path . $plugin['path'];
       if (!isset($plugin['buttons']) || count($plugin['buttons']) == 0) {
         $buttons = array();
-        if (preg_match_all('#\.addButton\([\s]*\'(.*?)\'[\s]*\,[\s]*\{[\s]*(.*?)[\s]*\}#s', $source, $matches)) {
-          foreach ($matches[1] as $i => $button_name){
-            if (preg_match('#(icon)[\s]*\:[\s]*([^\,\n]*)#', $matches[2][$i], $matches2)){
+        if (preg_match_all($pattern, $source, $matches)) {
+          foreach ($matches[1] as $j => $button_name) {
+            if (preg_match('#(icon)[\s]*\:[\s]*([^\,\n]*)#', $matches[2][$j], $matches2)) {
               $buttons[$button_name] = array();
               $buttons[$button_name]['label'] = $button_name;
               $matches2[2] = str_replace(array('this.path', '+', '\'', '"'), array('', '', '', ''), $matches2[2]);
@@ -401,7 +400,7 @@ function ckeditor_load_plugins($render = FALSE) {
             }
           }
         }
-        $plugin['buttons'] = (count($buttons) > 0) ? $buttons : FALSE;
+        $plugins[$i]['buttons'] = (count($buttons) > 0) ? $buttons : FALSE;
       }
     }
     else {
@@ -427,8 +426,7 @@ function ckeditor_load_plugins($render = FALSE) {
     unset($arr['drupalbreaks']['buttons']['DrupalPageBreak']);
   }
 
-  if (isset($arr['drupalbreaks']))
-  {
+  if (isset($arr['drupalbreaks'])) {
     $arr['drupalbreaks']['default'] = 't';
   }
 

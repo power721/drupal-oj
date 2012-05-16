@@ -88,10 +88,10 @@ function user_theme() {
 }
 
 function user_external_load($authname) {
-  $result = db_query("SELECT uid FROM {authmap} WHERE authname = '%s'", $authname);
+  $uid = db_query(db_query("SELECT uid FROM {authmap} WHERE authname = '%s'", $authname));
 
-  if ($user = db_fetch_array($result)) {
-    return user_load($user);
+  if ($uid) {
+    return user_load($uid);
   }
   else {
     return 0;
@@ -291,7 +291,7 @@ function user_save($account, $array = array(), $category = 'account') {
     }
 
     // Refresh user object.
-    $user = user_load(array('uid' => $account->uid));
+    $user = user_load($account->uid);
 
     // Send emails after we have the new user object.
     if (isset($array['status']) && $array['status'] != $account->status) {
@@ -348,7 +348,7 @@ function user_save($account, $array = array(), $category = 'account') {
 
     // Build the initial user object.
     $array['uid'] = db_last_insert_id('users', 'uid');
-    $user = user_load(array('uid' => $array['uid']));
+    $user = user_load($array['uid']);
 
     user_module_invoke('insert', $array, $user, $category);
 
@@ -372,7 +372,7 @@ function user_save($account, $array = array(), $category = 'account') {
     }
 
     // Build the finished user object.
-    $user = user_load(array('uid' => $array['uid']));
+    $user = user_load($array['uid']);
   }
 
   // Save distributed authentication mappings.
@@ -1647,7 +1647,7 @@ function _user_edit_submit($uid, &$edit) {
  * @param $uid The user ID of the user to delete.
  */
 function user_delete($edit, $uid) {
-  $account = user_load(array('uid' => $uid));
+  $account = user_load($uid);
   sess_destroy_uid($uid);
   _user_mail_notify('status_deleted', $account);
   db_query('DELETE FROM {users} WHERE uid = %d', $uid);
@@ -1859,7 +1859,7 @@ function user_user_operations($form_state = array()) {
  */
 function user_user_operations_unblock($accounts) {
   foreach ($accounts as $uid) {
-    $account = user_load(array('uid' => (int)$uid));
+    $account = user_load($uid);
     // Skip unblocking user if they are already unblocked.
     if ($account !== FALSE && $account->status == 0) {
       user_save($account, array('status' => 1));
@@ -1872,7 +1872,7 @@ function user_user_operations_unblock($accounts) {
  */
 function user_user_operations_block($accounts) {
   foreach ($accounts as $uid) {
-    $account = user_load(array('uid' => (int)$uid));
+    $account = user_load($uid);
     // Skip blocking user if they are already blocked.
     if ($account !== FALSE && $account->status == 1) {
       user_save($account, array('status' => 0));
@@ -1891,7 +1891,7 @@ function user_multiple_role_edit($accounts, $operation, $rid) {
   switch ($operation) {
     case 'add_role':
       foreach ($accounts as $uid) {
-        $account = user_load(array('uid' => (int)$uid));
+        $account = user_load($uid);
         // Skip adding the role to the user if they already have it.
         if ($account !== FALSE && !isset($account->roles[$rid])) {
           $roles = $account->roles + array($rid => $role_name);
@@ -1901,7 +1901,7 @@ function user_multiple_role_edit($accounts, $operation, $rid) {
       break;
     case 'remove_role':
       foreach ($accounts as $uid) {
-        $account = user_load(array('uid' => (int)$uid));
+        $account = user_load($uid);
         // Skip removing the role from the user if they already don't have it.
         if ($account !== FALSE && isset($account->roles[$rid])) {
           $roles = array_diff($account->roles, array($rid => $role_name));

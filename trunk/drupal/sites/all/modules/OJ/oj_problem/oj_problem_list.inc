@@ -93,8 +93,8 @@ SCR;
   
 	# add the themeroller widget set (bJQueryUI=true)
 	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	drupal_add_css(drupal_get_path('module','datatables').'/theme/css/sunny/jquery-ui-1.8.17.custom.css');
-
+	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/sunny/jquery-ui-1.7.3.custom.css');
+	
 	$inputboxes='<table style="border:0px;background-color:#fedc6b; float:left">
                 <tr><td>Filter ID:</td><td><input id="searchid" type=text size=15></td></tr>
                 <tr><td>Problem Title:</td><td><input id="searchtitle" type=text size=15></td></tr>
@@ -165,6 +165,7 @@ function oj_problem_list_ajax()
     $out.='"iTotalDisplayRecords": ' . $filteredrec . ', ';
     $out.='"aaData": [ ';
     print $out;
+	date_default_timezone_set("Asia/Chongqing");
     // deliver the rows 
     $comma=""; // comma must not be written after the last row (IE)
     while ($r = db_fetch_array($result))

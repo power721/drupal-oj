@@ -1,7 +1,7 @@
 <?php
 /**
  * CKEditor - The text editor for the Internet - http://ckeditor.com
- * Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+ * Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
  *
  * == BEGIN LICENSE ==
  *
@@ -63,10 +63,9 @@ function ckeditor_help_delegate($path, $arg) {
           array(
             '!wysiwyg' => '<acronym title="'. t('What You See Is What You Get') .'">'. t('WYSIWYG') .'</acronym>',
           )) .'</p>'.
-        '<p>'.t('Useful links: !ckeditorlink | !devguidelink | !userguidelink.',
+        '<p>'. t('More information about the editor can be found at the !ckeditorlink. A handy !userguidelink is available, too.',
           array(
             '!ckeditorlink' => l(t('CKEditor website'), 'http://ckeditor.com'),
-            '!devguidelink' => l(t('CKEditor for Drupal Documentation'), 'http://docs.cksource.com/CKEditor_for_Drupal'),
             '!userguidelink' => l(t('User\'s Guide'), 'http://docs.cksource.com/CKEditor_3.x/Users_Guide'),
           )) .'</p>'.
         '<p>'. t('Profiles can be defined based on user roles. A CKEditor profile may define which pages receive the CKEditor support, which buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions. It is also possible to define the Global Profile that will store values which will be appended to all other profiles.') .'</p>'.
@@ -83,11 +82,10 @@ function ckeditor_help_delegate($path, $arg) {
          array(
            '!wysiwyg' => '<acronym title="' . t('What You See Is What You Get') . '">' . t('WYSIWYG') . '</acronym>',
          )) . '</p>';
-      $output .= '<p>' . t('Useful links: !ckeditorlink | !devguidelink | !userguidelink.',
+     $output .= '<p>' . t('More information about the editor can be found at the !ckeditorlink. A handy !userguidelink is available, too.',
         array(
-          '!ckeditorlink' => l(t('CKEditor website'), 'http://ckeditor.com'),
-          '!devguidelink' => l(t('CKEditor for Drupal Documentation'), 'http://docs.cksource.com/CKEditor_for_Drupal'),
-          '!userguidelink' => l(t('User\'s Guide'), 'http://docs.cksource.com/CKEditor_3.x/Users_Guide')
+            '!ckeditorlink' => l(t('CKEditor website'), 'http://ckeditor.com'),
+            '!userguidelink' => l(t('User\'s Guide'), 'http://docs.cksource.com/CKEditor_3.x/Users_Guide'),
         )) . '</p>';
       $output .= '<h4>' . t('Configuration') . '</h4>';
       $output .= '<ol>';
@@ -103,9 +101,10 @@ function ckeditor_help_delegate($path, $arg) {
         array(
           '!filterlink' => l(t('filters'), 'admin/settings/filters'),
         )) .
-        '<br /><code>'. htmlspecialchars('<a> <p> <span> <div> <h1> <h2> <h3> <h4> <h5> <h6> <img> <map> <area> <hr> <br> <br /> <ul> <ol> <li> <dl> <dt> <dd> <table> <tbody> <th> <tr> <td> <em> <b> <u> <i> <strong> <del> <ins> <sub> <sup> <quote> <blockquote> <pre> <address> <code> <cite> <embed> <object> <param> <strike> <caption> <iframe>') .'</code><br />';
-      $output .= t('<strong>Note:</strong> be careful when granting users access to create tags like %iframe.',
+      '<br /><code>'. htmlspecialchars('<a> <p> <span> <div> <h1> <h2> <h3> <h4> <h5> <h6> <img> <map> <area> <hr> <br> <br /> <ul> <ol> <li> <dl> <dt> <dd> <table> <tbody> <th> <tr> <td> <em> <b> <u> <i> <strong> <del> <ins> <sub> <sup> <quote> <blockquote> <pre> <address> <code> <cite> <embed> <object> <param> <strike> <caption> <iframe>') .'</code><br />';
+       $output .= t('<strong>Note:</strong> be careful when granting users access to create tags like %iframe. <br />If you are going to use CKEditor with the <strong>Filtered HTML</strong> input format, please read  the "Setting up filters" section in the <code>!readme</code> file.',
         array(
+        '!readme' => l('README.txt', drupal_get_path('module', 'ckeditor') .'/README.txt'),
         '%iframe' => '<iframe>'
         )) .'</li>';
       $output .= '<li>'. t('To have better control over line breaks, you should disable the <strong>%settingname</strong> setting in the chosen filter (recommended).',
@@ -141,15 +140,30 @@ function ckeditor_help_delegate($path, $arg) {
       $output .= '<li><code>node/add/*.edit-log</code>: '. t('matches all <code>%fieldname</code> fields on pages such as <code>%pathname1</code>, <code>%pathname2</code>, etc.', array('%fieldname' => 'edit-log', '%pathname1' => 'node/add/page', '%pathname2' => 'node/add/story')) .'</li>';
       $output .= '<li><code>node/add/*.edit-user-*</code>: '. t('matches fields starting with <code>%fieldname</code> on pages starting with <code>%pathname</code>', array('%fieldname' => 'edit-user-', '%pathname' => 'node/add/')) .'</li>';
       $output .= '</ul>';
-
       $output .= '<h3>'. t('Troubleshooting') .'</h3>';
       $output .= t('Take a look at !listlink when installing CKEditor.',
-         array(
+        array(
            '!listlink' => l(t('the list of common problems'), 'http://docs.cksource.com/CKEditor_for_Drupal/Troubleshooting')
-       ));
+        ));
       $output .= ' '. t('If you are looking for more information, have any trouble with the configuration, or found an issue with the CKEditor module, please visit the !officiallink.', array('!officiallink' => l(t('official project page'), 'http://drupal.org/project/ckeditor')));
       $output .= ' '. t('More information about how to customize CKEditor for your theme can be found !herelink.', array('!herelink' => l(t('here'), 'http://drupal.fckeditor.net/tricks')));
       $output .= '</p>';
+
+      $output .= '<h3>'. t('Uploading images and files') .'</h3>';
+      $output .= '<p>'. t('There are three ways for uploading files:') .'</p>';
+      $output .= '<ol>';
+      $output .= '<li>'. t('By using !ckfinder (commercial), an advanced Ajax file manager.',
+        array(
+          '!ckfinder' => l(t('CKFinder'), 'http://ckfinder.com'),
+        )) .'</li>';
+      $output .= '<li>'. t('By using a dedicated module like !imcelink, !iblink or !webfmlink.',
+        array(
+          '!imcelink' => l(t('IMCE'), 'http://drupal.org/project/imce'),
+          '!iblink' => l(t('Image Browser'), 'http://drupal.org/project/imagebrowser'),
+          '!webfmlink' => l(t('Web File Manager'), 'http://drupal.org/project/webfm'),
+        )) .'</li>';
+      $output .= '<li>'. t('By using the core upload module.') .'</li>';
+      $output .= '</ol>';
 
       break;
   }
@@ -160,18 +174,28 @@ function ckeditor_help_delegate($path, $arg) {
  * AJAX callback - XSS filter
  */
 function ckeditor_filter_xss() {
+  global $user;
   $GLOBALS['devel_shutdown'] = FALSE;
 
-  if (!isset($_POST['text']) || !is_string($_POST['text']) || !is_array($_POST['filters'])) {
+  if (!isset($_POST['text']) || !is_string($_POST['text']) || !isset($_POST['token']) || !drupal_valid_token($_POST['token'], 'ckeditorAjaxCall', TRUE)) {
     exit;
   }
+
+  module_load_include('inc', 'ckeditor', 'includes/ckeditor.lib');
+  $profile = ckeditor_user_get_profile($user);
+
+  if ($profile == FALSE) {
+    exit;
+  }
+
+  $settings = $profile->settings;
 
   $text = $_POST['text'];
   $text = strtr($text, array('<!--' => '__COMMENT__START__', '-->' => '__COMMENT__END__'));
 
   $filters = array();
 
-  foreach ($_POST['filters'] as $module_delta) {
+  foreach ($settings['filters'] as $module_delta => $active) {
     if (!is_string($module_delta)) {
       continue;
     }
@@ -189,7 +213,7 @@ function ckeditor_filter_xss() {
     $text = module_invoke($filter->module, 'filter', 'prepare', $filter->delta, $filter->format, $text);
   }
 
-  foreach ($filters as $filter){
+  foreach ($filters as $filter) {
     //built-in filter module, a special case where we would like to strip XSS and nothing more
     if ($filter->module == 'filter' && $filter->delta == 0) {
       preg_match_all("|</?([a-z][a-z0-9]*)(?:\b[^>]*)>|i", $text, $matches);
