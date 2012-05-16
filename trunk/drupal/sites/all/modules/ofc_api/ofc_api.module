@@ -1,0 +1,436 @@
+<?php
+// $Id: ofc_api.module,v 1.9 2010/09/19 04:06:31 kong Exp $
+/**
+ * @file
+ * Open Flash Chart 2 API.
+ *
+ * This module provides an API to generate
+ * Open Flash Chart 2 charts in Drupal.
+ *
+ * @see http://drupal.org/node/423020
+ */
+
+// Check for open-flash-chart.swf
+if (!file_exists(drupal_get_path('module', 'ofc_api') . '/open-flash-chart.swf')) {
+  drupal_set_message(t('The Open Flash Chart 2 API module requires that you place the %open-flash-chart file in %module directory. You can download the file from !open-flash-chart.', array('%open-flash-chart' => 'open-flash-chart.swf', '%module' => drupal_get_path('module', 'ofc_api'), '!open-flash-chart' => l('Open Flash Chart 2 web site', 'http://teethgrinder.co.uk/open-flash-chart-2'))), 'warning', FALSE);
+}
+
+// Include the external library if needed
+if (variable_get('ofc_api_use_library', FALSE)) {
+  include_once(variable_get('ofc_api_library', ''));
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function ofc_api_help($path, $arg) {
+  $help = '';
+
+  switch ($path) {
+    case 'admin/help#ofc_api':
+      $ofc2 = l('Open Flash Chart 2', 'http://teethgrinder.co.uk/open-flash-chart-2');
+      $help = '<p>' . t('Provides an API to generate !ofc2 charts in Drupal', array('!ofc2' => $ofc2)) . '</p>';
+    break;
+  }
+
+  return $help;
+}
+
+/**
+ * Implementation of hook_menu()
+ */
+function ofc_api_menu() {
+  // Open Flash Chart 2 API settings
+  $items['admin/settings/ofc_api'] = array(
+    'title' => t("Open Flash Chart 2 API"),
+    'description' => t("Configure Open Flash Chart 2 API."),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ofc_api_admin_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  // URL to get JSON data
+  $items['ofc_api/data'] = array(
+    'page callback' => 'ofc_api_json',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_ofc_api_data()
+ *
+ * @return
+ * Array of string containing the names of the function that returns a chart object.
+ */
+function ofc_api_ofc_api_data() {
+  return array('ofc_api_sample');
+}
+
+/**
+ * Open Flash Chart 2 API settings form.
+ */
+function ofc_api_admin_settings() {
+  $form['ofc_api_use_swfobject'] = array(
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('ofc_api_use_swfobject', true),
+    '#title' => t('Use SWFObject to embed charts'),
+    '#description' => t('If enabled, Open Flash Chart 2 API will use !swfobject to embed charts into the page. Note that this only works if the end-user has JavaScript enabled in their browser.', array('!swfobject' => l('SWFObject', 'http://code.google.com/p/swfobject'))),
+  );
+  
+  $form['ofc_api_wmode_transparent'] = array(
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('ofc_api_wmode_transparent', false),
+    '#title' => t('Use wmode:transparent for all charts'),
+    '#description' => t('If enabled, Open Flash Chart 2 API will apply !wmode-transparent to all charts. This helps resolve the issue about Flash content always stays on top which can make some element like CSS drop-down menu inaccessible. Alternatively, you can specify this parameter for individual chart when calling !render-function.', array('!wmode-transparent' => '<span style="font-family:monospace">' . check_plain('<param name="wmode" value="transparent" />') . '</span>', '!render-function' => '<span style="font-family:monospace">' . check_plain('ofc_api_render()') . '</span>')),
+  );
+
+  $form['ofc_api_library_container'] = array(
+    '#title' => t('External library'),
+    '#type' => 'fieldset',
+    '#description' => t('You can use an external library instead of the built-in one. So you can create chart objects the way you want.'),
+    '#collapsible' => true,
+    '#collapsed' => !variable_get('ofc_api_use_library', false),
+  );
+
+  $form['ofc_api_library_container']['ofc_api_use_library'] = array(
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('ofc_api_use_library', false),
+    '#title' => t('Use external library'),
+    '#description' => t("If checked, Open Flash Chart 2 API will include the specified library file and enable you to use the library's functions to create the chart object."),
+  );
+
+  $form['ofc_api_library_container']['ofc_api_library'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Path to external library file'),
+    '#default_value' => variable_get('ofc_api_library', ''),
+    '#description' => t('The path to the main external library file, relative to @module-path<br />Example: %example', array('@module-path' => drupal_get_path('module', 'ofc_api'), '%example' => 'php-ofc-library/open-flash-chart.php')),
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Settings form validation
+ */
+function ofc_api_admin_settings_validate($form, $form_state) {
+  $library = drupal_get_path('module', 'ofc_api') . '/' . $form_state['values']['ofc_api_library'];
+
+  if ($form_state['values']['ofc_api_use_library'] && !is_file($library)) {
+    form_set_error('ofc_api_library', t('The file %library does not exist.', array('%library' => $library)));
+  }
+}
+
+/**
+ * Renders the chart.
+ *
+ * This determines the content of the $chart variable
+ * and tries to use an appropriate method to render it.
+ *
+ * @param $chart
+ * Function name, string, or object containing the chart data.
+ * @param $width
+ * The width of the chart. The value could be in pixels or percentage e.g. 400 or '80%'.
+ * @param $height
+ * The height of the chart. The value could be in pixels or percentage e.g. 250 or '50%'.
+ * @param $params
+ * Array of name/value pair for additional Flash parameters e.g. array('quality' => 'high').
+ * @return
+ * String containing HTML code and JavaScript to display the chart.
+ */
+function ofc_api_render($chart = 'ofc_api_sample', $width = 400, $height = 250, $params = array()) {
+  $swf = url(drupal_get_path('module', 'ofc_api') . '/open-flash-chart.swf');
+  $id = ofc_api_unique_id();
+  
+  // Call hook_ofc_api_data() to get all function names that will return chart data
+  $charts = module_invoke_all('ofc_api_data');
+  
+  // $chart contains a function name
+  if (in_array($chart, $charts, true) && function_exists($chart)) {
+    $method = 'data-file';
+    $source = url('ofc_api/data/' . $chart);
+  }
+  // $chart is a chart object
+  elseif (is_object($chart) && isset($chart->elements)) {
+    $method = 'get-data';
+    $source = $id;
+    $json = drupal_to_js(json_encode($chart));
+  }
+  // $chart contains the JSON string
+  elseif (is_string($chart) && is_object(json_decode($chart))) {
+    $method = 'get-data';
+    $source = $id;
+    $json = drupal_to_js($chart);
+  }
+  // $chart is in unknown format
+  else {
+    $method = 'data-file';
+    $source = url('ofc_api/data/not-found');
+  }
+  
+  $data = array(
+    '@swf' => $swf,
+    '@id' => $id,
+    '@width' => check_plain($width),
+    '@height' => check_plain($height),
+    '@method' => $method,
+    '@source' => $source,
+    '@json' => $json,
+  );
+  
+  return ofc_api_render_html($data, $params);
+}
+
+/**
+ * Generates the chart embedding code
+ *
+ * This generates the Flash embedding code using the
+ * nested-objects method describe in an article at A List Apart
+ * @see: http://www.alistapart.com/articles/flashembedcagematch
+ *
+ * @param $data
+ * Array containing parameters used to generate HTML code
+ * @return
+ * String containg HTML code to render the chart
+ */
+function ofc_api_render_html($data, $params) {
+  // Add SWFObject script
+  drupal_add_js(drupal_get_path('module', 'ofc_api') . '/swfobject.js');
+  
+  // Generate code to provide data when rendering chart using JavaScript method
+  if ($data['@method'] == 'get-data') {
+    $js = 'function @id() { return @json; }';
+    $js = str_replace(array_keys($data), array_values($data), $js);
+    drupal_add_js($js, 'inline', 'header');
+  }
+
+  // Use an appropriate protocol to avoid SSL security warning
+  $protocol = empty($_SERVER['HTTPS']) ? 'http' : 'https';
+
+  // Alternative content to display when Flash player is not installed
+  $alt_content = l(theme_image("$protocol://www.adobe.com/images/shared/download_buttons/get_flash_player.gif", 'Get Adobe Flash player', 'Get Adobe Flash player', null, false), 'http://www.adobe.com/go/getflashplayer', array('html' => TRUE));
+  
+  // Set wmode:transparent only if it is not already set by user
+  if (variable_get('ofc_api_wmode_transparent', false) && !isset($params['wmode'])) {
+    $params['wmode'] = 'transparent';
+  }
+  
+  // Prepare Flash parameters for SWFObject dynamic publishing
+  $data['@params'] = drupal_to_js($params);
+
+  // Embed chart using SWFObject dynamic publishing
+  if (variable_get('ofc_api_use_swfobject', true)) {
+    $js = 'swfobject.embedSWF("@swf", "@id", "@width", "@height", "9.0.0", false, {"@method":"@source"}, @params)';
+    $js = str_replace(array_keys($data), array_values($data), $js);
+    drupal_add_js($js, 'inline', 'header');
+
+    $output[] = '<div id="@id">';
+    $output[] = $alt_content;
+    $output[] = '</div>';
+  }
+  // Embed chart using SWFObject static publishing
+  else {
+    $js = 'swfobject.registerObject("@id", "9.0.0", false)';
+    $js = str_replace(array_keys($data), array_values($data), $js);
+    drupal_add_js($js, 'inline', 'header');
+
+    $output[] = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="@width" height="@height" id="@id">';
+    $output[] = '<param name="movie" value="@swf" />';
+    $output[] = '<param name="flashvars" value="@method=@source" />';
+    $output[] = '<!--[if !IE]>-->';
+    $output[] = '<object type="application/x-shockwave-flash" data="@swf" width="@width" height="@height">';
+    $output[] = '<param name="flashvars" value="@method=@source" />';
+    foreach ($params as $name => $value) {
+      $output[] = '<param name="' . $name . '" value="' . $value . '" />';
+    }
+    $output[] = '<!--<![endif]-->';
+    $output[] = $alt_content;
+    $output[] = '<!--[if !IE]>-->';
+    $output[] = '</object>';
+    $output[] = '<!--<![endif]-->';
+    $output[] = '</object>';
+  }
+
+  return implode('', str_replace(array_keys($data), array_values($data), $output));
+}
+
+/**
+ * Renders the chart data.
+ *
+ * This runs the function named $chart and convert its
+ * output into JSON string.
+ *
+ * @param $chart
+ * Function name that will return chart data.
+ * @return
+ * JSON representation of chart data.
+ */
+function ofc_api_json($chart) {
+  // get all function list by calling hook_ofc_api_data()
+  $charts = module_invoke_all('ofc_api_data');
+
+  // check the function name in $chart aginst the function list, also check if the function really exists
+  if (in_array($chart, $charts, true) && function_exists($chart)) {
+    $data = $chart();
+
+    // further verify the returned value of the function to make sure it is an Open Flash Chart 2 object
+    if (is_object($data) && isset($data->elements)) {
+      // set HTTP header to be text/plain
+      drupal_set_header('Content-Type: text/plain; charset: utf-8');
+
+      // JSON-ize the data, cannot use drupal_json() because it will convert "&" in on-click urls to "\x26"
+      print json_encode($data);
+    }
+    else {
+      // if $data is not what we expected, show the 404 page instead of rendering it
+      drupal_not_found();
+    }
+  }
+  else {
+    // if the function name is not in the function list or the function does not exist, show the 404 page
+    drupal_not_found();
+  }
+}
+
+/**
+ * Sample chart.
+ *
+ * Sample code of how to create a sketch bar chart
+ * using the built-in library.
+ *
+ * @return
+ * Object containing chart data
+ */
+function ofc_api_sample() {
+  // create new chart object
+  $chart = ofc_api_chart();
+
+  // set chart title
+  $chart->set('title', array(
+    'text' => "Open Flash Chart 2 API\nSample Chart",
+    'style' => '{font-size: 12px; font-family: Verdana, Arial, sans-serif; text-align: center;}',
+  ));
+
+  // create new bar_sketch element and set its attributes
+  $bar = ofc_api_element('bar_sketch');
+  $bar->set('colour', '#81ac00');
+  $bar->set('outline-colour', '#567300');
+  $bar->set('offset', 7);
+  $bar->set('values', array(5, 1, 4, 3, 2, 6));
+  $bar->set('tip', 'Value: #val#');
+
+  // add bar_sketch element to the chart
+  $chart->add('element', $bar);
+
+  // return chart object
+  return $chart;
+}
+
+/**
+ * Returns new chart object
+ */
+function ofc_api_chart() {
+  return new ofc2_chart();
+}
+
+/**
+ * Returns new chart element
+ */
+function ofc_api_element($type = '') {
+  return new ofc2_element($type);
+}
+
+/**
+ * Open Flash Chart 2 base class
+ */
+class ofc2_chart {
+  function set($name, $data) {
+    if (is_array($data) && is_assoc($data)) {
+      foreach ($data as $key => $value) {
+        $this->$name->$key = ofc_api_fix_type($value);
+      }
+    }
+    else {
+      $this->$name = ofc_api_fix_type($data);
+    }
+  }
+
+  function add($name, $data) {
+    $this->{$name . 's'}[] = $data;
+  }
+}
+
+/**
+ * Open Flash Chart 2 element class
+ */
+class ofc2_element extends ofc2_chart {
+  function __construct($type) {
+    if (!empty($type)) {
+      $this->type = $type;
+    }
+  }
+}
+
+/**
+ * Helper functions
+ */
+
+/**
+ * Fixes the data type of JSON attribute
+ *
+ * This fixes the "json_encode automatically quoting numbers" issue.
+ *
+ * @see http://php.net/manual/en/function.json-encode.php#86513
+ */
+function ofc_api_fix_type($data) {
+  return is_numeric($data) ? $data + 0 : $data;
+}
+
+/**
+ * Generates a unique id for <object> tag
+ */
+function ofc_api_unique_id()  {
+  $id = md5(uniqid(rand(), true));
+  return 'ofc_' . substr($id, 4);
+}
+
+/**
+ * Checks if the specified array is an associative array
+ */
+function is_assoc($array) {
+    return array_keys($array) != range(0, count($array) - 1);
+}
+
+/**
+ * Color themes.
+ *
+ * Some predefined color themes to set the chart colors
+ * these colors are generated from http://kuler.adobe.com.
+ *
+ * @param $name
+ * String containing the name of color theme.
+ * @return
+ * Array of colors for that theme.
+ */
+function ofc_api_color_theme($name) {
+  $themes['blue'] = array('#527c94', '#6198b7', '#73adcf', '#90c4e2', '#aed8f0');
+  $themes['green'] = array('#a8bc38', '#bcd04c', '#d0e460', '#e4f574', '#f8ff88');
+  $themes['brown'] = array('#c0ab58', '#d5c173', '#e3d18b', '#eddea3', '#f7ebbb');
+  $themes['dark-blue'] = array('#e3e3d8', '#72b0b4', '#007c8f', '#14435d', '#270a2b');
+  $themes['bright'] = array('#ffa08f', '#ffca95', '#f1e9d6', '#cdcfa0', '#7a869e');
+  $themes['desert'] = array('#b64245', '#d98962', '#f6cb6b', '#f9f0c7', '#6f8069');
+  $themes['zen-and-tea'] = array('#10222b', '#95ab63', '#8dd684', '#e2f0d6', '#f6ffe0');
+  $themes['gentle-honey'] = array('#c4a44a', '#e5d399', '#9ab8a9', '#7c8a7f', '#4e4b44');
+  $themes['u23d'] = array('#cc0000', '#171919', '#384242', '#008abc', '#ffcc00');
+  $themes['retro-spanky'] = array('#262223', '#5fc5b8', '#8ebf45', '#f2b90c', '#f24c27');
+  $themes['sushi-maki'] = array('#261f27', '#fee169', '#cdd452', '#f9722e', '#c9313d');
+  $themes['aged-paper'] = array('#414751', '#a8b25f', '#c7d99c', '#e3f2dc', '#9faeb2');
+  $themes['suspicion'] = array('#233a41', '#58777f', '#8cabb2', '#c0d9df', '#bbc960');
+  $themes['baden'] = array('#6ca327', '#b85f1e', '#b8222f', '#2b638a', '#4e4b44');
+
+  return isset($themes[$name]) ? $themes[$name] : $themes['blue'];
+}

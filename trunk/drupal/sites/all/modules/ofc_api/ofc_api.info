@@ -1,0 +1,13 @@
+; $Id: ofc_api.info,v 1.1 2009/04/03 15:43:44 kong Exp $
+
+name = Open Flash Chart 2 API
+description = Provides an API to generate <a href="http://teethgrinder.co.uk/open-flash-chart-2">Open Flash Chart 2</a> charts in Drupal.
+core = 6.x
+php = 5.2
+
+; Information added by drupal.org packaging script on 2010-09-19
+version = "6.x-1.2"
+core = "6.x"
+project = "ofc_api"
+datestamp = "1284869761"
+
