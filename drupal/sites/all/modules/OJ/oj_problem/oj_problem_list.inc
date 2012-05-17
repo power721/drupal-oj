@@ -102,6 +102,7 @@ SCR;
 				<input id="search_button" type="submit" value="Search">';         
 	return $inputboxes . theme_datatable($head,$dummy_row,$params);
 }
+
 function oj_problem_list_ajax()
 {
 	$lim_off=db_escape_string($_GET['iDisplayStart']);
@@ -174,6 +175,9 @@ function oj_problem_list_ajax()
       	{
       		$r[$key] = trim($value);
       	}
+		$node = problem_load($r['field_pid_value']);
+		if(function_exists('contest_problem_access')&&!contest_problem_access($node))
+			continue;
         print $comma; $comma=",";
         $linkbeg=addslashes('<a href="' . url('problem/' . $r['field_pid_value']) . '">');
         $linkend=addslashes('</a>'); 

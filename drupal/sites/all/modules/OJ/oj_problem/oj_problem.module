@@ -228,10 +228,11 @@ function oj_problem_form_alter(&$form, $form_state, $form_id)
 	if($form_id == 'problem_node_form')
 	{
 		$form['author']['#access']=0;
+		$form['field_pid']['#access'] = 0;
 		//$form['options']['#collapsed'] = 0;
 		unset($form['revision_information'],$form['comment_settings'],$form['menu'],$form['path'],$form['attachments'],$form['options']);
 		//unset($form['options']['promote'],$form['options']['sticky']);
-		unset($form['field_pid'],$form['field_submit'],$form['field_accepted'],$form['field_submit_user'],$form['field_solved']);
+		unset($form['field_submit'],$form['field_accepted'],$form['field_submit_user'],$form['field_solved']);
 		unset($form['field_input_path'],$form['field_output_path'],$form['field_view'],$form['field_error'],$form['field_problem_id']);
 		//$contest_form = (oj_problem_to_contest($form_state));
 		//$form = array_merge($form,$contest_form);
@@ -332,6 +333,8 @@ function oj_problem_discuss_access($node)/*应该放在0j_message模块*/
 	global $user;
 	if($node->type=='problem')
 		return true;
+	if(function_exists('contest_problem_access')&&!contest_problem_access($node))
+		return FALSE;
 	return false;
 }
 
@@ -365,15 +368,8 @@ function problem_view_access($node)
 		return true;
 	if($node->status!=1)
 		return false;
-	if(function_exists('get_contest_status'))
-	{
-		$cid = $node->field_cid[0]['value'];
-		$status = get_contest_status($cid);
-		if($cid && $status && $status<2)
-		{
-			return FALSE;
-		}
-	}
+	if(function_exists('contest_problem_access')&&!contest_problem_access($node))
+		return FALSE;
 	return true;
 }
 

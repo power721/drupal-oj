@@ -37,6 +37,7 @@ function oj_contest_edit_form($form_state,$cid)
 		'#title' => t('Title'),
 		'#type' => 'textfield',
 		'#default_value' => $contest->title,
+		'#required' => TRUE,
 	);
 	$form['access'] = array
 	(
@@ -291,6 +292,7 @@ function oj_contest_add_form($form_state)
 	(
 		'#title' => t('Title'),
 		'#type' => 'textfield',
+		'#required' => TRUE,
 	);
 	$form['access'] = array
 	(
@@ -370,28 +372,28 @@ JS;
 	(
 		
 		'#type' => 'textfield',
-		'#default_value' => date('Y-m-d',time()+18000),
+		'#default_value' => date('Y-m-d',time()+18000+3600),
 		'#attributes' => array('readonly'=>'readonly'),
 		'#size' => 10,
 	);
 	$form['end_time']['end_time_hour'] = array
 	(
 		'#type' => 'textfield',
-		'#default_value' => date('H',time()+18000),
+		'#default_value' => date('H',time()+18000+3600),
 		'#size' => 2,
 		'#maxlength' => 2,
 	);
 	$form['end_time']['end_time_min'] = array
 	(
 		'#type' => 'textfield',
-		'#default_value' => date('i',time()+18000),
+		'#default_value' => date('i',time()+18000+3600),
 		'#size' => 2,
 		'#maxlength' => 2,
 	);
 	$form['end_time']['end_time_sec'] = array
 	(
 		'#type' => 'textfield',
-		'#default_value' => date('s',time()+18000),
+		'#default_value' => date('s',time()+18000+3600),
 		'#size' => 2,
 		'#maxlength' => 2,
 	);
@@ -512,7 +514,7 @@ function oj_contest_problems_form(&$form_state,$cid)
 	
 	$form['problems']['list']['table_start'] = array
 	(
-		'#value' => '<table id=contest-problems><thead><th></th><th>Num</th><th>PID</th><th>Alias</th><th></th><th>title</th></thead>',
+		'#value' => '<table id=contest-problems><thead>'.(is_root_login()||$status<1?'<th></th>':'').'<th>Num</th><th>PID</th><th>Alias</th><th></th><th>title</th></thead>',
 	);
 	
 	if(empty($form_state['values']['problems']))
@@ -533,7 +535,7 @@ function oj_contest_problems_form(&$form_state,$cid)
 	(
 		'#value' => '</table>',
 	);
-	if($status < 2)
+	if(is_root_login() || $status < 2)
 	{
 		//$index = max(array_keys($problems));
 		//if($index<24)
@@ -569,7 +571,7 @@ function _oj_contest_problems_form($key,$problem,$status)
 		'#tree' => TRUE,
 	);
 	
-	if($status < 1)
+	if(is_root_login() || $status < 1)
 	{
 		$form['del'] = array
 		(
@@ -779,6 +781,10 @@ function contest_del_problem_submit($form, &$form_state)
 	$name = $form_state['clicked_button']['#name'];
 	if(preg_match('/problems\[(.*)\]\[del\]/',$name,$m))
 		$index = $m[1];
+	$pid = $form_state['values']['problems'][$index]['pid'];
+	$node = problem_load($pid);
+	$node->field_cid[0]['value'] = NULL;
+	node_save($node);
 	unset($form_state['values']['problems'][$index]);
 	
 	oj_contest_problems_validate($form,$form_state);

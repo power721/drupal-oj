@@ -331,6 +331,57 @@ function template_preprocess_contest_problem(&$variables)
 	$variables['status_link'] = "";
 }
 
+function oj_contest_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL)
+{
+	if($node->type=='problem')
+	{
+		switch($op)
+		{
+			case 'presave':
+			case 'insert':problem_to_contest($node);
+		}
+	}
+}
+
+function problem_to_contest($node)
+{
+	$cid = $node->field_cid[0]['value'];
+	if(!empty($cid))
+	{
+		$contest = contest_load($cid);
+		if($contest->problem_num>=25)
+		{
+			drupal_set_message('The contest problems are exceed the limit.','error');
+			return;
+		}
+		$pid = $node->field_pid[0]['value'];
+		$problem['pid'] = $pid;
+		$problem['uid'] = $node->uid;
+		//$problem['alias'] = $node->title;
+		$problem['num'] = $contest->problem_num+1;
+		$flag = TRUE;
+		foreach($contest->problems as $key => $cp)
+			if($cp['pid'] == $pid)
+				return;
+
+		$contest->problems[] = $problem;
+		contest_save($contest,TRUE);
+	}
+}
+
+function contest_problem_access($node)
+{
+	if(is_admin_login())
+		return true;
+	$cid = $node->field_cid[0]['value'];
+	$status = get_contest_status($cid);
+	if($cid && $status<2)
+	{
+		return FALSE;
+	}
+	return true;
+}
+
 function reset_contest_access()
 {
 	global $user;
