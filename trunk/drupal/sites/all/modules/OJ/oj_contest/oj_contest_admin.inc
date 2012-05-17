@@ -56,11 +56,11 @@ function oj_contest_edit_form($form_state,$cid)
 	$js = <<<JS
 	$(document).ready(function()
 	{
-		if($("#edit-access-3").attr("checked") != "checked")
+		if($("#edit-access-3").attr("checked") != true)
 			$("#edit-password-wrapper").hide();
 		$(".contest_access").change(function()
 		{
-			if($("#edit-access-3").attr("checked") == "checked")
+			if($("#edit-access-3").attr("checked") == true)
 				$("#edit-password-wrapper").show();
 			else
 				$("#edit-password-wrapper").hide();
@@ -309,12 +309,15 @@ function oj_contest_add_form($form_state)
 	$js = <<<JS
 	$(document).ready(function()
 	{
-		if($("#edit-access-3").attr("checked") != "checked")
+		if($("#edit-access-3").attr("checked") != true)
 			$("#edit-password-wrapper").hide();
 		$(".contest_access").change(function()
 		{
-			if($("#edit-access-3").attr("checked") == "checked")
+			if($("#edit-access-3").attr("checked") == true)
+			{
+				
 				$("#edit-password-wrapper").show();
+			}
 			else
 				$("#edit-password-wrapper").hide();
 		});
