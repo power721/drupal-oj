@@ -614,9 +614,11 @@ function reset_solution()
 function oj_problem_status_access($node)
 {
 	global $user;
-	if($node->type=='problem')
-		return true;
-	return false;
+	if($node->type!='problem')
+		return false;
+	if(function_exists('contest_problem_access')&&!contest_problem_access($node))
+		return FALSE;
+	return true;
 }
 
 function oj_problem_status_callback($node)
