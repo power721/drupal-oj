@@ -16,6 +16,28 @@ $(document).ready(function(){
 				dates.not( this ).datepicker( "option", option, date );
 			}
 	});
+	
+	$('#edit-pid-0').click(function()
+	{
+		var isChecked = this.checked;
+		var elements = $('#oj-contest-rejudge-form .field-pid :checkbox');
+		var counter = elements.length;
+		for(i = 0;i < counter;i++)
+		{
+			elements[i].checked = isChecked;
+		}
+	});
+	
+	$('#edit-result-0').click(function()
+	{
+		var isChecked = this.checked;
+		var elements = $('#oj-contest-rejudge-form .field-result :checkbox');
+		var counter = elements.length;
+		for(i = 0;i < counter;i++)
+		{
+			elements[i].checked = isChecked;
+		}
+	});
 	/*
 	$("input[name$='[pid]']").live("blur",function(){
 		var name = $(this).attr('name');

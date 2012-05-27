@@ -1,14 +1,17 @@
 <?php
 
-function import_user($p1=0,$p2=100)
+function import_user($p1=0,$p2=100,$redirect=TRUE)
 {
 	//debug($p1,'p1');debug($p2,'p2');
-	if($p1<0||$p2<0||$p1>$p2)
+	if($p1<0||$p2<0)
 	{
-		drupal_set_message("Invalid Arguments");
-		drupal_goto('user/list');
+		drupal_set_message("user import:Invalid Arguments");
+		if($redirect)
+			drupal_goto('user/list');
+		return;
 	}
 	$start_time = time();
+	$last_user = variable_get('last_import_user',0);
 	
 	set_time_limit(0);
 	$lim_off=db_escape_string($p1);
@@ -29,6 +32,7 @@ function import_user($p1=0,$p2=100)
 	while($user = db_fetch_object($result))
 	{
 		//debug($problem,'problem id:'.$problem->problem_id);
+		$last_user++;
 		$items=db_query("SELECT uid FROM {users} WHERE name='%s'",$user->user_id);
 		if($item = db_fetch_object($items))
 		{
@@ -40,6 +44,11 @@ function import_user($p1=0,$p2=100)
 		oj_user_external_register($name, $pass, 'oj_user');
 		$num++;
 	}
+	db_set_active('default');
+	
+	variable_set('last_import_user',$last_user);
+	if(!$redirect)
+		return;
 	
 	$msg = "You had import $num user";
 	if($num>1)
@@ -63,6 +72,8 @@ function reset_user()
 	db_query("ALTER TABLE {authmap} AUTO_INCREMENT=1");
 	
 	db_query("DELETE FROM {url_alias} WHERE src LIKE 'user%%'");
+	
+	variable_set('last_import_user',0);
 	
 	drupal_set_message("You had delete all users.");
 	drupal_goto('user/list');
@@ -91,7 +102,7 @@ function oj_user_external_register($name, $pass, $module)
 		);
 		$account = user_save('', $userinfo);
 		// Terminate if an error occured during user_save().
-		if (!$account) 
+		if (!$account)
 		{
 			drupal_set_message(t("Error saving user account."), 'error');
 			return;

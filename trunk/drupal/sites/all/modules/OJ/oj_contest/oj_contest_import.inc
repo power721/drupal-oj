@@ -1,12 +1,14 @@
 <?php
 
-function oj_contest_import($c1=1000,$c2=1099)
+function oj_contest_import($c1=1000,$c2=1099,$redirect=TRUE)
 {
 	
 	if($c1<0 || $c2<0 || $c1>$c2)
 	{
-		drupal_set_message("Invalid Arguments");
-		drupal_goto('contests');
+		drupal_set_message("contest import:Invalid Arguments.");
+		if($redirect)
+			drupal_goto('contests');
+		return;
 	}
 	$start_time = time();
 	
@@ -19,6 +21,7 @@ function oj_contest_import($c1=1000,$c2=1099)
 	if($c2 == NULL)
 		$c2 = 1099;
 	global $user;
+	$last_cid = variable_get('last_import_contest',1000);
 	
 	$num = 0;
 	db_set_active('JudgeOnline');
@@ -42,6 +45,7 @@ function oj_contest_import($c1=1000,$c2=1099)
 	
 	while($item = db_fetch_object($items))
 	{
+		$last_cid = max($last_cid,$item->contest_id);
 		$contest = new stdClass;
 		$contest->uid = $user->uid;
 		$contest->title = problem_text($item->title);
@@ -76,9 +80,15 @@ function oj_contest_import($c1=1000,$c2=1099)
 		
 		$contest->cid = db_result(db_query("SELECT cid FROM {contests} WHERE title='%s' AND start_time=%d",$contest->title,$contest->start_time));
 		contest_save($contest,TRUE,TRUE);
+		
 		//oj_contest_rank_table($contest->cid,FALSE);
 	}
+	db_set_active('default');
 	
+	variable_set('last_import_contest',$last_cid);
+	if(!$redirect)
+		return;
+		
 	$time = time()-$start_time;
 	drupal_set_message("The contests have been updated.\ntime: $time");
 	drupal_set_message('Then you should import solutions data.');
@@ -98,7 +108,9 @@ function reset_contest()
 	
 	db_query("DELETE FROM {contest_rank}");
 	db_query("ALTER TABLE {contest_rank} AUTO_INCREMENT=1");
-		
+	
+	variable_set('last_import_contest',1000);
+	
 	drupal_set_message("You had delete all contests.");
 	drupal_goto('contests');
 }

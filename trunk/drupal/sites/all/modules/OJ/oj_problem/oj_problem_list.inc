@@ -52,12 +52,12 @@ function oj_problem_list()
             'sCookiePrefix' => 'pl_',
             'bProcessing' => true,
             'bServerSide' => true,
-            'sAjaxSource' => '?q=oj_problem_list.ajax',
+            'sAjaxSource' => 'ajax.php?q=oj_problem_list_ajax',
             'aoColumns' => $colwidths,
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
 			'iDisplayLength'=>25,
-			'aLengthMenu'=>array(array(25, 50, 100, 200),array('25', '50', '100', '200'))
+			'aLengthMenu'=>array(25, 50, 100, 200)
         )
     );
 
@@ -92,7 +92,7 @@ SCR;
 	drupal_add_js($script,'inline');
   
 	# add the themeroller widget set (bJQueryUI=true)
-	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
+	//drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
 	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/sunny/jquery-ui-1.7.3.custom.css');
 	
 	$inputboxes='<table style="border:0px;background-color:#fedc6b; float:left">
@@ -102,7 +102,7 @@ SCR;
 				<input id="search_button" type="submit" value="Search">';         
 	return $inputboxes . theme_datatable($head,$dummy_row,$params);
 }
-
+/*
 function oj_problem_list_ajax()
 {
 	$lim_off=db_escape_string($_GET['iDisplayStart']);
@@ -189,7 +189,7 @@ function oj_problem_list_ajax()
 		else if($ups==-1)
 			$img = "<img title=wrong src={$path}wrong.gif />";
         $row= '["'.$r['field_pid_value'].$img.
-             '","'.$linkbeg . $r['title'].$linkend.
+             '","'.$linkbeg . addslashes($r['title']) . $linkend.
              '","'."<a href=".url('status')."?pid={$r['field_pid_value']}&result=0>".$r['field_accepted_value']."</a>".
              '","'."<a href=".url('status')."?pid={$r['field_pid_value']}>".$r['field_submit_value']."</a>".
              '","'.($r['field_submit_value']==0?0:ceil($r['field_accepted_value']/$r['field_submit_value']*100)).'%'. 
@@ -199,3 +199,4 @@ function oj_problem_list_ajax()
     }
     print ']}';
 }
+*/

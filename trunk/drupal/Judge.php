@@ -40,6 +40,20 @@ else if($method == 'rejudge')
 		oj_rejudge_problem_callback($pid,$results);
 		return;
 	}
+	else if($type == 'cid')
+	{
+		$cid = array_shift($argv);
+		$num = array_shift($argv);
+		$problems = array();
+		while($num--)
+		{
+			$problems[] = array_shift($argv);
+		}
+		$results = $argv;
+		
+		oj_rejudge_contest_callback($cid,$problems,$results);
+		return;
+	}
 	$id1 = array_shift($argv);
 	$id2 = array_shift($argv);
 	$result = $argv;

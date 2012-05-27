@@ -161,7 +161,9 @@
    </fieldset>
    <?php endif;?>
    <p align="center"><font size="4" color="blue">
+	<?php if($user->uid): ?>
 	[<a href=<?php print url('problem/'.$node->field_pid[0]['value'].'/submit') ?>>Submit</a>]&nbsp;&nbsp;
+	<?php endif; ?>
 	[<a href="javascript:history.go(-1)">Go Back</a>]&nbsp;&nbsp; 
 	[<a href=<?php print url('problem/'.$node->field_pid[0]['value'].'/status') ?>>Status</a>]&nbsp;&nbsp; 
 	[<a href=<?php print url('problem/'.$node->field_pid[0]['value'].'/discuss') ?>>Discuss</a>]

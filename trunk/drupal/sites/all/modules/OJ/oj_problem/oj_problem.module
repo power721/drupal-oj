@@ -1,11 +1,9 @@
 <?php
 
 require_once drupal_get_path('module', 'oj_problem').'/oj_problem_import.inc';
-require_once drupal_get_path('module', 'oj_problem').'/oj_problem_list.inc';
-require_once drupal_get_path('module', 'oj_problem').'/oj_source_code.inc';
 require_once drupal_get_path('module', 'oj_problem').'/oj_problem_status.inc';
+require_once drupal_get_path('module', 'oj_problem').'/oj_source_code.inc';
 require_once drupal_get_path('module', 'node').'/node.pages.inc';
-
 
 /*function oj_problem_init()
 {
@@ -19,7 +17,8 @@ function oj_problem_menu()
 		'title' => 'Status List',
 		'page callback' => 'oj_status',
 		//'page arguments' => array(1,2,3,4),
-		'access callback' => TRUE
+		'access callback' => TRUE,
+		'file' => 'oj_problem_status.inc',
 	);
 	
 	$items['oj_status.ajax'] = array 
@@ -28,6 +27,7 @@ function oj_problem_menu()
 		//'page arguments' => array(1,2,3,4),
 		'type' => MENU_CALLBACK,
 		'access callback' => TRUE,
+		'file' => 'oj_problem_status.inc',
 	);
 	
 	$items['oj_problem_status.ajax'] = array 
@@ -36,6 +36,7 @@ function oj_problem_menu()
 		'page arguments' => array(1,2),
 		'type' => MENU_CALLBACK,
 		'access callback' => TRUE,
+		'file' => 'oj_problem_status.inc',
 	);
 	
 	$items['node/%node/submit'] = array
@@ -46,7 +47,8 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Submit',
 		'type' => MENU_LOCAL_TASK,
-		'weight' => -3
+		'weight' => -3,
+		'file' => 'oj_source_code.inc',
 	);
 	
 	$items['node/%node/status'] = array
@@ -57,7 +59,8 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Status',
 		'type' => MENU_LOCAL_TASK,
-		'weight' => -2
+		'weight' => -2,
+		'file' => 'oj_problem_status.inc',
 	);
 	
 	$items['node/%node/discuss'] = array/*应该放在0j_message模块*/
@@ -75,7 +78,8 @@ function oj_problem_menu()
 	(
 		'title' => 'Problem List',
 		'page callback' => 'oj_problem_list',
-		'access callback' => TRUE
+		'access callback' => TRUE,
+		'file' => 'oj_problem_list.inc',
 	);
 	
 	$items['problem/%problem'] = array
@@ -86,14 +90,14 @@ function oj_problem_menu()
 		'page arguments' => array(1),
 		'access callback' => 'problem_view_access',
 		'access arguments' => array(1),
-		'type' => MENU_CALLBACK
+		'type' => MENU_CALLBACK,
 	);
 	
 	$items['problem/%problem/view'] = array
 	(
 		'title' => 'View',
 		'type' => MENU_DEFAULT_LOCAL_TASK,
-		'weight' => -10
+		'weight' => -10,
 	);
 	
 	$items['problem/%problem/submit'] = array
@@ -104,7 +108,8 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Submit',
 		'type' => MENU_LOCAL_TASK,
-		'weight' => -3
+		'weight' => -3,
+		'file' => 'oj_source_code.inc',
 	);
 	
 	$items['problem/%problem/status'] = array
@@ -115,7 +120,8 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Status',
 		'type' => MENU_LOCAL_TASK,
-		'weight' => -2
+		'weight' => -2,
+		'file' => 'oj_problem_status.inc',
 	);
 	
 	$items['problem/%problem/discuss'] = array/*应该放在0j_message模块*/
@@ -126,7 +132,7 @@ function oj_problem_menu()
 		'access arguments' => array(1),
 		'title' => 'Discuss',
 		'type' => MENU_LOCAL_TASK,
-		'weight' => -1
+		'weight' => -1,
 	);
 	
 	$items['problem/%problem/edit'] = array
@@ -159,6 +165,7 @@ function oj_problem_menu()
 		'page callback' => 'oj_problem_list_ajax',
 		'type' => MENU_CALLBACK,
 		'access callback' => TRUE,
+		'file' => 'oj_problem_list.inc',
 	);
 	
 	$items['problem/import'] = array
@@ -167,13 +174,16 @@ function oj_problem_menu()
 		'page callback' => 'import_problem',
 		'page arguments' => array(2,3),
         'access arguments' => array('create problem content'),
-		'type' => MENU_CALLBACK
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_problem_import.inc',
 	);
 	
 	$items['problem/reset'] = array
 	(
 		'page callback' => 'reset_problem',
-        'access callback' => 'reset_problem_access'
+        'access callback' => 'reset_problem_access',
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_problem_import.inc',
 	);
 	
 	$items['status/import'] = array
@@ -182,13 +192,16 @@ function oj_problem_menu()
 		'page callback' => 'import_solution',
 		'page arguments' => array(2,3),
         'access arguments' => array('create problem content'),
-		'type' => MENU_CALLBACK
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_problem_status.inc',
 	);
 	
 	$items['status/reset'] = array
 	(
 		'page callback' => 'reset_solution',
-        'access callback' => 'reset_solution_access'
+        'access callback' => 'reset_solution_access',
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_problem_status.inc',
 	);
 	
 	$items['code'] = array
@@ -196,7 +209,9 @@ function oj_problem_menu()
 		'page callback' => 'show_code',
 		'page arguments' => array(1),
         'access callback' => 'show_code_access',
-		'access arguments' => array(1)
+		'access arguments' => array(1),
+		'type' => MENU_CALLBACK,
+		'file' => 'oj_source_code.inc',
 	);
 	
 	$items['compileinfo'] = array
@@ -204,7 +219,8 @@ function oj_problem_menu()
 		'page callback' => 'show_compile_info',
 		'page arguments' => array(1),
         'access callback' => 'show_compile_info_access',
-		'access arguments' => array(1)
+		'access arguments' => array(1),
+		'type' => MENU_CALLBACK,
 	);
 	
 	return $items;
@@ -222,23 +238,40 @@ function oj_problem_theme()
 	);
 }
 
+function _oj_problem_cron()
+{
+	$pid = variable_get('last_import_problem',1000);
+	$num = variable_get('import_problem_num',20);
+	import_problem($pid,$pid+$num,FALSE);
+}
+
+function _oj_solution_cron()
+{
+	$sid = variable_get('last_import_solution',1000)+1;
+	$num = variable_get('import_solution_num',100);
+	import_solution($sid,$sid+$num,FALSE);
+}
+
 function oj_problem_form_alter(&$form, $form_state, $form_id)
 {
 	//debug($form_id,'$form_id');debug($form,'$form');debug($form_state,'$form_state');
 	if($form_id == 'problem_node_form')
 	{
-		$form['author']['#access']=0;
-		$form['field_pid']['#access'] = 0;
-		//$form['options']['#collapsed'] = 0;
-		unset($form['revision_information'],$form['comment_settings'],$form['menu'],$form['path'],$form['attachments'],$form['options']);
-		//unset($form['options']['promote'],$form['options']['sticky']);
-		unset($form['field_submit'],$form['field_accepted'],$form['field_submit_user'],$form['field_solved']);
-		unset($form['field_input_path'],$form['field_output_path'],$form['field_view'],$form['field_error'],$form['field_problem_id']);
-		//$contest_form = (oj_problem_to_contest($form_state));
-		//$form = array_merge($form,$contest_form);
-		//debug($contest_form,'$contest_form');
-		//debug($form['#node'],'$form');
-		//drupal_add_js(drupal_get_path('module','oj_problem').'/oj_problem.js');
+		if(!is_root_login())
+		{
+			$form['author']['#access']=0;
+			$form['field_pid']['#access'] = 0;
+			//$form['options']['#collapsed'] = 0;
+			unset($form['revision_information'],$form['comment_settings'],$form['menu'],$form['path'],$form['attachments'],$form['options']);
+			//unset($form['options']['promote'],$form['options']['sticky']);
+			unset($form['field_submit'],$form['field_accepted'],$form['field_submit_user'],$form['field_solved']);
+			unset($form['field_input_path'],$form['field_output_path'],$form['field_view'],$form['field_error'],$form['field_problem_id']);
+			//$contest_form = (oj_problem_to_contest($form_state));
+			//$form = array_merge($form,$contest_form);
+			//debug($contest_form,'$contest_form');
+			//debug($form['#node'],'$form');
+			//drupal_add_js(drupal_get_path('module','oj_problem').'/oj_problem.js');
+		}
 	}
 	if($form_id == 'search_theme_form')
 	{
@@ -328,6 +361,33 @@ function oj_problem_to_contest(&$form_state)
 	return $form;
 }
 */
+
+function reset_problem_access()
+{
+	global $user;
+	if($user->uid==1)
+		return true;
+	return false;
+}
+
+function oj_problem_status_access($node)
+{
+	global $user;
+	if($node->type!='problem')
+		return false;
+	if(function_exists('contest_problem_access')&&!contest_problem_access($node))
+		return FALSE;
+	return true;
+}
+
+function reset_solution_access()
+{
+	global $user;
+	if($user->uid==1)
+		return true;
+	return false;
+}
+
 function oj_problem_discuss_access($node)/*应该放在0j_message模块*/
 {
 	global $user;
@@ -368,6 +428,7 @@ function problem_view_access($node)
 		return true;
 	if($node->status!=1)
 		return false;
+	
 	if(function_exists('contest_problem_access')&&!contest_problem_access($node))
 		return FALSE;
 	return true;
@@ -505,4 +566,27 @@ function oj_get_next_pid()
 	else
 		$pid = 1000;
 	return $pid;
+}
+
+function problem_text($text)
+{
+	$text = phpcharset($text,'UTF-8');
+	$text = str_replace(array("\r\n", "\r"), "\n", $text);
+	$text = str_replace("\n", "<br>", $text);
+	//preg_replace("!<img src=\"(.*)\"/>!","<img src=\"/oj/\1\" />",$text);
+	//preg_replace("!<img src='(.*)'/>!","<img src='/oj/\1' />",$text);
+	//preg_replace("!<img src=(.*)/>!","<img src=/oj/\1 />",$text);
+	if(preg_match("!src=(.*)/>!",$text,$m))
+	{
+		$r = str_replace("\\","/",$m[1]);
+		$text = str_replace($m[1],$r,$text);
+	}
+	$text = str_replace("src=images", "src=/oj/images", $text);
+	$text = str_replace("src=\"images", "src=\"/oj/images", $text);
+	$text = str_replace("src='images", "src='/oj/images", $text);
+	
+	$text = str_replace("src=problem-images", "src=/oj/problem-images", $text);
+	$text = str_replace("src=\"problem-images", "src=\"/oj/problem-images", $text);
+	$text = str_replace("src='problem-images", "src='/oj/problem-images", $text);
+	return $text;
 }

@@ -4,6 +4,7 @@ require_once drupal_get_path('module','oj_contest').'/recent_contests.inc';
 require_once drupal_get_path('module','oj_contest').'/oj_contest_table.inc';
 require_once drupal_get_path('module','oj_contest').'/oj_contest_problem.inc';
 require_once drupal_get_path('module','oj_contest').'/oj_contest_admin.inc';
+require_once drupal_get_path('module','oj_contest').'/oj_contest_import.inc';
 
 function oj_contest_menu()
 {
@@ -40,6 +41,20 @@ function oj_contest_menu()
 		'type' => MENU_CALLBACK,
 		'file' => 'oj_contest_import.inc',//file是检查权限后包含进来的。
 	);
+	
+	if(function_exists('devel_load_object'))
+	{
+		$items['contest/%contest/devel'] = array
+		(
+			'title' => 'Devel',
+			'page callback' => 'devel_load_object',
+			'page arguments' => array(1, 'contest'),
+			'access callback' => 'user_access',
+			'access arguments' => array('access devel information'),
+			'type' => MENU_LOCAL_TASK,
+			'weight' => 100,
+		);
+	}
 	
 	$items['contest/import/%/%'] = array
 	(
@@ -93,7 +108,7 @@ function oj_contest_menu()
 		'title' => t('Problems'),
 		'page callback' => 'oj_contest_problem_submit',
 		'page arguments' => array(1,3),
-		'access callback' => 'oj_contest_access',
+		'access callback' => 'oj_contest_submit_access',
 		'access arguments' => array(1),
 		'type' => MENU_CALLBACK,
 	);
@@ -279,6 +294,31 @@ function oj_contest_menu()
 	return $items;
 }
 
+function oj_contest_cron()
+{
+	$now = time();
+	$items = db_query("SELECT cid FROM {contests} WHERE end_time<=%d AND end_time>%d",$now,$now-variable_get('cron_safe_threshold', 10800));
+	while($cid = db_result($items))
+	{
+		$contest = contest_load($cid);
+		if($contest->problems)
+		foreach($contest->problems as $problem)
+		{
+			$node = problem_load($problem['pid']);
+			$node->field_cid[0]['value'] = 0;
+			node_save($node);
+		}
+	}
+}
+
+function _oj_contest_cron()
+{
+	//require_once(drupal_get_path('module','oj_contest').'/oj_contest_import.inc');
+	$cid = variable_get('last_import_contest',1000);
+	$num = variable_get('import_contest_num',10);
+	oj_contest_import($cid,$cid+$num,FALSE);
+}
+
 function oj_contest_perm()
 {
 	return array('create contest');
@@ -304,6 +344,18 @@ function template_preprocess_contest_problem(&$variables)
 	$node = $variables['node'];
 	$cid = $variables['cid'];
 	$num = $variables['num'];
+	$contest = contest_load($cid);
+	
+	foreach($contest->problems as $problem)
+	{
+		if(!empty($problem['alias']))
+			$titles[] = $problem['alias'];
+		else
+		{
+			$titles[] = problem_load($problem['pid'])->title;
+		}
+	}
+	$variables['titles'] = $titles;
 	$variables['count'] = db_result(db_query("SELECT COUNT(*) FROM {contest_problem} WHERE cid=%d",$cid));
 	$result = get_user_problem_status($node->field_pid[0]['value'],$cid);
 	$variables['result'] = $result;
@@ -327,6 +379,10 @@ function template_preprocess_contest_problem(&$variables)
 	$accepted = db_result(db_query("SELECT COUNT(*) FROM {solution} WHERE result=0 AND cid=%d AND pid=%d",$cid,$node->field_pid[0]['value']));
 	$variables['accepted'] = $accepted;
 	$variables['accepted_link'] = "<a href=".url("contest/$cid/status/")."&pid=$num&result=0".">$accepted</a>";
+	
+	$solved = db_result(db_query("SELECT COUNT(DISTINCT uid) FROM {solution} WHERE result=0 AND cid=%d AND pid=%d",$cid,$node->field_pid[0]['value']));
+	$variables['solved'] = $solved;
+	
 	$variables['submit_link'] = "";
 	$variables['status_link'] = "";
 }
@@ -360,6 +416,7 @@ function problem_to_contest($node)
 		//$problem['alias'] = $node->title;
 		$problem['num'] = $contest->problem_num+1;
 		$flag = TRUE;
+		if($contest->problems)
 		foreach($contest->problems as $key => $cp)
 			if($cp['pid'] == $pid)
 				return;
@@ -373,8 +430,16 @@ function contest_problem_access($node)
 {
 	if(is_admin_login())
 		return true;
+	if(is_array($node))
+	{
+		if(isset($node['pid']))
+			$node = porblem_load($node['pid']);
+	}
 	$cid = $node->field_cid[0]['value'];
 	$status = get_contest_status($cid);
+	$access = get_contest_access_type($cid);
+	if($cid && $status>0 && $access==0)
+		return true;
 	if($cid && $status<2)
 	{
 		return FALSE;
@@ -465,6 +530,8 @@ function oj_contest_view_problem_access($cid)
 function oj_contest_submit_access($cid)
 {
 	global $user;
+	if(!$user->uid)
+		return false;
 	if(is_admin_login())
 		return true;
 	$contest = contest_load($cid,FALSE,FALSE);
@@ -748,15 +815,26 @@ function oj_contest_statistics($cid)
 	$tooltip = new tooltip();
 	$tooltip->set_hover();
 	
+	/****** pie *****/
+	$items = db_query("SELECT result,COUNT(*) AS num FROM {solution} WHERE cid=%d GROUP BY result",$cid);
+	while($item = db_fetch_object($items))
+	{
+		$results = oj_get_status_result();
+		$key = $results[$item->result];
+		$data[$key] = (int)$item->num;
+		$links[$key] = url("contest/$cid/status",array('absolute'=>TRUE))."&result=".$item->result;
+	}
+	
 	$chart = new open_flash_chart();
 	$chart->set_title($title);
 	$chart->add_element($bar_stack);
+	//$chart->add_element($pie);
 	$chart->set_x_axis($x);
 	$chart->add_y_axis($y);
 	$chart->set_tooltip($tooltip);
 	$chart->set_bg_colour('#ffffff');
 	
-	return "<div class=open_flash_chart>".ofc_api_render($chart,800,400)."</div>";
+	return "<div class=open_flash_chart>".ofc_api_render($chart,800,400)."</div>\n".problem_status_generate_pie_chart_2($data,$links,'Submissions Statistics');
 }
 
 function oj_contest_discuss($cid)
@@ -791,6 +869,11 @@ function get_contest_status_desc($cid)
 		'<font color=gray>Ended</font>',
 	);
 	return $status[get_contest_status($cid)];
+}
+
+function get_contest_access_type($cid)
+{
+	return db_result(db_query("SELECT access FROM {contests} WHERE cid=%d",$cid));
 }
 
 function get_contest_type($id)
@@ -833,6 +916,13 @@ function contest_load($cid,$user_access=FALSE,$problems=TRUE)
 		$items = db_query("SELECT pid,uid,alias,num FROM {contest_problem} WHERE cid=%d ORDER BY num",$cid);
 		while($item = db_fetch_array($items))
 		{
+			$title = $item['alias'];
+			if(empty($title))
+			{
+				$problem = problem_load($item['pid']);
+				$title = $problem->title;
+			}
+			$item['title'] = $title;
 			$contest->problems[] = $item;
 		}
 	}
@@ -849,7 +939,7 @@ function contest_load($cid,$user_access=FALSE,$problems=TRUE)
 	return $contest;
 }
 
-function contest_save(&$contest,$update_problem=FALSE,$update_user=FALSE)
+function contest_save(&$contest,$update_problem=FALSE,$update_user=FALSE,$hide=FALSE)
 {
 	//if($contest->cid==1046)
 	//debug($contest,'contest');
@@ -940,7 +1030,14 @@ function contest_save(&$contest,$update_problem=FALSE,$update_user=FALSE)
 				}
 		}
 	}
-	
+	if($hide)
+	{
+		if($contest->problems)
+			foreach($contest->problems as $problem)
+			{
+				db_query("UPDATE {content_type_problem} SET field_cid_value=%d WHERE field_pid_value=%d",$contest->cid,$problem['pid']);
+			}
+	}
 	$contest = contest_load($contest->cid);
 	
 	return $contest;
@@ -1097,7 +1194,7 @@ function oj_contest_penalty($penalty)
 
 function oj_contest_rejudge($cid)
 {
-	return drupal_get_form('oj_rejudge_form');
+	return drupal_get_form('oj_contest_rejudge_form',$cid);
 }
 
 function oj_contest_edit($cid)
@@ -1111,12 +1208,25 @@ function oj_contest_admin($cid)
 	return "<pre>oj_contest_admin\nAdd a problem\nManage user access</pre>";
 }
 
-function oj_contest_language($cid)
+function oj_contest_language($cid,$flag=TRUE)
 {
 	$contest = contest_load($cid);
 	if(empty($contest->language))
-		return oj_languages(TRUE);
-	return drupal_map_assoc(explode(';',$contest->language));
+		return oj_languages($flag);
+	if($flag)
+		return drupal_map_assoc(explode(';',$contest->language));
+	
+	$contest_language = explode(';',$contest->language);
+	$array = oj_languages();
+	$id = 0;
+	foreach($array as $value)
+	{
+		$language_map[$value] = $id++;
+	}
+	$languages = array();
+	foreach($contest_language as $value)
+		$languages[$language_map[$value]] = $value;
+	return $languages;
 }
 
 function chart_test()

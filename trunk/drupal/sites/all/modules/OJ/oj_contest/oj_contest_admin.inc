@@ -486,13 +486,13 @@ function oj_contest_add_form_submit($form,$form_state)
 			variable_set($cid.'_update_contest_rank',1);
 		
 		drupal_set_message("The contest $cid has been created.");
-		drupal_goto("contest/$cid");
+		drupal_goto("contest/$cid/admin");
 	}
 }
 
 function oj_contest_problems_form(&$form_state,$cid)
 {
-	drupal_add_js(drupal_get_path('module','datatables').'/theme/js/jquery-ui-1.8.19.custom.min.js');
+	//drupal_add_js(drupal_get_path('module','datatables').'/theme/js/jquery-ui-1.8.19.custom.min.js');
 	drupal_add_js(drupal_get_path('module','oj_contest').'/oj_contest.js');
 	$contest = contest_load($cid);
 	$status = get_contest_status($cid);
@@ -539,6 +539,15 @@ function oj_contest_problems_form(&$form_state,$cid)
 	{
 		//$index = max(array_keys($problems));
 		//if($index<24)
+		$hide_problem = $form_state['values']['hide_problem']?$form_state['values']['hide_problem']:0;
+		$form['problems']['hide_problem'] = array
+		(
+			'#type' => 'checkbox',
+			'#title' => 'Hide',
+			'#description' => 'Hide these problems in Problem List?',
+			//'#default_value' => 0,
+			//'#options' => array('No','Yes'),
+		);
 		$form['problems']['add_problem'] = array
 		(
 			'#type' => 'submit',
@@ -694,6 +703,12 @@ function oj_contest_problems_submit($form,&$form_state)
 				$user->uid,
 				$alias,
 				$num++);
+		
+		if($form_state['values']['hide_problem'])
+		{
+			db_query("UPDATE {content_type_problem} SET field_cid_value=%d WHERE field_pid_value=%d",$cid,$pid);
+			dsm($form_state);
+		}
 	}
 	drupal_set_message("The problems have been updated.");
 }
@@ -800,4 +815,88 @@ function contest_del_problem_ajax()
 	$output = theme('status_messages').drupal_render($tablefields);
 
 	drupal_json(array('status' => TRUE, 'data' => $output));
+}
+
+function oj_contest_rejudge_form(&$form_state,$cid)
+{
+	drupal_add_js(drupal_get_path('module','oj_contest').'/oj_contest.js');
+
+	$contest = contest_load($cid);
+	$problems[0] = 'All';
+	foreach($contest->problems as $key => $problem)
+		$problems[$problem['num']] = chr($problem['num']-1+ord('A')).":".$problem['title'];
+	$form['pid'] = array
+	(
+		'#type' => 'checkboxes',
+		'#title' => t('Contest Problems'),
+		'#description' => t('The problems to rejudge.'),
+		'#options' => $problems,
+		'#default_value' => array(),
+		'#attributes' => array('class' => 'field-pid'),
+	);
+	
+	$form['cid'] = array
+	(
+		'#type' => 'value',
+		'#value' => $cid,
+	);
+	
+	$form['contest'] = array
+	(
+		'#type' => 'value',
+		'#value' => $contest,
+	);
+	
+	$status_result[0] = 'All';
+	$results = oj_get_status_result(TRUE);
+	foreach($results as $key => $value)
+	{
+		$status_result[$key+1] = $value;
+	}
+	$form['result'] = array
+	(
+		'#type' => 'checkboxes',
+		'#title' => t('Status result'),
+		'#description' => t('The status result to rejudge.'),
+		'#options' => $status_result,
+		'#default_value' => array(10001),
+		'#attributes' => array('class' => 'field-result'),
+	);
+	$form['submit'] = array
+	(
+		'#type' => 'submit',
+		'#value' => t('Submit'),
+		//'#executes_submit_callback' => TRUE,
+		//'#submit' => array('oj_rejudge_form_submit')
+	);
+	return $form;
+}
+
+function oj_contest_rejudge_form_validate(&$form, &$form_state)
+{
+	foreach($form_state['values']['pid'] as $key => $value)
+		if(!empty($value))
+			$problems[$key] = $key;
+	
+	if(empty($problems))
+		form_set_error('pid', t('You must select some problems to rejudge.'));
+	
+	foreach($form_state['values']['result'] as $key => $value)
+		if(!empty($value))
+			$results[$key-1] = $key-1;
+	
+	if(empty($results))
+		form_set_error('result', t('You must select some status results to rejudge.'));
+		
+	$form_state['values']['problems'] = $problems;
+	$form_state['values']['results'] = $results;
+	return $form;
+}
+
+function oj_contest_rejudge_form_submit($form, &$form_state)
+{
+	$cid = $form_state['values']['cid'];
+	$problems = $form_state['values']['problems'];
+	$results = $form_state['values']['results'];
+	oj_rejudge_contest($cid,$problems,$results);
 }

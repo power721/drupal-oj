@@ -74,7 +74,7 @@ function oj_rejudge_problem_callback($pid,$results = array())
 		$node->field_error[0]['value'] = 0;
 		node_save($node);
 		
-		$items = db_query("SELECT sid FROM {solution} WHERE pid = %d",$pid);
+		$items = db_query("SELECT sid FROM {solution} WHERE pid = %d ORDER BY sid",$pid);
 		while($item = db_fetch_object($items))
 		{
 			oj_rejudge_one($item->sid,FALSE,FALSE);
@@ -89,7 +89,7 @@ function oj_rejudge_problem_callback($pid,$results = array())
 			{
 				$sql .= " OR result = $result";
 			}
-		$sql .= ")";
+		$sql .= ") ORDER BY sid";
 		$items = db_query($sql,$pid);
 		//debug($sql,'$sql');
 		//debug($items,'$items');
@@ -119,9 +119,46 @@ function oj_rejudge_problem($pid,$results = array(),$redirect = TRUE)
 	}
 }
 
-function oj_rejudge_contest($cid,$pid = 0,$result = array())
+function oj_rejudge_contest($cid,$problems = array(),$results = array(),$redirect = TRUE)
 {
+	global $php_path,$judge_php;
+	$para = "$php_path $judge_php rejudge cid $cid";
 	
+	if(is_array($problems) && !empty($problems))
+	{
+		$num = count($problems);
+		$para .= " $num";
+		foreach($problems as $problem)
+			$para .= " $problem";
+	}
+	if(is_array($results) && !empty($results))
+		foreach($results as $result)
+			$para .= " $result";
+	$tid = start_proc($para);
+
+	if($redirect)
+	{
+		drupal_set_message("The rejudge has started,waiting and refresh to view the result.");
+		drupal_goto("contest/$cid/status");
+	}
+}
+
+function oj_rejudge_contest_callback($cid,$problems = array(),$results = array())
+{
+	$contest = contest_load($cid);
+	foreach($problems as $problem)
+	{
+		$pid = $contest->problems[$problem-1]['pid'];
+		foreach($results as $result)
+		{
+			$items = db_query("SELECT sid FROM {solution} WHERE cid=%d AND pid=%d AND result=%d ORDER BY sid",$cid,$pid,$result);
+			while($sid = db_result($items))
+			{
+				
+				oj_rejudge_one($sid,TRUE,FALSE);
+			}
+		}
+	}
 }
 
 function oj_rejudge_one($sid,$reset = TRUE,$redirect = TRUE)

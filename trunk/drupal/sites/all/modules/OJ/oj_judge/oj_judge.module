@@ -56,7 +56,18 @@ function oj_judge_menu()
 	);
 	return $items;
 }
-
+/*
+function oj_judge_cron()
+{
+	
+	$items = db_query("SELECT sid FROM {solution} WHERE result=10000 ORDER BY sid LIMIT 10");
+	debug($items,'$items');
+	while($sid = db_result($items))
+	{
+		oj_rejudge_one($sid,TRUE,FALSE);
+	}
+}
+*/
 function oj_judge($sid)
 {
 	if(oj_get_value('DeleteTempFile'))
@@ -98,7 +109,7 @@ function oj_compile($sid)
 	}
 	//debug($path,'path');
 	$file_size = file_put_contents($source_file,$item->source);
-	
+	//debug(md5($item->source));
 	$spec = array
 	(
 		array("pipe","r"),
@@ -153,27 +164,34 @@ function oj_run($sid)
 	if(!is_dir($input_path))
 	{
 		db_query("UPDATE {solution} SET result=100 WHERE sid=%d",$sid);
-		drupal_set_message("input_path is not correct.");
+		//drupal_set_message("input_path is not correct.");
 		return 100;
 	}
 	if(!is_dir($output_path))
 	{
 		db_query("UPDATE {solution} SET result=100 WHERE sid=%d",$sid);
-		drupal_set_message("output_path is not correct.");
+		//drupal_set_message("output_path is not correct.");
 		return 100;
 	}
 	
-	$data_files = file_scan_directory($input_path,'.in',array('.', '..', 'CVS'),0,FALSE,'filename',0,0);
+	/*$data_files = file_scan_directory($input_path,'.in',array('.', '..', 'CVS'),0,FALSE,'filename',0,0);
 	//debug($data_files,'$data_files');
 	if(empty($data_files))
 	{
 		db_query("UPDATE {solution} SET result=100 WHERE sid=%d",$sid);
 		return 100;
 	}
-	
+	*/
 	$data_in = array();
 	$data_out = array();
-	foreach ($data_files as $key=>$file)
+	if(find_data_files($input_path,$data_in,$data_out))
+	{
+		db_query("UPDATE {solution} SET result=100 WHERE sid=%d",$sid);
+		return 100;
+	}
+	//debug($data_in,'$data_in');
+	//debug($data_out,'$data_out');
+	/*foreach ($data_files as $key=>$file)
 	{
 		$file_out = substr($file->filename,0,strlen($file->filename)-3).".out";
 		if(!is_file($file_out))
@@ -181,6 +199,7 @@ function oj_run($sid)
 		$data_in[] = realpath($file->filename);
 		$data_out[] = realpath($file_out);
 	}
+	*/
 	$spec = array
 	(
 		array("pipe","r"),
@@ -243,6 +262,7 @@ function oj_run($sid)
 	db_query("UPDATE {solution} SET result=%d,time=%d,memory=%d WHERE sid=%d",$return_value,$time,$memory,$sid);
 	if($return_value == 0)
 	{
+		debug(md5_file($runcmd));
 		++$node->field_accepted[0]['value'];
 		if(!$pass)
 		{
@@ -257,6 +277,40 @@ function oj_run($sid)
 	}
 	node_save($node);
 	return $return_value;
+}
+
+function find_data_files($input_path,&$data_in,&$data_out)
+{
+	$data_files = file_scan_directory($input_path,'.in',array('.', '..', 'CVS'),0,FALSE,'filename',0,0);
+	if(!empty($data_files))
+	{
+		foreach ($data_files as $key=>$file)
+		{
+			$file_out = substr($file->filename,0,strlen($file->filename)-3).".out";
+			if(!is_file($file_out))
+				continue;
+			$data_in[] = realpath($file->filename);
+			$data_out[] = realpath($file_out);
+		}
+	}
+	
+	$data_files = file_scan_directory($input_path,'.txt',array('.', '..', 'CVS'),0,FALSE,'filename',0,0);
+	if(!empty($data_files))
+	{
+		foreach ($data_files as $key=>$file)
+		{
+			if(substr($file->basename,0,2)!='in')
+				continue;
+			$file_out = substr($file->filename,0,strlen($file->filename)-strlen($file->basename))."out".substr($file->basename,2);
+			if(!is_file($file_out))
+				continue;
+			$data_in[] = realpath($file->filename);
+			$data_out[] = realpath($file_out);
+		}
+	}
+	if(empty($data_in))
+		return 1;
+	return 0;
 }
 
 function have_solved($sid)
