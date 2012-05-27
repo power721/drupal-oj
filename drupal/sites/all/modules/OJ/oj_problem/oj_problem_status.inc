@@ -43,7 +43,7 @@ function oj_status()
 		array('bSortable'=>false,'sWidth'=>'14%'),
 	);
 	//debug($_GET,'$_GET');
-	$url = "?q=oj_status.ajax";
+	$url = "ajax.php?q=oj_status_ajax";
 	if($_GET['uid'])
 		$url .= "&uid=".$_GET['uid'];
 	if($_GET['pid'])
@@ -67,12 +67,21 @@ function oj_status()
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
 			'iDisplayLength'=>25,
-			'aLengthMenu'=>array(array(25, 50, 100, 200),array('25', '50', '100', '200')),
+			'aLengthMenu'=>array(25, 50, 100, 200),
         )
     );
 	$script=<<<SCR
 $(document).ready(function() 
 	{
+		$("#page_num").keyup( 
+		function () 
+		{
+            t=$('#datatable-1').dataTable();
+			if(this.value == null || this.value=="" || this.value<1)
+				this.value = 1;
+            t.fnPageChange(this.value-1);
+        });
+		
         $("#search-user").keyup( 
 		function () 
 		{
@@ -113,8 +122,8 @@ SCR;
 	//drupal_set_html_head("<META HTTP-EQUIV=Refresh content=".variable_get('status_refresh_time',60).">");
 	
 	# add the themeroller widget set (bJQueryUI=true)
-	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	//drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
+	//drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
+	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
 
 	global $user;
 	
@@ -156,7 +165,9 @@ SCR;
 		100 => 'Data Error',
 		1000 => 'Waiting',
 	);
-	
+	$page = 1;
+	if(!empty($_GET['iDisplayLength']))
+		$page = $_GET['iDisplayStart']/$_GET['iDisplayLength']+1;
 	$languages = oj_languages(TRUE);
 	$options = "<option value=>All</option>";
 	foreach($languages as $key => $value)
@@ -166,13 +177,14 @@ SCR;
 	$inputboxes .= '</select></td>
 				<td>Language:<select size=1 id=search-language>'.
 				$options
-				.'</select></td></tr>
+				.'</select></td>
+				<td>Page:<input id="page_num" type=text size=10 value='.$page.'></td>
+				</tr>
 				</table>
 				<input id="search_button" type="submit" value="Search">';
-			
 	return $inputboxes . theme_datatable($head,$dummy_row,$params);
 }
-
+/*
 function oj_status_ajax()
 {
 	$lim_off=db_escape_string($_GET['iDisplayStart']);
@@ -180,7 +192,7 @@ function oj_status_ajax()
 	
 	$allrecord=db_result(db_query("SELECT COUNT(*) FROM {solution}"));
 	$sql="SELECT SQL_CALC_FOUND_ROWS s.sid,s.cid,s.num,u.name,s.uid,s.pid,s.result,s.memory,s.time,s.language,s.code_length,s.in_date FROM {solution} s LEFT JOIN {users} u ON u.uid=s.uid WHERE 1";
-    // NOTE: use double %, because drupal printf()s it before sending to mysql...
+    
 	if(!empty($_GET['sSearch_1']))
         $sql.=" AND u.name LIKE '" . $_GET['sSearch_1']  . "%%' ";
 	else if($_GET['uid'])
@@ -211,8 +223,6 @@ function oj_status_ajax()
 	if(!is_NULL($language))
 		$sql.=" AND  s.language = " . $language;
 	
-    // because of condition listing, one odering is always needed: based on nid
-    // to be able to group the same notification (with just differenct conditions) together
     $sqlorderby=" ORDER BY "; 
     $ordercomma="";  
 	
@@ -242,30 +252,23 @@ function oj_status_ajax()
     if(!empty($sqlorderby))
 		$sql.=$sqlorderby;
     
-    # limit is simply based on user choice
     $sql.=" LIMIT $lim_off, $lim_rowc";
-    // Query that mess finally!
     $items=db_query($sql);
+	
 	$languages = oj_languages(TRUE);
-    //$languages = array('G++','GCC','JAVA','Pascal','Masm32');
 	$result_type = oj_get_status_result();
-    // Query the rows counted without the limit
+	
     $filteredrec=db_result(db_query("SELECT FOUND_ROWS()"));
 	
-    // Start constructing JSON data
     $out= '{ "sEcho":' . $_GET['sEcho'] . ', ';
     $out.='"iTotalRecords": ' . $allrecord .', ';
     $out.='"iTotalDisplayRecords": ' . $filteredrec . ', ';
     $out.='"aaData": [ ';
-    print $out;
-    // deliver the rows 
-    $comma=""; // comma must not be written after the last row (IE)
+    echo $out;
+    
+    $comma="";
     while ($r = db_fetch_array($items))
 	{
-      	foreach ($r as $key => $value)
-      	{
-      		$r[$key] = trim($value);
-      	}
 		if(!empty($r['cid'])&&contest_is_running($r['cid']))
 		{
 			$problem_num = chr($r['num']-1+ord('A'));
@@ -279,7 +282,7 @@ function oj_status_ajax()
 			$linkend=addslashes('</a>');
 			$problem_url = $linkbeg . $r['pid'] . $linkend;
 		}
-        print $comma; $comma=",";
+        echo $comma;$comma=",";
         
 		date_default_timezone_set("Asia/Chongqing");
 		$row= '["' .$r['sid'].
@@ -293,11 +296,11 @@ function oj_status_ajax()
 			 '","' . date('Y-m-d H:i:s',$r['in_date']) . 
 			 '"]';
 
-        print $row;
+        echo $row;
     }
-    print ']}';
+    echo ']}';
 }
-
+*/
 // server side processing:
 function oj_problem_status($node=NULL)
 {
@@ -351,7 +354,7 @@ function oj_problem_status($node=NULL)
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
 			'iDisplayLength'=>20,
-			'aLengthMenu'=>array(array(10, 20, 50, 100),array('10', '20', '50', '100')),
+			'aLengthMenu'=>array(10, 20, 50, 100),
         )
     );
 	$params['datatable_options']['aaSorting']=array(array(3,'asc'),array(2,'asc'),array(5,'asc'),array(1,'desc'));
@@ -371,8 +374,8 @@ SCR;
 	drupal_add_js($script,'inline');
 	
 	# add the themeroller widget set (bJQueryUI=true)
-	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	//drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');	
+	//drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
+	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');	
 	
 	$languages = oj_languages(TRUE);
 	$options = "<option value=>All</option>";
@@ -506,14 +509,17 @@ function oj_problem_status_ajax($pid=0)
     print ']}';
 }
 
-function import_solution($p1=1000,$p2=1099)
+function import_solution($p1=1000,$p2=1099,$redirect=TRUE)
 {
 	if($p1<0||$p2<0||$p1>$p2)
 	{
-		drupal_set_message("Invalid Arguments");
-		drupal_goto('status');
+		drupal_set_message("solution import:Invalid Arguments.");
+		if($redirect)
+			drupal_goto('status');
+		return;
 	}
 	$start_time = time();
+	$last_sid = variable_get('last_import_solution',1000);
 	
 	set_time_limit(0);
 	if($p1==NULL)
@@ -530,7 +536,7 @@ function import_solution($p1=1000,$p2=1099)
 	
 	$query="SELECT
 				*,
-				UNIX_TIMESTAMP(in_date) AS in_date
+				UNIX_TIMESTAMP(in_date) AS in_date_t
 			FROM
 				solution
 			WHERE
@@ -542,8 +548,8 @@ function import_solution($p1=1000,$p2=1099)
 	db_set_active('default');
 	while($solution = db_fetch_object($result))
 	{
-		
-		$items=db_query("SELECT sid FROM {solution} WHERE pid=%d AND uid=%d AND in_date=%d",$solution->problem_id,$solution->user_id,$solution->in_date);
+		$last_sid = max($last_sid,$solution->solution_id);
+		$items=db_query("SELECT sid FROM {solution} WHERE in_date=%d",$solution->in_date_t);
 		if($item = db_fetch_object($items))
 		{
 			if($item->sid!=NULL)
@@ -553,15 +559,15 @@ function import_solution($p1=1000,$p2=1099)
 		$uid = 0;
 		$items=db_query("SELECT uid FROM {users} WHERE name='%s'",$solution->user_id);
 		if($item = db_fetch_object($items))
-		{
 			$uid = $item->uid;
-		}
 		db_set_active('JudgeOnline');
 		$source_code = db_result(db_query("SELECT uncompress(source) FROM source_code WHERE solution_id=%d",$solution->solution_id));
 		$compileinfo = db_result(db_query("SELECT error FROM compileinfo WHERE solution_id=%d",$solution->solution_id));
 		db_set_active('default');
 		$pid = db_result(db_query("SELECT field_pid_value FROM {content_type_problem} WHERE field_problem_id_value=%d",$solution->problem_id));
-		$cid = db_result(db_query("SELECT cid FROM {contests} WHERE contest_id=%d",$solution->contest_id));
+		$cid = NULL;
+		if($solution->contest_id)
+			$cid = db_result(db_query("SELECT cid FROM {contests} WHERE contest_id=%d",$solution->contest_id));
 		$language = array(0,1,3,2,4);
 		db_query("INSERT INTO {solution} 
 		(pid,cid,uid,time,memory,in_date,result,language,ip,num,code_length,source,error) VALUES 
@@ -571,7 +577,7 @@ function import_solution($p1=1000,$p2=1099)
 			$uid,
 			$solution->time,
 			$solution->memory,
-			$solution->in_date,
+			$solution->in_date_t,
 			$solution->result,
 			$language[$solution->language],
 			$solution->ip,
@@ -580,9 +586,12 @@ function import_solution($p1=1000,$p2=1099)
 			phpcharset($source_code,'UTF-8'),
 			$compileinfo
 			) or drupal_set_message('Insert into database error.');
-
+		
 		$num++;
 	}
+	variable_set('last_import_solution',$last_sid);
+	if(!$redirect)
+		return;
 	
 	$msg = "You had import $num solution";
 	if($num>1)
@@ -592,14 +601,6 @@ function import_solution($p1=1000,$p2=1099)
 	drupal_goto('status');
 }
 
-function reset_solution_access()
-{
-	global $user;
-	if($user->uid==1)
-		return true;
-	return false;
-}
-
 function reset_solution()
 {
 	$query="DELETE FROM {solution} WHERE 1";
@@ -607,18 +608,10 @@ function reset_solution()
 	$query="ALTER TABLE {solution} AUTO_INCREMENT=1000";
 	db_query($query);
 	
+	variable_set('last_import_solution',1000);
+	
 	drupal_set_message("You had delete all solutions.");
 	drupal_goto('status');
-}
-
-function oj_problem_status_access($node)
-{
-	global $user;
-	if($node->type!='problem')
-		return false;
-	if(function_exists('contest_problem_access')&&!contest_problem_access($node))
-		return FALSE;
-	return true;
 }
 
 function oj_problem_status_callback($node)
@@ -667,7 +660,7 @@ function problem_status_generate_pie_chart($data)
 	return "<div class=open_flash_chart>".ofc_api_render($chart)."</div>";
 }
 */
-function problem_status_generate_pie_chart_2($data,$links = array())
+function problem_status_generate_pie_chart_2($data,$links = array(),$title_s="")
 {
 	if(empty($data))
 		return "";
@@ -694,7 +687,9 @@ function problem_status_generate_pie_chart_2($data,$links = array())
 
 	$chart = new open_flash_chart();
 	$chart->add_element($pie);
-	$title = new title('Statistics');
+	if($title_s=="")
+		$title_s = 'Statistics';
+	$title = new title($title_s);
 	$title->set_style('color: #f0f0f0; font-size: 20px');
 	$chart->set_title($title);
 	$chart->set_bg_colour('#202020');

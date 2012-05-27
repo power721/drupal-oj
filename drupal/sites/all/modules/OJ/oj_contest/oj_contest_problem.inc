@@ -80,7 +80,7 @@ function oj_contest_problem_submit_form(&$form_state=NULL,$cid,$num)
 		'#prefix' => '<div class=container-inline>',
 		'#suffix' => '</div>'
 	);
-	$languages = oj_contest_language($cid);
+	$languages = oj_contest_language($cid,FALSE);
 	$form['language']=array
 	(
 		'#type'=>'select',
@@ -106,7 +106,7 @@ function oj_contest_problem_submit_form(&$form_state=NULL,$cid,$num)
 		'#value' => 'Submit',
 		'#executes_submit_callback' => TRUE,
 		'#submit' => array('contest_problem_submit'),
-		'#validate' => array('problem_submit_validate'),
+		'#validate' => array('contest_problem_submit_validate'),
 	);
 
 	$form['problem_reset'] = array 
@@ -121,7 +121,9 @@ function contest_problem_submit_validate($form, &$form_state)
 {
 	$len = strlen($form_state['values']['source_code']);
 	if($len<10)
-		form_set_error(source_code, "Source code too short,submit FAILED;if you really need submit this source please contact administrator");
+		form_set_error('source_code', "Source code too short,submit FAILED;if you really need submit this source please contact administrator");
+	if($len>30000)
+		form_set_error('source_code', "Source code is too long,submit FAILED;if you really need submit this source please contact administrator");
 }
 
 function contest_problem_submit(&$form, &$form_state)
@@ -152,7 +154,7 @@ function contest_problem_submit(&$form, &$form_state)
 		$cid,
 		$time,
 		10000,
-		$language[$form_state['values']['language']],
+		$form_state['values']['language'],
 		$_SERVER['REMOTE_ADDR'],
 		$num,
 		$len,

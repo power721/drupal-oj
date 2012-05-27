@@ -43,12 +43,12 @@ function oj_contest_list()
             'sCookiePrefix' => 'pl_',
             'bProcessing' => true,
             'bServerSide' => true,
-            'sAjaxSource' => '?q=oj_contest_list.ajax',
+            'sAjaxSource' => 'ajax.php?q=oj_contest_list_ajax',
             'aoColumns' => $colwidths,
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
-			'iDisplayLength'=>20,
-			'aLengthMenu'=>array(array(10, 20, 50, 100),array('10', '20', '50', '100')),
+			'iDisplayLength' => 20,
+			'aLengthMenu' => array(10, 20, 50, 100),
         )
     );
 	
@@ -95,7 +95,7 @@ SCR;
 	}
 	return $inputboxes . theme_datatable($head,$dummy_row,$params);
 }
-
+/*
 function oj_contest_list_ajax()
 {
 	$lim_off=db_escape_string($_GET['iDisplayStart']);
@@ -166,7 +166,7 @@ function oj_contest_list_ajax()
         $linkend=addslashes('</a>');   
 		
 		$row= '["' . $linkbeg . $r['cid'] .  $linkend . 
-			 '","' . $linkbeg . $r['title'] .  $linkend . 
+			 '","' . $linkbeg . addslashes($r['title']) .  $linkend . 
 			 '","' . date('Y-m-d H:i:s',$r['start_time']) . 
 			 '","' . date('Y-m-d H:i:s',$r['end_time']) . 
 			 '","' . get_contest_type($r['access']) . 
@@ -177,6 +177,7 @@ function oj_contest_list_ajax()
     }
     print ']}';
 }
+*/
 function oj_contest_problem_list($cid)
 {
 	oj_contest_password_access($cid);
@@ -211,7 +212,7 @@ function oj_contest_problem_list($cid)
 		if(is_admin_login())
 			$num = "<a href=".url('problem/'.$item->pid).">".$item->pid."</a> ";
 		$num .= "Problem ".chr($item->num-1+ord('A'));
-		$title = $item->title;
+		$title = $item->alias;
 		if(empty($title))
 		{
 			$problem = problem_load($item->pid);
@@ -328,7 +329,7 @@ function oj_contest_status($cid)
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
 			'iDisplayLength'=>25,
-			'aLengthMenu'=>array(array(25, 50, 100, 200),array('25', '50', '100', '200')),
+			'aLengthMenu'=>array(25, 50, 100, 200),
         )
     );
 	$script=<<<SCR
@@ -372,8 +373,8 @@ SCR;
 
 	drupal_add_js($script,'inline');
 	
-	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	//drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
+	//drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
+	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
 
 	global $user;
 	$pid = $_GET['pid'];
@@ -400,8 +401,14 @@ SCR;
 						<option value=100 '.($result==100?'selected':'').'>Data Error</option>
 						<option value=10000 '.($result==10000?'selected':'').'>Waiting</option>';
 	
+	$languages = oj_contest_language($cid,FALSE);
+	$options = '<option value=\'\'  selected>All</option>';
+	foreach($languages as $key => $value)
+		$options .= "<option value=$key>$value</option>\n";
 	$inputboxes .= '</select></td>
-				<td>Language:<select size=1 id=search-language><option value=\'\'  selected>All</option><option value=0>G++</option><option value=1>GCC</option><option value=2>Java</option><option value=3>Pascal</option></select></td></tr>
+				<td>Language:<select size=1 id=search-language>'.
+				$options
+				.'</select></td></tr>
 				</table>
 				<input id="search_button" type="submit" value="Search">';
 			
@@ -417,7 +424,11 @@ function oj_contest_status_ajax($cid)
 	$sql = "SELECT SQL_CALC_FOUND_ROWS s.sid,u.name,s.uid,s.pid,s.result,s.memory,s.time,s.language,s.code_length,s.in_date FROM {solution} s LEFT JOIN {users} u ON u.uid=s.uid WHERE cid=$cid";
 
 	if(!empty($_GET['sSearch_1']))
-        $sql .= " AND u.name LIKE '" . $_GET['sSearch_1']  . "%%' ";
+		$uid = $_GET['sSearch_1'];
+	else if($_GET['uid'])
+		$uid = $_GET['uid'];
+	if(!empty($uid))
+		$sql .= " AND u.name LIKE '" .  $uid . "%%' ";
 	
 	if(!empty($_GET['sSearch_2']))
 		$pid = $_GET['sSearch_2'];
@@ -508,14 +519,15 @@ function oj_contest_status_ajax($cid)
         $user_linkend = addslashes('</a>');
 		
 		date_default_timezone_set("Asia/Chongqing");
+		$flag = show_code_access($r['sid']);
 		$row= '["' . $r['sid'] .
 			 '","' . $user_linkbeg . $r['name'] . $user_linkend . 
 			 '","' . $linkbeg . $num . $linkend .
 			 '","' . getResultDescript($r['result']) .
-			 '","' . ($r['result']==0?$r['memory']."K":"") .
-			 '","' . ($r['result']==0?$r['time'] . "MS":"") .
-			 '","' . (show_code_access($r['sid'])?'<a href=' . url('code/'.$r['sid']) . '>':'') .$languages[$r['language']] . (show_code_access($r['sid'])?'</a>':'') .
-			 '","' . $r['code_length'] . 'b' . 
+			 '","' . ($r['result']==0&&$flag?$r['memory']."K":"") .
+			 '","' . ($r['result']==0&&$flag?$r['time'] . "MS":"") .
+			 '","' . ($flag?'<a href=' . url('code/'.$r['sid']) . '>':'') .$languages[$r['language']] . ($flag?'</a>':'') .
+			 '","' . ($flag?$r['code_length'].'b':'') . 
 			 '","' . date('Y-m-d H:i:s',$r['in_date']) . 
 			 '"]';
 
@@ -587,7 +599,7 @@ function oj_contest_problem_status($num=NULL,$cid=NULL)
             'bJQueryUI' => true,
 			'bAutoWidth' => false,
 			'iDisplayLength'=>20,
-			'aLengthMenu'=>array(array(10, 20, 50, 100),array('10', '20', '50', '100')),
+			'aLengthMenu'=>array(10, 20, 50, 100),
         )
     );
 	$params['datatable_options']['aaSorting']=array(array(3,'asc'),array(2,'asc'),array(5,'asc'),array(1,'desc'));
@@ -605,19 +617,20 @@ $(document).ready(function()
 SCR;
 	drupal_add_js($script,'inline');
 	
-	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
-	//drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
-
+	//drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
+	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
+	
+	$languages = oj_contest_language($cid,FALSE);
+	$options = '<option value=\'\'  selected>All</option>';
+	foreach($languages as $key => $value)
+		$options .= "<option value=$key>$value</option>\n";
+		
 	$inputboxes='<table style="border:0px;background-color:#fedc6b; float:right">
                 <tr>
 				<td>
-				Language:<select size=1 id=search-language>
-				<option value=\'\'  selected>All</option>
-				<option value=0>G++</option>
-				<option value=1>GCC</option>
-				<option value=2>Java</option>
-				<option value=3>Pascal</option>
-				</select>
+				Language:<select size=1 id=search-language>'.
+				$options
+				.'</select>
 				</td>
 				</tr>
 				</table>
@@ -696,14 +709,16 @@ function oj_contest_problem_status_ajax($pid=NULL,$cid=NULL)
       	}
         print $comma; $comma=",";
         $linkbeg=addslashes('<a href="' . url('problem/' . $r['pid']) . '">');
-        $linkend=addslashes('</a>');   
+        $linkend=addslashes('</a>');  
 		
+		$nick = oj_user_nick($r['uid']);
+		$flag = show_code_access($r['sid']);
 		$row= '["' .$r['sid'].
-			 '","' . "<a href=" . url('user/'.$r['uid']) . ">"  .  $r['name'] . "</a>" . 
-			 '","' . ($r['result']==0?$r['memory']."K":"") .
-			 '","' . ($r['result']==0?$r['time'] . "MS":"") .
-			 '","' . (show_code_access($r['sid'])?'<a href=' . url('code/'.$r['sid']) . '>':'') .$language[$r['language']] . (show_code_access($r['sid'])?'</a>':'') .
-			 '","' . $r['code_length'] . 'b' . 
+			 '","' . "<a href=".url('user/'.$r['uid'])." title=".$nick.">".$r['name']."</a>" . 
+			 '","' . ($r['result']==0&&$flag?$r['memory']."K":"") .
+			 '","' . ($r['result']==0&&$flag?$r['time'] . "MS":"") .
+			 '","' . ($flag?'<a href=' . url('code/'.$r['sid']) . '>':'') .$language[$r['language']] . ($flag?'</a>':'') .
+			 '","' . ($flag?$r['code_length'].'b':'') . 
 			 '","' . date('Y-m-d H:i:s',$r['in_date']) . 
 			 '"]';
 
@@ -768,7 +783,7 @@ function oj_contest_ranklist($cid)
                 'bJQueryUI' => true,
 				'bAutoWidth' => false,
 				'iDisplayLength'=>50,
-				'aLengthMenu'=>array(array(25, 50, 100, 200),array('25', '50', '100', '200'))
+				'aLengthMenu'=>array(array25, 50, 100, 200)
 			)
         );
 
@@ -859,12 +874,13 @@ function oj_contest_rank_ajax($cid)
 		
 		$nick = oj_user_nick($r['uid']);
         $linkbeg = addslashes('<a href="' . url('user/') . $r['uid'] . '/status" title="'.$nick.'">');
-        $linkend = addslashes('</a>');
+        $link_status = addslashes('<a href="' . url("contest/$cid/status/") . '&result=0&uid=' .oj_user_name($r['uid']). '">');
+	    $linkend = addslashes('</a>');
                 
         $row = '["' . $idx .
              '","' . $linkbeg . $r['name'] . $linkend .
-            // '","' . $nick .
-             '","' . $r['accepts'] .
+            // '","' . addslashes($nick) .
+             '","' . $link_status . $r['accepts'] . $linkend .
              '","' . oj_contest_penalty($r['penalty']);
         foreach($contest->problems as $problem)
 		{

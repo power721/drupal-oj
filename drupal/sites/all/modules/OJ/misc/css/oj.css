@@ -198,3 +198,25 @@ div.open_flash_chart
   text-decoration: underline;
 }
 */
+
+.ui-button {
+    cursor: pointer;
+    display: inline-block;
+    /*margin-right: 0.1em;
+	padding: 3px;
+	margin:1px;
+    overflow: visible;
+    position: relative;*/
+    text-align: center;
+    text-decoration: none !important;
+	font-size:18px;
+}
+
+table.oj td
+{
+	border: 1px solid white;
+}
+table.announce td
+{
+    padding: 10px;
+}

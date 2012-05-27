@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 function oj_message_menu()
 {
@@ -9,6 +9,23 @@ function oj_message_menu()
 		'access callback' => '',
 		'type' => MENU_CALLBACK,
 	);
+	$items['announce'] = array
+	(
+		'title' => 'Announcement List',
+		'page callback' => 'oj_announce_list',
+		'access callback' => true,
+		'type' => MENU_CALLBACK,
+	);
+	
+	$items['announce/%'] = array
+	(
+		//'title' => 'Discuss Board',
+		'page callback' => 'oj_show_announce',
+		'page arguments' => array(1),
+		'access callback' => 'oj_announce_access',
+		'access arguments' => array(1),
+		'type' => MENU_CALLBACK,
+	);
 	
 	return $items;
 }
@@ -16,4 +33,122 @@ function oj_message_menu()
 function oj_discuss_list()
 {
 	
+}
+
+function oj_announce_list()
+{
+	drupal_add_css(drupal_get_path('module','datatables').'dataTables/media/css/demo_table_jui.css');
+	//drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/sunny/jquery-ui-1.7.3.custom.css');
+
+	$head = array('ID','Title','Publisher');
+
+	$items = db_query("SELECT id,uid,title FROM {announce} ORDER BY id DESC");
+	while($item = db_fetch_object($items))
+	{
+		$linkbeg = '<a href=' . url('announce/'.$item->id).'>';
+        $linkend = '</a>';
+		$publisher = "<a href=".url('user/'.$item->uid).">".oj_user_name($item->uid)."</a>";
+		
+		$dummy_row[] = array
+		(
+			array('data' => $item->id),
+			array('data' => $linkbeg . $item->title . $linkend),
+			array('data' => $publisher),
+		);
+	}
+	
+	$colwidths=array
+	(
+		array('bSortable'=>false,'sWidth'=>'10%'),
+		array('bSortable'=>false,'sWidth'=>'80%'),
+		array('bSortable'=>false,'sWidth'=>'10%'),
+	);
+	
+	$params=array
+	(
+		'datatable_options' =>array
+		(
+            'sDom' => '<"H"lp<"clear">>rt<"F"ip<"clear">><"clear">',
+            'aoColumns' => $colwidths,
+            'bJQueryUI' => true,
+			'bAutoWidth' => false,
+			'aaSorting' => array(array(0,'desc')),
+			'iDisplayLength'=>20,
+			'aLengthMenu'=>array(10,20,50,100),
+        )
+    );
+	
+	return theme_datatable($head,$dummy_row,$params);
+}
+
+function oj_announce($type=0,$id=NULL)
+{
+	$now = time();
+	$sql = "SELECT id,title FROM {announce} WHERE start_time<=%d AND end_time>=%d";
+	if($type==0)
+		$sql .= " AND pid IS NULL AND cid IS NULL";
+	else if($type==1)
+		$sql .= "AND pid=%d";
+	else if($type==2)
+		$sql .= "AND cid=%d";
+	$items = db_query($sql,$now,$now,$id);
+	$out = '<marquee scrollamount=2 width=800 scrolldelay=30 onMouseOver="javascript:this.stop();" onMouseOut="javascript:this.start();"><b style="margin-right:20px">';
+	while($item = db_fetch_object($items))
+	{
+		$flag = true;
+		$out .= "\n<a href=".url("announce/".$item->id).">".$item->title."</a><br>";
+	}
+	if(!$flag)
+		return "";
+	$out .= "\n</b></marquee>";
+	return $out;
+}
+
+function oj_announce_access($id)
+{
+	return db_result(db_query("SELECT 1 FROM {announce} WHERE id=%d",$id));
+}
+
+function oj_show_announce($id)
+{
+	$breadcrumb = array();
+	$breadcrumb[] = l('Home', '<front>');
+	$breadcrumb[] = l('Announce', 'announce');
+	drupal_set_breadcrumb($breadcrumb);
+	
+	$bg_url = drupal_get_path('module','oj').'/misc/images/bg.jpg';
+	db_query("UPDATE {announce} SET view=view+1 WHERE id=%d",$id);
+	
+	$item = db_fetch_object(db_query("SELECT * FROM {announce} WHERE id=%d",$id));
+	
+	date_default_timezone_set("Asia/Chongqing");
+	$start_time = date('Y-m-d H:i:s',$item->start_time);
+	$end_time = date('Y-m-d H:i:s',$item->end_time);
+	$publisher = "<a href=".url('user/'.$item->uid).">".oj_user_name($item->uid)."</a>";
+	$editor = oj_user_name($item->editor);
+	if($editor)
+		$editor = "Editor: <a href=".url('user/'.$item->editor).">".$editor."</a>";
+	$out =<<<HTML
+	<center><table class="oj announce" id=announce-$id  width=99% border=1 class=user_info style=background-image:$bg_url>
+	<tr>
+		<td align="center">
+			<h2>{$item->title}</h2>
+			Start time: <font color="#993399">$start_time</font>  End time: <font color="#993399">$end_time</font><br/>
+			Publisher: $publisher  $editor View:{$item->view}<br/>
+			<hr>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<p>
+			{$item->content}
+			<br><br>
+			<div align=right>----信息工程学院ACM集训队</div>
+		</p>
+		</td>
+	</tr>
+	</table></center>
+HTML;
+	
+	return $out;
 }

@@ -58,8 +58,11 @@
     <td colspan="2"><div><?php print $header ?></div></td>
   </tr>
 </table>
-
+	<div align=center id=rollword>
+	<?php if(function_exists('oj_announce'))print oj_announce(); ?>
+	</div>
 <table id="content" border="0" cellpadding="15" cellspacing="0" width="100%">
+
   <tr>
     <?php if ($left != ""): ?>
     <td>

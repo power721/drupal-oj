@@ -4,36 +4,20 @@ oTest.fnStart( "fnInitComplete" );
 /* Fairly boring function compared to the others! */
 
 $(document).ready( function () {
-	/* Check the default */
-	var oTable = $('#example').dataTable( {
-		"bServerSide": true,
-		"sAjaxSource": "../../../examples/examples_support/server_processing.php"
-	} );
-	var oSettings = oTable.fnSettings();
-	var mPass;
-	
 	oTest.fnWaitTest( 
-		"Default should be null",
-		null,
-		function () { return oSettings.fnInitComplete == null; }
-	);
-	
-	
-	oTest.fnWaitTest( 
-		"One argument passed",
+		"Two arguments passed",
 		function () {
-			oSession.fnRestore();
 			
 			mPass = -1;
 			$('#example').dataTable( {
 				"bServerSide": true,
-		"sAjaxSource": "../../../examples/examples_support/server_processing.php",
+		"sAjaxSource": "../../../examples/server_side/scripts/server_processing.php",
 				"fnInitComplete": function ( ) {
-					mPass = arguments.length;
+					mPass = arguments.length===2 && arguments[1]===undefined;
 				}
 			} );
 		},
-		function () { return mPass == 1; }
+		function () { return mPass; }
 	);
 	
 	
@@ -44,13 +28,13 @@ $(document).ready( function () {
 			
 			oTable = $('#example').dataTable( {
 				"bServerSide": true,
-		"sAjaxSource": "../../../examples/examples_support/server_processing.php",
+		"sAjaxSource": "../../../examples/server_side/scripts/server_processing.php",
 				"fnInitComplete": function ( oSettings ) {
 					mPass = oSettings;
 				}
 			} );
 		},
-		function () { return oTable.fnSettings() == mPass; }
+		function () { console.log( oTable.fnSettings(), mPass );return oTable.fnSettings() === mPass; }
 	);
 	
 	
@@ -62,7 +46,7 @@ $(document).ready( function () {
 			mPass = 0;
 			$('#example').dataTable( {
 				"bServerSide": true,
-				"sAjaxSource": "../../../examples/examples_support/server_processing.php",
+				"sAjaxSource": "../../../examples/server_side/scripts/server_processing.php",
 				"fnInitComplete": function ( ) {
 					mPass++;
 				}
@@ -90,7 +74,7 @@ $(document).ready( function () {
 			mPass = 0;
 			$('#example').dataTable( {
 				"bServerSide": true,
-				"sAjaxSource": "../../../examples/examples_support/server_processing.php",
+				"sAjaxSource": "../../../examples/server_side/scripts/server_processing.php",
 				"fnInitComplete": function ( ) {
 					mPass = $('#example tbody tr').length;
 				}

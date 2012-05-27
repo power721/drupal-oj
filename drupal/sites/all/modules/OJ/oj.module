@@ -5,7 +5,6 @@ function oj_init()
 	$path = drupal_get_path('module','oj').'/misc/';
 	drupal_add_css($path.'css/oj.css');
 	drupal_add_css($path.'css/contactable.css');
-	drupal_add_css($path.'jquery-ui/css/start/jquery-ui-1.7.3.custom.css');
 	
 	drupal_add_js($path.'jquery-ui/js/jquery-ui-1.7.3.custom.min.js');
 	drupal_add_js($path.'js/oj.js');
@@ -16,6 +15,15 @@ function oj_init()
 
 function oj_menu()
 {
+	$items['admin/settings/oj'] = array
+	(
+		'title' => 'Online Judge',
+		'description' => 'Configure settings for Online Judge.',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('oj_settings'),
+		'access arguments' => array('administer site configuration'),
+	);
+	
 	$items['faq'] = array
 	(
 		'title' => 'Frequently Asked Questions',
@@ -56,6 +64,159 @@ function oj_menu()
 function oj_perm()
 {
 	return array('oj_import_data');
+}
+
+function oj_theme()
+{
+	return array
+	(
+		'oj_faq' => array
+		(
+			'arguments' => array('path' => NULL),
+			'template' => 'faq',
+		)
+	);
+}
+
+function oj_cron()
+{
+	if(function_exists('_oj_user_cron'))
+	{
+		_oj_user_cron();
+	}
+	if(function_exists('_oj_problem_cron'))
+	{
+		_oj_problem_cron();
+	}
+	if(function_exists('_oj_contest_cron'))
+	{
+		_oj_contest_cron();
+	}
+	if(function_exists('_oj_solution_cron'))
+	{
+		_oj_solution_cron();
+	}
+}
+
+function oj_settings()
+{
+	$form['oj_import_user'] = array
+	(
+		'#type' => 'fieldset',
+		'#title' => 'User Import',
+		'#collapsible' => TRUE,
+	);
+	$form['oj_import_user']['last_uid'] = array
+	(
+		'#type' => 'textfield',
+		'#title' => t('Last imported user number'),
+		'#default_value' => variable_get('last_import_user',0),
+		'#size' => 10,
+	);
+	$form['oj_import_user']['user_num'] = array
+	(
+		'#type' => 'select',
+		'#title' => t('Import number per time'),
+		'#default_value' => variable_get('import_user_num',50),
+		'#options' => drupal_map_assoc(array(10,20,50,100)),
+	);
+	
+	$form['oj_import_problem'] = array
+	(
+		'#type' => 'fieldset',
+		'#title' => 'Problem Import',
+		'#collapsible' => TRUE,
+	);
+	$form['oj_import_problem']['last_pid'] = array
+	(
+		'#type' => 'textfield',
+		'#title' => t('Last imported problem number'),
+		'#default_value' => variable_get('last_import_problem',1000),
+		'#size' => 10,
+	);
+	$form['oj_import_problem']['problem_num'] = array
+	(
+		'#type' => 'select',
+		'#title' => t('Import number per time'),
+		'#default_value' => variable_get('import_problem_num',20),
+		'#options' => drupal_map_assoc(array(10,20,30,50)),
+	);
+	
+	$form['oj_import_contest'] = array
+	(
+		'#type' => 'fieldset',
+		'#title' => 'Contest Import',
+		'#collapsible' => TRUE,
+	);
+	$form['oj_import_contest']['last_cid'] = array
+	(
+		'#type' => 'textfield',
+		'#title' => t('Last imported contest number'),
+		'#default_value' => variable_get('last_import_contest',1000),
+		'#size' => 10,
+	);
+	$form['oj_import_contest']['contest_num'] = array
+	(
+		'#type' => 'select',
+		'#title' => t('Import number per time'),
+		'#default_value' => variable_get('import_contest_num',10),
+		'#options' => drupal_map_assoc(array(5,10,20,30,50)),
+	);
+	
+	$form['oj_import_solution'] = array
+	(
+		'#type' => 'fieldset',
+		'#title' => 'Solution Import',
+		'#collapsible' => TRUE,
+	);
+	$form['oj_import_solution']['last_sid'] = array
+	(
+		'#type' => 'textfield',
+		'#title' => t('Last imported solution number'),
+		'#default_value' => variable_get('last_import_solution',1000),
+		'#size' => 10,
+	);
+	$form['oj_import_solution']['solution_num'] = array
+	(
+		'#type' => 'select',
+		'#title' => t('Import number per time'),
+		'#default_value' => variable_get('import_solution_num',100),
+		'#options' => drupal_map_assoc(array(20,50,100,200,500)),
+	);
+	
+	$form['#validate'][] = 'oj_settings_validate';
+	$form['#submit'][] = 'oj_settings_submit';
+	return system_settings_form($form);
+}
+
+function oj_settings_validate($form,$form_state)
+{
+	if(!is_numeric($form_state['values']['last_uid']) || $form_state['values']['last_uid']<0)
+		form_set_error('last_uid','The last imported user number is incorrect.');
+	
+	if(!is_numeric($form_state['values']['last_pid']) || $form_state['values']['last_pid']<1000)
+		form_set_error('last_pid','The last imported problem number is incorrect.');
+	
+	if(!is_numeric($form_state['values']['last_cid']) || $form_state['values']['last_cid']<1000)
+		form_set_error('last_cid','The last imported contest number is incorrect.');
+	
+	if(!is_numeric($form_state['values']['last_sid']) || $form_state['values']['last_sid']<1000)
+		form_set_error('last_sid','The last imported solution number is incorrect.');
+}
+
+function oj_settings_submit($form,$form_state)
+{
+	variable_set('last_import_user',$form_state['values']['last_uid']);
+	variable_set('import_user_num',$form_state['values']['user_num']);
+	
+	variable_set('last_import_problem',$form_state['values']['last_pid']);
+	variable_set('import_problem_num',$form_state['values']['problem_num']);
+	
+	variable_set('last_import_contest',$form_state['values']['last_cid']);
+	variable_set('import_contest_num',$form_state['values']['contest_num']);
+	
+	variable_set('last_import_solution',$form_state['values']['last_sid']);
+	variable_set('import_solution_num',$form_state['values']['solution_num']);
 }
 
 function oj_login_form($form_state)
@@ -99,6 +260,7 @@ function oj_login_form($form_state)
 function oj_faq()
 {
 	$path = drupal_get_path('module','oj');
+	//return theme('oj_faq',$path);
 	$html = <<<SCR
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -114,6 +276,8 @@ function oj_faq()
 <script src='{$path}/misc/js/dp.SyntaxHighlighter/Scripts/shBrushCpp.js' type='text/javascript'></script>
 <script src='{$path}/misc/js/dp.SyntaxHighlighter/Scripts/shBrushJava.js' type='text/javascript'></script>
 <script src='{$path}/misc/js/dp.SyntaxHighlighter/Scripts/shBrushDelphi.js' type='text/javascript'></script>
+<script src='{$path}/misc/js/dp.SyntaxHighlighter/Scripts/shBrushPerl.js' type='text/javascript'></script>
+<script src='{$path}/misc/js/dp.SyntaxHighlighter/Scripts/shBrushPhp.js' type='text/javascript'></script>
 </head>
 
 <body>
@@ -258,13 +422,14 @@ Masm32:<font color=blue>masm32.bat %PATH% %NAME% %EXT%</font><br />
 <tr>
   <td><font color=#ff3030><b>Waiting</b></font></td>
   <td style="text-align:left">你的程序正在评测当中，请稍候。</td></tr>
-<tr><td><font color=green>Queuing</font></td><td style="text-align:left">OJ正在评测其它用户的提交，请你稍等片刻。</td></tr>
+<tr><td><font color=balck>Data Error</font></td><td style="text-align:left">测试数据文件错误，请告知管理员。</td></tr>
 <tr><td><font color=black>System Error</font></td>
 <td style="text-align:left">未知错误，如果有该评测结果，请及时联系管理员。</td>
 </tr>
 </table>
 </center>
-注意：对于Java语言，有极少部分可能将RFC与RE判成WA。<br /><br />
+注意：对于Java语言，有极少部分可能将RFC与RE判成WA。<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Perl、PHP脚本语言暂时无法判断CE。<br />
 
 <a name=key></a>
 <hr />
@@ -346,6 +511,25 @@ public class Main
 	}
 }
 </pre>
+
+Perl语言：
+<pre class='brush: perl;toolbar: false;'>
+my @a;
+while(<>)
+{
+    @a = split(' ',\$_);
+    \$a[0] += \$a[1];
+    print "\$a[0]\\n";
+}
+</pre>
+
+PHP语言：
+<pre class='brush: php;toolbar: false;'>
+&lt;?php
+\$stdin = fopen('php ://stdin', 'r');
+while (fscanf(\$stdin, "%d%d", \$a, \$b) == 2)
+    print (\$a + \$b) . "\\n";
+</pre>
 <script type="text/javascript">SyntaxHighlighter.all();</script>
 
 <br />
@@ -356,7 +540,6 @@ public class Main
 
 </div><!-- center -->
 
-<script language='javascript' type='text/javascript'>dp.SyntaxHighlighter.HighlightAll('code');</script>
 </body>
 </html>
 
@@ -568,8 +751,38 @@ function hook_exist($type = NULL)
 
 function oj_test($par=NULL)
 {
-	$text = "";
-	return problem_text($text);
+	$str = file('http://localhost/drupal/code/33239');
+	foreach($str as $line)
+		$output .= $line;
+	/*// 创建一个新cURL资源
+	$ch = curl_init();
+
+	// 设置URL和相应的选项
+	curl_setopt($ch,CURLOPT_URL, "http://localhost/drupal/code/33239");
+	curl_setopt($ch,CURLOPT_HEADER, false);
+	curl_setopt($ch,CURLOPT_POST,1);
+	curl_setopt($ch,CURLOPT_POSTFIELDS,'op=check');
+	// 抓取URL并把它传递给浏览器
+	$str = curl_exec($ch);
+	
+	
+	//关闭cURL资源，并且释放系统资源
+	curl_close($ch);
+*/
+$js =<<<JS
+			<script type="text/javascript">
+			//alert($('#check_code').val());
+				$('.functions').each(function(i)
+				{
+					alert($(this).val());
+					$('#check_code').append($(this).val());
+				});
+			</script>
+JS;
+	//drupal_add_js($js,'inline');
+	//debug($output);
+	echo $output.$js;
+	//return "<pre>".check_plain($output)."</pre>";
 }
 
 function microtime_float()
@@ -602,6 +815,9 @@ function debug($var,$title = NULL,$filename = NULL)
 	$f = fopen($filename,'a');
 	ob_start();
 	print("===== $title(".gettype($var).") =====\r\n");
+	$call = debug_backtrace();
+	print $call[0]['file'].',line '.$call[0]['line']."\r\n\r\n";
+	//print "File: ". __FILE__ ." Line: ". __LINE__ ."\r\n\r\n";
 	print_r($var);
 	print("\n\n");
 	fwrite($f,ob_get_contents());

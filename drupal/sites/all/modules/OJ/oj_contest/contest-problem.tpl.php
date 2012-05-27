@@ -56,12 +56,11 @@
 	<div class="tabs" align=center>
 	<ul class="tabs secondary">
 	<?php
-	for($i=1;$i<=$count;$i++)
-		print '<li><a href='.url("contest/$cid/problem/".chr($i-1+ord('A'))).( $i==$num?' class="active"':'').'>'.chr($i-1+ord('A'))."</a></li>\n";
+	for($i=0;$i<$count;$i++)
+		print '<li><a href='.url("contest/$cid/problem/".chr($i+ord('A'))).( $i+1==$num?' class="active"':'').' title="'.$titles[$i].'.">'.chr($i+ord('A'))."</a></li>\n";
 	?>
 	</ul>
 	</div>
-	
 	
   <center>
   <p align=center>
@@ -70,7 +69,8 @@
  <font color=blue>Time Limit</font>:<?php print $node->field_time[0]['value'] ?>MS
  <font color=blue>Memory Limit</font>:<?php print $node->field_memory[0]['value'] ?>K<br>
  <font color=red>Total Submit</font>:<?php print $submited_link; ?>
- <font color=red>Accepted</font>:<?php print $accepted_link; ?><br>
+ <font color=red>Accepted</font>:<?php print $accepted_link; ?>
+ <font color=red>Solved</font>:<?php print $solved; ?><br>
  <?php if($node->field_ctime[0]['value']<$node->field_time[0]['value']): ?>
  <font color=green>Case Time Limit:<?php print $node->field_ctime[0]['value'] ?>MS</font><br>
  <?php endif;?>

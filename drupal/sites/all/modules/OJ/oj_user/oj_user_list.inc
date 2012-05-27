@@ -28,7 +28,7 @@ function oj_user_ranklist()
               );
 
   $colwidths=array(
-                   array('bSortable'=>false,'sWidth'=>'6%'),
+                   array('bSortable'=>true,'sWidth'=>'6%'),
                    array('bSortable'=>true,'sWidth'=>'24%'),
                    array('bSortable'=>false,'sWidth'=>'40%'),
                    array('bSortable'=>true,'sWidth'=>'10%'),
@@ -39,17 +39,17 @@ function oj_user_ranklist()
 
   $params=array('datatable_options' =>
            array('sPaginationType' => 'full_numbers',
-                 'sDom' => '<"H"lp<"clear">>rt<"F"i<"clear">><"clear">',
+                 'sDom' => '<"H"lp<"clear">>rt<"F"ip<"clear">><"clear">',
                  // 'bStateSave'  => true,  // needs work te remember the independent input search box values
                  'sCookiePrefix' => 'ul_',
                  'bProcessing' => true,
                  'bServerSide' => true,
-                 'sAjaxSource' => '?q=oj_user_list.ajax',
+                 'sAjaxSource' => '../ajax.php?q=oj_user_list_ajax',
                  'aoColumns' => $colwidths,
                  'bJQueryUI' => true,
 				 'bAutoWidth' => false,
-				'iDisplayLength'=>25,
-				'aLengthMenu'=>array(array(25, 50, 100, 200),array('25', '50', '100', '200'))
+				 'iDisplayLength'=>25,
+				 'aLengthMenu'=>array(25, 50, 100, 200)
         )
           );
 
@@ -74,7 +74,7 @@ SCR;
   drupal_add_js($script,'inline');
   
   # add the themeroller widget set (bJQueryUI=true)
-  drupal_add_css(drupal_get_path('module', 'datatables').'dataTables/media/css/demo_table_jui.css');
+  //drupal_add_css(drupal_get_path('module', 'datatables').'dataTables/media/css/jquery.dataTables_themeroller.css');
 
 	drupal_add_css(drupal_get_path('module','oj').'/misc/jquery-ui/css/redmond/jquery-ui-1.7.3.custom.css');
 
@@ -87,6 +87,7 @@ SCR;
 				  
   return $inputboxes . theme_datatable($head,$dummy_row,$params);
 }
+/*
 function oj_user_list_ajax() {
      
 	$lim_off=db_escape_string($_GET['iDisplayStart']);
@@ -101,7 +102,7 @@ function oj_user_list_ajax() {
 		LEFT JOIN profile_values pn ON u.uid=pn.uid AND pn.fid=1 
 		LEFT JOIN profile_values pa ON u.uid=pa.uid AND pa.fid=4 
 		LEFT JOIN profile_values ps ON u.uid=ps.uid AND ps.fid=5 
-		WHERE status=1)t,(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt WHERE 1";*/
+		WHERE status=1)t,(SELECT @rank:=0) r ORDER BY solved desc,submissions)tt WHERE 1";
 	$sql = "
 		SELECT
 			SQL_CALC_FOUND_ROWS *
@@ -122,6 +123,9 @@ function oj_user_list_ajax() {
     
         for($s=0; $s < $_GET['iSortingCols']; $s++) {
           switch($_GET["iSortCol_$s"]) {
+			case 0: $sqlorderby.= $ordercomma . "rank " . $_GET["sSortDir_$s"];
+                    $ordercomma=",";
+                    break;
             case 1: $sqlorderby.= $ordercomma . "name " . $_GET["sSortDir_$s"];
                     $ordercomma=",";
                     break;
@@ -173,8 +177,8 @@ function oj_user_list_ajax() {
         $linkend=addslashes('</a>');
                 
         $row= '["' .$r['rank'] .
-             '","' . $linkbeg . $r['name'] . $linkend .
-             '","' . $r['nick'] .
+             '","' . $linkbeg . addslashes($r['name']) . $linkend .
+             '","' . addslashes($r['nick']) .
              '","' . $r['solved'] .
              '","' . $r['submissions'] . 
              '","' . ($r['submissions']==0?0:ceil($r['solved']/$r['submissions']*100)) .'%' . 
@@ -185,3 +189,4 @@ function oj_user_list_ajax() {
       }
       print ' ]}';
 }
+*/

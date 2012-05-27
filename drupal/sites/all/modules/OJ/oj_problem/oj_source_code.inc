@@ -61,7 +61,7 @@ function oj_problem_submit_form(&$form_state=NULL,$node)
 		'#suffix' => '</div>'
 	);
 	*/
-	$languages = oj_languages();
+	$languages = oj_languages(TRUE);
 	$form['language']=array
 	(
 		'#type'=>'select',
@@ -109,18 +109,15 @@ function problem_submit_validate($form, &$form_state)
 {
 	$len = strlen($form_state['values']['source_code']);
 	if($len<10)
-		form_set_error(source_code, "Source code too short,submit FAILED;if you really need submit this source please contact administrator");
+		form_set_error('source_code', "Source code too short,submit FAILED;if you really need submit this source please contact administrator");
+	if($len>30000)
+		form_set_error('source_code', "Source code too long,submit FAILED;if you really need submit this source please contact administrator");
 }
 
 function problem_submit(&$form, &$form_state)
 {
 	global $user;
-	$array = oj_languages();
-	$id = 0;
-	foreach($array as $value)
-	{
-		$language[$value] = $id++;
-	}
+	
 	//$language = array('G++'=>0,'GCC'=>1,'JAVA'=>2,'Pascal'=>3,'Masm32'=>4);
 	$item = db_fetch_object(db_query("SELECT sid FROM {solution} WHERE uid=%d AND pid=%d LIMIT 1"
 			,$user->uid,$form_state['values']['pid']));
@@ -137,7 +134,7 @@ function problem_submit(&$form, &$form_state)
 		$user->uid,
 		$time,
 		10000,
-		$language[$form_state['values']['language']],
+		$form_state['values']['language'],
 		$_SERVER['REMOTE_ADDR'],
 		-1,
 		$len,
@@ -150,8 +147,12 @@ function problem_submit(&$form, &$form_state)
 	user_save($account,array('profile_submissions'=>$account->profile_submissions+1));
 	
 	db_query("UPDATE {node} SET changed=%d WHERE nid=%d",time(),$form_state['values']['nid']);
-	$cid = "content:".$form_state['values']['nid'];
-	cache_clear_all($cid,'cache_content',TRUE);
+	//$cid = "content:".$form_state['values']['nid'];
+	//cache_clear_all($cid,'cache_content',TRUE);
+	
+	/*require_once drupal_get_path('oj_problem','module')."/check_code.php";
+	$code = new c_code($form_state['values']['source_code']);
+	debug($code->check());*/
 	
 	oj_judge($sid);
 	
@@ -172,6 +173,7 @@ function show_code($sid)
 		drupal_set_message("No such solution.");
 		drupal_goto('status');
 	}
+	
 	$query = "SELECT s.*,u.name,uncompress(source) AS source FROM {solution} s LEFT JOIN {users} u ON s.uid=u.uid WHERE sid=%d";
 	$items = db_query($query,$sid);
 	$language = oj_languages(TRUE);
@@ -241,6 +243,7 @@ SCR;
 			
 			<script type="syntaxhighlighter" class="brush: {$type[$item->language]};toolbar: false;"><![CDATA[ {$item->source}]]></script> 
 			<script type="text/javascript">SyntaxHighlighter.all();</script>
+			<span id=check_code></span>
 			
 SCR;
 		print theme('page', $output);
@@ -268,6 +271,10 @@ function show_code_access($sid)
 {
 	if($sid==NULL)
 		return false;
+	//if(isset($_POST['op']) && $_POST['op']=='check')
+	{
+		return true;
+	}
 	global $user;
 	if($user->uid==0)
 		return false;
