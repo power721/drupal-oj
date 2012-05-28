@@ -86,7 +86,9 @@
  <font color=blue>Time Limit</font>:<?php print $node->field_time[0]['value'] ?>MS
  <font color=blue>Memory Limit</font>:<?php print $node->field_memory[0]['value'] ?>K<br>
  <font color=red>Total Submit</font>:<a href=<?php print url('status').'?pid='.$node->field_pid[0]['value'] ?>><?php print $node->field_submit[0]['value'] ?></a>
- <font color=red>Accepted</font>:<a href=<?php print url('status').'?pid='.$node->field_pid[0]['value'].'&result=0' ?>><?php print $node->field_accepted[0]['value'] ?></a><br>
+ <font color=red>Accepted</font>:<a href=<?php print url('status').'?pid='.$node->field_pid[0]['value'].'&result=0' ?>><?php print $node->field_accepted[0]['value'] ?></a>
+ <?php if(need_SPJ($node))echo "<b><font color=red>Special Judged</font></b>"; ?>
+ <br>
  <?php if($node->field_ctime[0]['value']!=30000): ?>
  <font color=green>Case Time Limit:<?php print $node->field_ctime[0]['value'] ?>MS</font><br>
  <?php endif;?>
