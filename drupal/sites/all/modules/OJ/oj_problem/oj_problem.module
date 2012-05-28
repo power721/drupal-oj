@@ -590,3 +590,9 @@ function problem_text($text)
 	$text = str_replace("src='problem-images", "src='/oj/problem-images", $text);
 	return $text;
 }
+
+function need_SPJ($node)
+{
+	$SPJ = $node->field_input_path[0]['value'].'/Validate.exe';
+	return file_exists($SPJ);
+}
